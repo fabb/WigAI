@@ -46,7 +46,7 @@ public class WigaiExtensionDefinition extends ControllerExtensionDefinition {
 
     @Override
     public int getRequiredAPIVersion() {
-        return 22;
+        return 19;
     }
 
     @Override

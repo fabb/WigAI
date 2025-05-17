@@ -11,7 +11,7 @@ WigAI is a software component designed to enhance the creative workflow for Bitw
     2.  Enable external AI agents to control Bitwig's transport (start/stop playback) via MCP commands.
     3.  Enable external AI agents to trigger user-specified clips (by track name and clip index/scene number) and entire scenes in Bitwig via MCP commands.
     4.  Enable external AI agents to read and set the eight (8) parameters of the currently selected device in Bitwig via MCP commands.
-    5.  To achieve this using exclusively open-source tools and the official Bitwig Java Extension API (version 22).
+    5.  To achieve this using exclusively open-source tools and the official Bitwig Java Extension API (version 19).
 -   **Measurable Outcomes:**
     1.  Successful and reliable starting and stopping of Bitwig playback initiated by an MCP command.
     2.  Successful and reliable triggering of specified clips and scenes in Bitwig initiated by an MCP command.
@@ -62,7 +62,7 @@ WigAI is a software component designed to enhance the creative workflow for Bitw
     * Not directly applicable to WigAI itself, as it is a server component without a direct UI. The usability and accessibility pertain to the external AI agent and its interface.
 -   **Compatibility:**
     * Must function on all operating systems supported by Bitwig Studio (macOS, Windows, Linux).
-    * Must use and be compatible with the official Bitwig Java Extension API version 22.
+    * Must use and be compatible with the official Bitwig Java Extension API version 19.
 -   **Resource Usage:**
     * The extension should be mindful of CPU and memory usage and not unduly burden the Bitwig Studio process.
 -   **Open Source:**
@@ -79,7 +79,7 @@ WigAI is a software component designed to enhance the creative workflow for Bitw
     * WigAI will expose an MCP server endpoint (configurable local IP and port) for external AI agents to connect and send MCP messages.
     * The specific MCP message schema (JSON structure, command names, parameters) for each supported function (transport, clip/scene launch, device parameters) needs to be defined and documented for AI agent developers.
 2.  **Bitwig Studio Integration:**
-    * WigAI will use the official Bitwig Java Extension API (version 22) to interact with Bitwig Studio for all its functionalities.
+    * WigAI will use the official Bitwig Java Extension API (version 19) to interact with Bitwig Studio for all its functionalities.
 
 ### Testing Requirements (High-Level)
 
@@ -132,7 +132,7 @@ WigAI is a software component designed to enhance the creative workflow for Bitw
 
 ### Technical Constraints
 
--   **Mandatory Technology:** Java (language level compatible with Bitwig Extension API v22 requirements, likely Java 8 or higher). Official Bitwig Java Extension API (version 22: `https://maven.bitwig.com/com/bitwig/extension-api/22/`).
+-   **Mandatory Technology:** Java (language level compatible with Bitwig Extension API v19 requirements, likely Java 8 or higher). Official Bitwig Java Extension API (version 19: `https://maven.bitwig.com/com/bitwig/extension-api/19/`).
 -   **Model Context Protocol (MCP):** The extension must correctly implement server-side handling for MCP messages related to the defined MVP features. The exact MCP message structures need to be defined.
 -   **Operating System Compatibility:** The extension must be compatible with macOS, Windows, and Linux (wherever Bitwig Studio runs). Code should be platform-agnostic.
 -   **Budget:** $0. All libraries and tools used must be open-source and free of charge.

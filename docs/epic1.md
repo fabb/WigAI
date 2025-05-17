@@ -6,11 +6,11 @@
 ## Story List
 
 ### Refined Story 1.1: Basic Bitwig Extension Project Setup
-* **User Story / Goal:** As a WigAI Developer, I want a basic, runnable Bitwig Java extension project configured with the necessary dependencies (Bitwig API v22, MCP Java SDK) and build system (Gradle), adhering to the defined project structure and coding standards, so that I have a foundation for implementing WigAI features.
+* **User Story / Goal:** As a WigAI Developer, I want a basic, runnable Bitwig Java extension project configured with the necessary dependencies (Bitwig API v19, MCP Java SDK) and build system (Gradle), adhering to the defined project structure and coding standards, so that I have a foundation for implementing WigAI features.
 * **Detailed Requirements:**
     * Set up a new Java project using Gradle, targeting Java 21 LTS.
     * The root package shall be `io.github.fabb.wigai`.
-    * Include `com.bitwig.extension-api:22` and the latest stable MCP Java SDK as dependencies in `build.gradle.kts`.
+    * Include `com.bitwig.extension-api:19` and the latest stable MCP Java SDK as dependencies in `build.gradle.kts`.
     * Configure the Gradle build script (`build.gradle.kts`) to compile the extension and package it into a `.bwextension` file (as detailed in technical story TS6).
     * Create initial `io.github.fabb.wigai.WigaiExtension.java` (extending `ControllerExtension`) and `io.github.fabb.wigai.WigaiExtensionDefinition.java` (extending `ControllerExtensionDefinition`) classes.
     * Implement basic `Logger` (`io.github.fabb.wigai.common.Logger.java`) and `ConfigManager` (`io.github.fabb.wigai.config.ConfigManager.java`) stubs as per technical story TS1.

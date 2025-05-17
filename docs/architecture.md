@@ -2,7 +2,7 @@
 
 ## 1. Technical Summary
 
-WigAI is a Bitwig Studio Java Extension that functions as a Model Context Protocol (MCP) server. It enables external AI agents to interact with and control Bitwig Studio for functionalities such as transport control (start/stop playback), clip and scene launching, and reading/writing parameters of the currently selected device. The architecture is designed to be lightweight and run efficiently within the Bitwig Studio environment. It utilizes Java 21 LTS, the official Bitwig Extension API v22, and the MCP Java SDK. WigAI implements the **MCP Streamable HTTP transport**, which uses a single HTTP endpoint for communication and can leverage **Server-Sent Events (SSE)** for streaming server-to-client updates. The primary goal is to provide a stable and responsive bridge between AI agents and Bitwig's creative functionalities, adhering to the open-source and no-cost constraints of the project.
+WigAI is a Bitwig Studio Java Extension that functions as a Model Context Protocol (MCP) server. It enables external AI agents to interact with and control Bitwig Studio for functionalities such as transport control (start/stop playback), clip and scene launching, and reading/writing parameters of the currently selected device. The architecture is designed to be lightweight and run efficiently within the Bitwig Studio environment. It utilizes Java 21 LTS, the official Bitwig Extension API v19, and the MCP Java SDK. WigAI implements the **MCP Streamable HTTP transport**, which uses a single HTTP endpoint for communication and can leverage **Server-Sent Events (SSE)** for streaming server-to-client updates. The primary goal is to provide a stable and responsive bridge between AI agents and Bitwig's creative functionalities, adhering to the open-source and no-cost constraints of the project.
 
 ## 2. High-Level Overview
 
@@ -171,7 +171,7 @@ This section highlights the significant architectural choices made for WigAI and
 
   * **Hosting/Cloud Provider(s):** Not applicable. WigAI is a local Bitwig Studio extension and runs entirely within the user's Bitwig Studio environment.
   * **Core Services Used:**
-      * Bitwig Studio Java Extension API (version 22)
+      * Bitwig Studio Java Extension API (version 19)
       * MCP Java SDK (for MCP server implementation)
       * Embedded HTTP server components as utilized by the MCP Java SDK's transport layer (e.g., Jetty, if the Servlet-based transport is used).
   * **Infrastructure as Code (IaC):** Not applicable.
@@ -199,7 +199,7 @@ This architecture document should be read in conjunction with the following deta
   * `docs/data-models.md`: Describes any significant data structures or objects used internally or in API communication. (To be created, if necessary beyond API spec)
   * `docs/environment-vars.md`: Documents any environment variables used for configuration (though MVP aims for minimal). (To be created)
   * `docs/testing-strategy.md`: Outlines the approach to unit, integration, and end-to-end testing. (To be created)
-  * Bitwig Java Extension API Documentation (Version 22): External reference for interacting with Bitwig Studio.
+  * Bitwig Java Extension API Documentation (Version 19): External reference for interacting with Bitwig Studio.
   * Model Context Protocol (MCP) Specification: External reference for MCP principles and the Streamable HTTP transport. ([https://modelcontextprotocol.io/](https://modelcontextprotocol.io/))
   * MCP Java SDK Documentation: External reference for the chosen Java SDK.
 

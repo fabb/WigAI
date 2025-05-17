@@ -35,7 +35,7 @@ The Minimum Viable Product (MVP) for WigAI will focus on delivering the followin
 * **Constraints:**
     * **Budget:** $0. The project must exclusively use open-source tools and technologies.
     * **Timeline:** None specified, as this is a hobby project. Development will proceed as time allows.
-    * **Mandatory Technology:** The project *must* use the official Bitwig Java extension API (specifically referencing version 22: `https://maven.bitwig.com/com/bitwig/extension-api/22/`).
+    * **Mandatory Technology:** The project *must* use the official Bitwig Java extension API (specifically referencing version 19: `https://maven.bitwig.com/com/bitwig/extension-api/19/`).
     * **Operating System Compatibility:** The solution must function on all operating systems supported by Bitwig Studio (macOS, Windows, and Linux).
     * **Programming Language:** Java (implied by the mandatory Bitwig extension API).
 * **Risks:**

@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     // Bitwig Extension API
-    implementation("com.bitwig:extension-api:22")
+    implementation("com.bitwig:extension-api:19")
 
     // MCP Java SDK
     // TODO: Replace with actual MCP Java SDK dependency once available
