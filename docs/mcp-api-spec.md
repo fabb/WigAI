@@ -1,352 +1,863 @@
 # WigAI MCP API Specification
 
-Version: 0.1.0
-Date: 2025-05-16
+Version: 0.2.0
+Date: 2025-05-17
 
 ## 1. Introduction
 
 This document specifies the Model Context Protocol (MCP) Application Programming Interface (API) for WigAI, a Bitwig Studio extension. WigAI enables external AI agents to interact with Bitwig Studio for various control and query tasks.
 
-This API adheres to the MCP principles, utilizing the Streamable HTTP transport. All requests and responses are JSON-formatted.
+This API adheres to the official MCP specification (2025-03-26), utilizing the Streamable HTTP transport and implementing the tools interface. All requests and responses are JSON-RPC 2.0 formatted.
 
 ## 2. General Principles
 
-* **Transport:** MCP Streamable HTTP. A single HTTP endpoint will be used for all communication. The server may use Server-Sent Events (SSE) for streaming responses or notifications over this connection.
-* **Request Method:** Clients SHOULD use HTTP POST for sending MCP command messages, with the MCP message as the JSON body. Some simple status or discovery endpoints MIGHT use HTTP GET if appropriate and defined by MCP.
+* **Transport:** MCP Streamable HTTP. A single HTTP endpoint will be used for all communication. The server uses Server-Sent Events (SSE) for streaming responses or notifications over this connection.
+* **Request Method:** Clients MUST use HTTP POST for sending MCP messages, with the JSON-RPC 2.0 message as the request body.
 * **Content Type:** All JSON payloads MUST use `application/json`.
-* **Endpoint:** A single configurable endpoint (e.g., `http://localhost:61169/mcp`). The port `61169` ("WIGAI") is the suggested default, as per initial project notes.
-* **MCP Message Structure (General):**
-    While MCP can be flexible, WigAI will adopt a common request/response pattern. The MCP Java SDK might enforce or suggest specific JSON-RPC-like structures. For WigAI's custom commands, we'll define a clear `command` field.
+* **Endpoint:** A single configurable endpoint (e.g., `http://localhost:61169/mcp`). The port `61169` ("WIGAI") is the suggested default.
+* **MCP Message Structure:**
+    WigAI follows the JSON-RPC 2.0 format as specified by the official MCP protocol. All functionality is exposed through the tools interface.
 
-    **Generic Request Structure Example:**
+    **Tools/List Request Example:**
     ```json
     {
-      "mcp_version": "1.0", // Or as per MCP Java SDK requirements
-      "message_id": "unique-message-id-123", // Optional, for tracking
-      "command": "command_name",
-      "payload": {
-        // Command-specific parameters
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/list"
+    }
+    ```
+
+    **Tools/List Response Example:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "tools": [
+          {
+            "name": "ping",
+            "description": "Verify connectivity and operational status of WigAI",
+            "inputSchema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "transport_start",
+            "description": "Start Bitwig's main transport playback",
+            "inputSchema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ]
       }
     }
     ```
 
-    **Generic Success Response Structure Example:**
+    **Tools/Call Request Example:**
     ```json
     {
-      "mcp_version": "1.0",
-      "in_reply_to": "unique-message-id-123", // Optional, correlates to request
-      "status": "success",
-      "data": {
-        // Command-specific response data
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "tools/call",
+      "params": {
+        "name": "ping",
+        "arguments": {}
       }
     }
     ```
-
-    **Generic Error Response Structure Example:**
+    
+    **Tools/Call Response Example:**
     ```json
     {
-      "mcp_version": "1.0",
-      "in_reply_to": "unique-message-id-123", // Optional
-      "status": "error",
+      "jsonrpc": "2.0",
+      "id": 2,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "pong (WigAI v0.2.0)"
+          }
+        ],
+        "isError": false
+      }
+    }
+    ```
+    
+    **Error Response Example:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 3,
       "error": {
-        "code": "ERROR_CODE_STRING", // e.g., "INVALID_PARAMETER", "BITWIG_ERROR"
-        "message": "A human-readable error message.",
-        "details": { /* Optional additional details */ }
+        "code": -32601,
+        "message": "Method not found"
       }
     }
     ```
-    *(Note: The exact top-level MCP wrapper structure might be dictated by the MCP Java SDK. The key for WigAI is the `command` and its `payload` / `data` content).*
+    *(Note: The MCP Java SDK handles the protocol structure. WigAI implements the tool functionalities on top of this foundation.)*
 
-## 3. Common Error Codes
+## 3. Standard Endpoints and Error Handling
 
-| Error Code String           | Description                                   | HTTP Status (Suggest) |
-| :-------------------------- | :-------------------------------------------- | :-------------------- |
-| `INVALID_REQUEST`           | The request was malformed or unparseable.   | 400                   |
-| `UNKNOWN_COMMAND`           | The specified command is not recognized.    | 404                   |
-| `INVALID_PARAMETER`         | A parameter in the command payload is invalid. | 400                   |
-| `MISSING_PARAMETER`         | A required parameter is missing.              | 400                   |
-| `BITWIG_ERROR`              | An error occurred during interaction with Bitwig. | 500                   |
-| `RESOURCE_NOT_FOUND`        | A specified Bitwig resource was not found.    | 404                   |
-| `OPERATION_FAILED`          | The requested operation could not be completed. | 500                   |
-| `DEVICE_NOT_SELECTED`       | Operation requires a device to be selected.   | 400                   |
-| `INVALID_PARAMETER_INDEX`   | Parameter index is out of bounds.             | 400                   |
-| `TRACK_NOT_FOUND`           | Specified track name not found.               | 404                   |
-| `CLIP_INDEX_OUT_OF_BOUNDS`  | Clip index out of bounds for the track.       | 400                   |
-| `SCENE_NOT_FOUND`           | Specified scene name or index not found.      | 404                   |
+### 3.1 Standard MCP Endpoints
 
-## 4. Commands
+WigAI implements the standard MCP endpoints as defined in the official specification:
 
-### 4.1. System Commands
+| Endpoint     | Method     | Description                                             |
+| :----------- | :--------- | :------------------------------------------------------ |
+| `tools/list` | List all available tools exposed by WigAI                            |
+| `tools/call` | Call a specific tool with arguments                                  |
 
-#### 4.1.1. Ping
+### 3.2 JSON-RPC 2.0 Error Codes
+
+WigAI follows the standard JSON-RPC 2.0 error codes as defined in the MCP specification:
+
+| Error Code | Message               | Description                                     |
+| :--------- | :-------------------- | :---------------------------------------------- |
+| -32700     | Parse error           | Invalid JSON was received                       |
+| -32600     | Invalid request       | The JSON sent is not a valid request object     |
+| -32601     | Method not found      | The method does not exist / is not available    |
+| -32602     | Invalid params        | Invalid method parameter(s)                     |
+| -32603     | Internal error        | Internal JSON-RPC error                         |
+
+### 3.3 Tool-Specific Error Handling
+
+In addition to standard JSON-RPC errors, tools may report execution errors through the `isError: true` field in their responses with specific messages:
+
+| Error Type                | Description                                    | Reported Via Tool Response |
+| :------------------------ | :--------------------------------------------- | :------------------------- |
+| `BITWIG_ERROR`            | An error occurred during Bitwig API interaction | Tool Result with `isError: true` |
+| `DEVICE_NOT_SELECTED`     | Operation requires a device to be selected     | Tool Result with `isError: true` |
+| `INVALID_PARAMETER_INDEX` | Parameter index is out of bounds               | Tool Result with `isError: true` |
+| `TRACK_NOT_FOUND`         | Specified track name not found                 | Tool Result with `isError: true` |
+| `CLIP_INDEX_OUT_OF_BOUNDS`| Clip index out of bounds for the track         | Tool Result with `isError: true` |
+| `SCENE_NOT_FOUND`         | Specified scene name or index not found        | Tool Result with `isError: true` |
+
+## 4. WigAI Tools
+
+### 4.1. System Tools
+
+#### 4.1.1. ping
 
 * **Description:** Verifies connectivity and operational status of WigAI.
 * **PRD Objective:** N/A (Implicit for server health)
 * **Epic Story:** 1.3
+* **Tool Schema:**
+    ```json
+    {
+      "name": "ping",
+      "description": "Verify connectivity and operational status of WigAI",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+    ```
 * **Request:**
     ```json
     {
-      "command": "ping"
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/call",
+      "params": {
+        "name": "ping",
+        "arguments": {}
+      }
     }
     ```
 * **Success Response (`200 OK`):**
     ```json
     {
-      "status": "success",
-      "data": {
-        "response": "pong",
-        "wigai_version": "0.1.0" // Current WigAI version
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "pong (WigAI v0.2.0)"
+          }
+        ],
+        "isError": false
       }
     }
     ```
 
-### 4.2. Transport Control Commands
+### 4.2. Transport Control Tools
 
-#### 4.2.1. Start Transport
+#### 4.2.1. transport_start
 
 * **Description:** Starts Bitwig's main transport playback.
 * **PRD Objective:** 2
 * **Epic Story:** 1.4
+* **Tool Schema:**
+    ```json
+    {
+      "name": "transport_start",
+      "description": "Start Bitwig's main transport playback",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+    ```
 * **Request:**
     ```json
     {
-      "command": "transport_start"
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/call",
+      "params": {
+        "name": "transport_start",
+        "arguments": {}
+      }
     }
     ```
 * **Success Response (`200 OK`):**
     ```json
     {
-      "status": "success",
-      "data": {
-        "action": "transport_started",
-        "message": "Bitwig transport started."
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Bitwig transport started."
+          }
+        ],
+        "isError": false
       }
     }
     ```
-* **Error Responses:** `BITWIG_ERROR`
+* **Error Response:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Failed to start transport: [error details]"
+          }
+        ],
+        "isError": true
+      }
+    }
+    ```
 
-#### 4.2.2. Stop Transport
+#### 4.2.2. transport_stop
 
 * **Description:** Stops Bitwig's main transport playback.
 * **PRD Objective:** 2
 * **Epic Story:** 1.5
+* **Tool Schema:**
+    ```json
+    {
+      "name": "transport_stop",
+      "description": "Stop Bitwig's main transport playback",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+    ```
 * **Request:**
     ```json
     {
-      "command": "transport_stop"
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/call",
+      "params": {
+        "name": "transport_stop",
+        "arguments": {}
+      }
     }
     ```
 * **Success Response (`200 OK`):**
     ```json
     {
-      "status": "success",
-      "data": {
-        "action": "transport_stopped",
-        "message": "Bitwig transport stopped."
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Bitwig transport stopped."
+          }
+        ],
+        "isError": false
       }
     }
     ```
-* **Error Responses:** `BITWIG_ERROR`
+* **Error Response:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Failed to stop transport: [error details]"
+          }
+        ],
+        "isError": true
+      }
+    }
+    ```
 
-### 4.3. Device Parameter Commands (Selected Device)
+### 4.3. Device Parameter Tools (Selected Device)
 
-#### 4.3.1. Get Selected Device Parameters
+#### 4.3.1. get_selected_device_parameters
 
 * **Description:** Reads the names and values of the eight addressable parameters of the currently selected device in Bitwig.
 * **PRD Objective:** 4
 * **Epic Story:** 2.1
+* **Tool Schema:**
+    ```json
+    {
+      "name": "get_selected_device_parameters",
+      "description": "Get parameters of the currently selected device in Bitwig",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+    ```
 * **Request:**
     ```json
     {
-      "command": "get_selected_device_parameters"
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/call",
+      "params": {
+        "name": "get_selected_device_parameters",
+        "arguments": {}
+      }
     }
     ```
 * **Success Response (`200 OK`):**
     ```json
     {
-      "status": "success",
-      "data": {
-        "device_name": "Poly Synth", // Name of the selected device
-        "parameters": [
-          { "index": 0, "name": "OSC1 Shape", "value": 0.75, "display_value": "75.0 %" },
-          { "index": 1, "name": "Filter Cutoff", "value": 0.5, "display_value": "500 Hz" },
-          // ... up to 8 parameters
-          // If a parameter slot is empty or not available, 'name' might be null or a placeholder.
-          // 'value' is normalized (0.0-1.0). 'display_value' is the string Bitwig shows.
-        ]
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Device: Poly Synth\nParameters:\n- OSC1 Shape: 75.0% (0.75)\n- Filter Cutoff: 500 Hz (0.5)\n..."
+          }
+        ],
+        "isError": false
       }
     }
     ```
-    If no device is selected, or it has no parameters:
+    Or with more structured return data:
     ```json
     {
-      "status": "success", // Or potentially an error status like DEVICE_NOT_SELECTED
-      "data": {
-        "device_name": null,
-        "parameters": []
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "resource",
+            "resource": {
+              "uri": "resource://device-parameters",
+              "mimeType": "application/json",
+              "data": {
+                "device_name": "Poly Synth",
+                "parameters": [
+                  { "index": 0, "name": "OSC1 Shape", "value": 0.75, "display_value": "75.0 %" },
+                  { "index": 1, "name": "Filter Cutoff", "value": 0.5, "display_value": "500 Hz" }
+                  // ... up to 8 parameters
+                ]
+              }
+            }
+          }
+        ],
+        "isError": false
       }
     }
     ```
-* **Error Responses:** `BITWIG_ERROR`, `DEVICE_NOT_SELECTED`
+* **Error Response:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Error: No device is currently selected."
+          }
+        ],
+        "isError": true
+      }
+    }
+    ```
 
-#### 4.3.2. Set Selected Device Parameter
+#### 4.3.2. set_selected_device_parameter
 
 * **Description:** Sets a single parameter of the currently selected device by its index.
 * **PRD Objective:** 4
 * **Epic Story:** 2.2
+* **Tool Schema:**
+    ```json
+    {
+      "name": "set_selected_device_parameter",
+      "description": "Set a single parameter of the currently selected device by its index",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "parameter_index": {
+            "type": "integer",
+            "description": "Index of the parameter (0-7)",
+            "minimum": 0,
+            "maximum": 7
+          },
+          "value": {
+            "type": "number",
+            "description": "Normalized value for the parameter (0.0-1.0)",
+            "minimum": 0.0,
+            "maximum": 1.0
+          }
+        },
+        "required": ["parameter_index", "value"]
+      }
+    }
+    ```
 * **Request:**
     ```json
     {
-      "command": "set_selected_device_parameter",
-      "payload": {
-        "parameter_index": 0, // Integer, 0-7
-        "value": 0.65         // Float, 0.0-1.0 (normalized)
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/call",
+      "params": {
+        "name": "set_selected_device_parameter",
+        "arguments": {
+          "parameter_index": 0,
+          "value": 0.65
+        }
       }
     }
     ```
 * **Success Response (`200 OK`):**
     ```json
     {
-      "status": "success",
-      "data": {
-        "action": "parameter_set",
-        "parameter_index": 0,
-        "new_value": 0.65, // Confirms the value set
-        "message": "Parameter 0 set to 0.65."
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Parameter 0 set to 0.65."
+          }
+        ],
+        "isError": false
       }
     }
     ```
-* **Error Responses:** `BITWIG_ERROR`, `DEVICE_NOT_SELECTED`, `INVALID_PARAMETER_INDEX`, `INVALID_PARAMETER` (for value out of range).
+* **Error Response:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Error: Invalid parameter index or no device selected."
+          }
+        ],
+        "isError": true
+      }
+    }
+    ```
 
-#### 4.3.3. Set Multiple Selected Device Parameters
+#### 4.3.3. set_multiple_device_parameters
 
 * **Description:** Sets multiple parameters of the currently selected device simultaneously.
 * **PRD Objective:** 4
 * **Epic Story:** 2.3
+* **Tool Schema:**
+    ```json
+    {
+      "name": "set_multiple_device_parameters",
+      "description": "Set multiple parameters of the currently selected device simultaneously",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "parameters": {
+            "type": "array",
+            "description": "List of parameters to change",
+            "items": {
+              "type": "object",
+              "properties": {
+                "parameter_index": {
+                  "type": "integer",
+                  "description": "Index of the parameter (0-7)",
+                  "minimum": 0,
+                  "maximum": 7
+                },
+                "value": {
+                  "type": "number",
+                  "description": "Normalized value for the parameter (0.0-1.0)",
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                }
+              },
+              "required": ["parameter_index", "value"]
+            }
+          }
+        },
+        "required": ["parameters"]
+      }
+    }
+    ```
 * **Request:**
     ```json
     {
-      "command": "set_multiple_selected_device_parameters",
-      "payload": {
-        "parameters": [
-          { "parameter_index": 0, "value": 0.25 },
-          { "parameter_index": 1, "value": 0.80 }
-          // ... other parameters
-        ]
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/call",
+      "params": {
+        "name": "set_multiple_device_parameters",
+        "arguments": {
+          "parameters": [
+            { "parameter_index": 0, "value": 0.25 },
+            { "parameter_index": 1, "value": 0.80 }
+          ]
+        }
       }
     }
     ```
 * **Success Response (`200 OK`):**
-    Contains a result for each attempted parameter change.
     ```json
     {
-      "status": "success", // Overall status; individual changes reported in results
-      "data": {
-        "action": "multiple_parameters_set",
-        "results": [
-          { "parameter_index": 0, "status": "success", "new_value": 0.25 },
-          { "parameter_index": 1, "status": "success", "new_value": 0.80 },
-          { "parameter_index": 8, "status": "error", "error_code": "INVALID_PARAMETER_INDEX", "message": "Index 8 out of bounds." } // Example of partial failure
-        ]
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Multiple parameters set successfully:\n- Parameter 0: set to 0.25\n- Parameter 1: set to 0.80"
+          }
+        ],
+        "isError": false
       }
     }
     ```
-* **Error Responses:** `BITWIG_ERROR`, `DEVICE_NOT_SELECTED`, `INVALID_PARAMETER` (if overall payload structure is bad). Individual parameter errors reported in `results` array.
+* **Partial Success/Error Response:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Parameters partially set:\n- Parameter 0: set to 0.25\n- Parameter 1: set to 0.80\n- Parameter 8: FAILED (Index out of bounds)"
+          }
+        ],
+        "isError": false
+      }
+    }
+    ```
+* **Error Response:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Error: No device selected or invalid parameters format."
+          }
+        ],
+        "isError": true
+      }
+    }
+    ```
 
-### 4.4. Clip and Scene Launching Commands
+### 4.4. Clip and Scene Launching Tools
 
-#### 4.4.1. Launch Clip
+#### 4.4.1. launch_clip
 
 * **Description:** Launches a specific clip by track name and clip slot index (scene number).
 * **PRD Objective:** 3
 * **Epic Story:** 3.1
+* **Tool Schema:**
+    ```json
+    {
+      "name": "launch_clip",
+      "description": "Launch a specific clip by track name and clip slot index",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "track_name": {
+            "type": "string",
+            "description": "Name of the track containing the clip"
+          },
+          "clip_index": {
+            "type": "integer",
+            "description": "0-based index of the clip slot (scene)",
+            "minimum": 0
+          }
+        },
+        "required": ["track_name", "clip_index"]
+      }
+    }
+    ```
 * **Request:**
     ```json
     {
-      "command": "launch_clip",
-      "payload": {
-        "track_name": "Drums",   // String, name of the track
-        "clip_index": 0         // Integer, 0-based index of the clip slot (scene)
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/call",
+      "params": {
+        "name": "launch_clip",
+        "arguments": {
+          "track_name": "Drums",
+          "clip_index": 0
+        }
       }
     }
     ```
 * **Success Response (`200 OK`):**
     ```json
     {
-      "status": "success",
-      "data": {
-        "action": "clip_launched",
-        "track_name": "Drums",
-        "clip_index": 0,
-        "message": "Clip at Drums[0] launched."
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Clip at Drums[0] launched."
+          }
+        ],
+        "isError": false
       }
     }
     ```
-* **Error Responses:** `BITWIG_ERROR`, `TRACK_NOT_FOUND`, `CLIP_INDEX_OUT_OF_BOUNDS`.
+* **Error Response:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Error: Track 'Drums' not found or clip index out of bounds."
+          }
+        ],
+        "isError": true
+      }
+    }
+    ```
 
-#### 4.4.2. Launch Scene by Index
+#### 4.4.2. launch_scene_by_index
 
 * **Description:** Launches an entire scene by its numerical index.
 * **PRD Objective:** 3
 * **Epic Story:** 3.2
+* **Tool Schema:**
+    ```json
+    {
+      "name": "launch_scene_by_index",
+      "description": "Launch an entire scene by its numerical index",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scene_index": {
+            "type": "integer",
+            "description": "0-based index of the scene to launch",
+            "minimum": 0
+          }
+        },
+        "required": ["scene_index"]
+      }
+    }
+    ```
 * **Request:**
     ```json
     {
-      "command": "launch_scene_by_index",
-      "payload": {
-        "scene_index": 1 // Integer, 0-based index of the scene
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/call",
+      "params": {
+        "name": "launch_scene_by_index",
+        "arguments": {
+          "scene_index": 1
+        }
       }
     }
     ```
 * **Success Response (`200 OK`):**
     ```json
     {
-      "status": "success",
-      "data": {
-        "action": "scene_launched",
-        "scene_index": 1,
-        "message": "Scene 1 launched."
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Scene 1 launched."
+          }
+        ],
+        "isError": false
       }
     }
     ```
-* **Error Responses:** `BITWIG_ERROR`, `SCENE_NOT_FOUND` (if index out of bounds).
+* **Error Response:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Error: Scene not found at index 1."
+          }
+        ],
+        "isError": true
+      }
+    }
+    ```
 
-#### 4.4.3. Launch Scene by Name
+#### 4.4.3. launch_scene_by_name
 
 * **Description:** Launches an entire scene by its name.
 * **PRD Objective:** 3
 * **Epic Story:** 3.3
+* **Tool Schema:**
+    ```json
+    {
+      "name": "launch_scene_by_name",
+      "description": "Launch an entire scene by its name",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scene_name": {
+            "type": "string",
+            "description": "Name of the scene to launch (case-sensitive)"
+          }
+        },
+        "required": ["scene_name"]
+      }
+    }
+    ```
 * **Request:**
     ```json
     {
-      "command": "launch_scene_by_name",
-      "payload": {
-        "scene_name": "Verse 1" // String, name of the scene (case sensitivity TBD, default to case-sensitive)
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/call",
+      "params": {
+        "name": "launch_scene_by_name",
+        "arguments": {
+          "scene_name": "Verse 1"
+        }
       }
     }
     ```
 * **Success Response (`200 OK`):**
     ```json
     {
-      "status": "success",
-      "data": {
-        "action": "scene_launched",
-        "scene_name": "Verse 1",
-        "message": "Scene 'Verse 1' launched."
-        // Optionally, include launched_scene_index if found
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Scene 'Verse 1' launched."
+          }
+        ],
+        "isError": false
       }
     }
     ```
-* **Error Responses:** `BITWIG_ERROR`, `SCENE_NOT_FOUND`.
+* **Error Response:**
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Error: Scene named 'Verse 1' not found."
+          }
+        ],
+        "isError": true
+      }
+    }
+    ```
 
-## 5. Future Considerations / Expansion
+## 5. Standard MCP Features
 
-* More granular error reporting.
-* Notifications from WigAI to the client (e.g., when a device is selected in Bitwig, track changes, etc.). This is a natural fit for the SSE aspect of Streamable HTTP.
-* Discovery mechanisms (e.g., list available tracks, scenes, devices).
+### 5.1. Tool Discovery with tools/list
+
+As per the MCP specification, WigAI supports tool discovery through the standard `tools/list` endpoint:
+
+**Request:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/list"
+}
+```
+
+**Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tools": [
+      {
+        "name": "ping",
+        "description": "Verify connectivity and operational status of WigAI",
+        "inputSchema": {...}
+      },
+      {
+        "name": "transport_start",
+        "description": "Start Bitwig's main transport playback",
+        "inputSchema": {...}
+      },
+      // Other tools...
+    ]
+  }
+}
+```
+
+### 5.2. Capabilities Declaration
+
+WigAI declares its supported capabilities in response to capability queries:
+
+```json
+{
+  "capabilities": {
+    "tools": {
+      "listChanged": false
+    }
+  }
+}
+```
+
+## 6. Future Considerations / Expansion
+
+* Implement notifications from WigAI to the client (e.g., when a device is selected in Bitwig, track changes, etc.) using the SSE aspect of Streamable HTTP.
+* Add more discovery mechanisms (e.g., list available tracks, scenes, devices) as additional tools.
+* Support tool list change notifications when tools are dynamically added.
 
 ## Change Log
 
-| Change        | Date       | Version | Description                       | Author              |
-| ------------- | ---------- | ------- | --------------------------------- | ------------------- |
-| Initial draft | 2025-05-16 | 0.1.0   | First draft of MCP API commands. | 3-architect BMAD v2 |
+| Change                      | Date       | Version | Description                                          | Author              |
+| --------------------------- | ---------- | ------- | ---------------------------------------------------- | ------------------- |
+| Initial draft              | 2025-05-16 | 0.1.0   | First draft of MCP API commands.                     | 3-architect BMAD v2 |
+| Updated to official MCP spec | 2025-05-17 | 0.2.0   | Converted command API to tools-based API per MCP spec. | GitHub Copilot      |

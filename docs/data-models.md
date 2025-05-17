@@ -1,111 +1,126 @@
 # WigAI Data Models
 
-Version: 0.1.0
-Date: 2025-05-16
+Version: 0.2.0
+Date: 2025-05-17
 
 ## 1. Introduction
 
 This document describes the primary data models and structures used within the WigAI Bitwig Extension, particularly those related to the MCP API request and response payloads. For MVP, WigAI does not have its own persistent database or state files; all state is either transient or directly reflects the state within Bitwig Studio.
 
-The data structures defined here will primarily be implemented as Java Records for immutability and conciseness, serving as Data Transfer Objects (DTOs) for handling MCP command payloads and constructing responses.
+The data structures defined here will primarily be implemented as Java Records for immutability and conciseness, serving as Data Transfer Objects (DTOs) for handling MCP tool arguments and constructing JSON-RPC 2.0 responses.
 
 ## 2. Core Application Entities / Domain Objects
 
 For the MVP, there are no complex internal domain objects that are distinctly separate from the API payload structures. The "domain" largely consists of interacting with Bitwig entities (tracks, devices, parameters, clips, scenes) via the Bitwig API and translating these interactions to/from MCP messages.
 
-## 3. MCP API Payload Schemas
+## 3. MCP API Data Structures
 
-These schemas define the structure of data sent to and received from the WigAI MCP API. They correspond to the JSON examples provided in `docs/mcp-api-spec.md`. Below are conceptual representations, which will translate to Java Records or classes.
+These structures define the data formats used by the WigAI MCP API implementation, following the JSON-RPC 2.0 format as specified in the official MCP standard. They correspond to the JSON examples provided in `docs/mcp-api-spec.md`. Below are conceptual representations, which will translate to Java Records or classes.
 
-### 3.1. Generic MCP Structures
+### 3.1. MCP Protocol Structures
 
-As outlined in the `mcp-api-spec.md`, requests and responses will follow a general MCP pattern. The focus here is on the `payload` of requests and the `data` field of successful responses.
+The MCP Java SDK handles the protocol-level structures for JSON-RPC 2.0. WigAI implements the tools and their input/output schemas on top of this foundation.
 
-* **Generic Request:**
-    * `command`: String (e.g., "ping", "transport_start")
-    * `payload`: Object (command-specific, see below)
-* **Generic Success Response:**
-    * `status`: "success"
-    * `data`: Object (command-specific, see below)
-* **Generic Error Response:**
-    * `status`: "error"
-    * `error`: Object { `code`: String, `message`: String, `details?`: Object }
+* **Standard JSON-RPC 2.0 Request Structure:**
+    * `jsonrpc`: String (Value: "2.0")
+    * `id`: Number or String (unique request identifier)
+    * `method`: String (e.g., "tools/list", "tools/call")
+    * `params`: Object (method-specific parameters)
+* **Standard Tool Call Request Structure:**
+    * `name`: String (tool name, e.g., "ping", "transport_start")
+    * `arguments`: Object (tool-specific arguments)
+* **Standard Tool Result Structure:**
+    * `content`: Array of content items with different types
+    * `isError`: Boolean (indicates whether the tool execution resulted in an error)
+* **Standard Error Response Structure:**
+    * `code`: Number (standard JSON-RPC error code)
+    * `message`: String (error description)
+    * `data`: Object (optional, additional error information)
 
-### 3.2. Command-Specific Payloads and Data Structures
+### 3.2. Tool-Specific Data Structures
 
-#### 3.2.1. Ping
-* **Request Payload:** (No payload)
-* **Response Data (`PingResponseData`):**
-    * `response`: String (Value: "pong")
-    * `wigai_version`: String (e.g., "0.1.0")
+#### 3.2.1. Ping Tool
+* **Tool Name:** `ping`
+* **Input Schema:** Empty object (no arguments required)
+* **Output Schema (`PingToolResult`):**
+    * `type`: String (Value: "text")
+    * `text`: String (Value: "pong (WigAI v0.2.0)")
 
-#### 3.2.2. Transport Control
-* **`transport_start` Request Payload:** (No payload)
-* **`transport_start` Response Data (`TransportActionData`):**
-    * `action`: String (Value: "transport_started")
-    * `message`: String
-* **`transport_stop` Request Payload:** (No payload)
-* **`transport_stop` Response Data (`TransportActionData`):** (Same structure as above)
-    * `action`: String (Value: "transport_stopped")
-    * `message`: String
+#### 3.2.2. Transport Control Tools
+* **Tool Name:** `transport_start`
+* **Input Schema:** Empty object (no arguments required)
+* **Output Schema (`TransportStartToolResult`):**
+    * `type`: String (Value: "text")
+    * `text`: String (Value: "Bitwig transport started.")
 
-#### 3.2.3. Device Parameters
+* **Tool Name:** `transport_stop`
+* **Input Schema:** Empty object (no arguments required)
+* **Output Schema (`TransportStopToolResult`):**
+    * `type`: String (Value: "text")
+    * `text`: String (Value: "Bitwig transport stopped.")
 
-* **`ParameterInfo` (Used in `GetDeviceParametersResponseData`):**
+#### 3.2.3. Device Parameter Tools
+
+* **Common Structure: `ParameterInfo`**
     * `index`: Integer (0-7)
     * `name`: String (Nullable)
     * `value`: Double (0.0-1.0, normalized)
     * `display_value`: String (Bitwig's display string for the value)
-* **`get_selected_device_parameters` Request Payload:** (No payload)
-* **`get_selected_device_parameters` Response Data (`GetDeviceParametersResponseData`):**
-    * `device_name`: String (Nullable, name of the selected Bitwig device)
-    * `parameters`: List<`ParameterInfo`>
-* **`set_selected_device_parameter` Request Payload (`SetDeviceParameterPayload`):**
+
+* **Tool Name:** `get_selected_device_parameters`
+* **Input Schema:** Empty object (no arguments required)
+* **Output Schema - Text Response:**
+    * `type`: String (Value: "text")
+    * `text`: String (formatted device parameters information)
+* **Output Schema - Resource Response:**
+    * `type`: String (Value: "resource")
+    * `resource`: Object
+        * `uri`: String (Value: "resource://device-parameters")
+        * `mimeType`: String (Value: "application/json")
+        * `data`: Object
+            * `device_name`: String (Nullable, name of the selected device)
+            * `parameters`: Array of `ParameterInfo` objects
+
+* **Tool Name:** `set_selected_device_parameter`
+* **Input Schema (`SetDeviceParameterArguments`):**
     * `parameter_index`: Integer (0-7)
     * `value`: Double (0.0-1.0)
-* **`set_selected_device_parameter` Response Data (`SetDeviceParameterResponseData`):**
-    * `action`: String (Value: "parameter_set")
-    * `parameter_index`: Integer
-    * `new_value`: Double
-    * `message`: String
-* **`ParameterSetting` (Used in `SetMultipleDeviceParametersPayload`):**
-    * `parameter_index`: Integer (0-7)
-    * `value`: Double (0.0-1.0)
-* **`set_multiple_selected_device_parameters` Request Payload (`SetMultipleDeviceParametersPayload`):**
-    * `parameters`: List<`ParameterSetting`>
-* **`ParameterSettingResult` (Used in `SetMultipleDeviceParametersResponseData`):**
-    * `parameter_index`: Integer
-    * `status`: String ("success" or "error")
-    * `new_value?`: Double (if success)
-    * `error_code?`: String (if error)
-    * `message?`: String (if error)
-* **`set_multiple_selected_device_parameters` Response Data (`SetMultipleDeviceParametersResponseData`):**
-    * `action`: String (Value: "multiple_parameters_set")
-    * `results`: List<`ParameterSettingResult`>
+* **Output Schema:**
+    * `type`: String (Value: "text")
+    * `text`: String (e.g., "Parameter 0 set to 0.65.")
 
-#### 3.2.4. Clip and Scene Launching
+* **Tool Name:** `set_multiple_device_parameters`
+* **Input Schema (`SetMultipleDeviceParametersArguments`):**
+    * `parameters`: Array of Objects
+        * `parameter_index`: Integer (0-7)
+        * `value`: Double (0.0-1.0)
+* **Output Schema:**
+    * `type`: String (Value: "text")
+    * `text`: String (summary of parameter setting results)
 
-* **`launch_clip` Request Payload (`LaunchClipPayload`):**
-    * `track_name`: String
-    * `clip_index`: Integer (0-based)
-* **`launch_clip` Response Data (`LaunchClipResponseData`):**
-    * `action`: String (Value: "clip_launched")
-    * `track_name`: String
-    * `clip_index`: Integer
-    * `message`: String
-* **`launch_scene_by_index` Request Payload (`LaunchSceneByIndexPayload`):**
-    * `scene_index`: Integer (0-based)
-* **`launch_scene_by_index` Response Data (`LaunchSceneByIndexResponseData`):**
-    * `action`: String (Value: "scene_launched")
-    * `scene_index`: Integer
-    * `message`: String
-* **`launch_scene_by_name` Request Payload (`LaunchSceneByNamePayload`):**
-    * `scene_name`: String
-* **`launch_scene_by_name` Response Data (`LaunchSceneByNameResponseData`):**
-    * `action`: String (Value: "scene_launched")
-    * `scene_name`: String
-    * `message`: String
-    * `launched_scene_index?`: Integer (Optional, actual index if found by name)
+#### 3.2.4. Clip and Scene Launching Tools
+
+* **Tool Name:** `launch_clip`
+* **Input Schema (`LaunchClipArguments`):**
+    * `track_name`: String (name of the track containing the clip)
+    * `clip_index`: Integer (0-based index of the clip slot)
+* **Output Schema:**
+    * `type`: String (Value: "text")
+    * `text`: String (e.g., "Clip at Drums[0] launched.")
+
+* **Tool Name:** `launch_scene_by_index`
+* **Input Schema (`LaunchSceneByIndexArguments`):**
+    * `scene_index`: Integer (0-based index of the scene)
+* **Output Schema:**
+    * `type`: String (Value: "text")
+    * `text`: String (e.g., "Scene 1 launched.")
+
+* **Tool Name:** `launch_scene_by_name`
+* **Input Schema (`LaunchSceneByNameArguments`):**
+    * `scene_name`: String (name of the scene to launch)
+* **Output Schema:**
+    * `type`: String (Value: "text")
+    * `text`: String (e.g., "Scene 'Verse 1' launched.")
 
 ## 4. Database Schemas
 
@@ -117,6 +132,7 @@ Not applicable for MVP. WigAI does not use external state files for its core ope
 
 ## Change Log
 
-| Change        | Date       | Version | Description                  | Author              |
-| ------------- | ---------- | ------- | ---------------------------- | ------------------- |
-| Initial draft | 2025-05-16 | 0.1.0   | First draft of data models. | 3-architect BMAD v2 |
+| Change                      | Date       | Version | Description                                             | Author              |
+| --------------------------- | ---------- | ------- | ------------------------------------------------------- | ------------------- |
+| Initial draft               | 2025-05-16 | 0.1.0   | First draft of data models.                            | 3-architect BMAD v2 |
+| Updated to MCP tools format | 2025-05-17 | 0.2.0   | Converted to official MCP tools and JSON-RPC 2.0 format | GitHub Copilot      |
