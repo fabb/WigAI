@@ -9,17 +9,17 @@ import io.github.fabb.wigai.config.ConfigManager;
  * Main extension class for the WigAI extension.
  * Handles lifecycle events (init, exit) and owns the primary components.
  */
-public class WigaiExtension extends ControllerExtension {
+public class WigAIExtension extends ControllerExtension {
     private Logger logger;
     private ConfigManager configManager;
 
     /**
-     * Creates a new WigaiExtension instance.
+     * Creates a new WigAIExtension instance.
      *
      * @param definition The extension definition
      * @param host       The Bitwig ControllerHost
      */
-    protected WigaiExtension(final WigaiExtensionDefinition definition, final ControllerHost host) {
+    protected WigAIExtension(final WigAIExtensionDefinition definition, final ControllerHost host) {
         super(definition, host);
     }
 

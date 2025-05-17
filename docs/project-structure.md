@@ -40,8 +40,8 @@ wigai-bitwig-extension/
 │   │   │       └── github/
 │   │   │           └── fabb/
 │   │   │               └── wigai/  # Project root package: io.github.fabb.wigai
-│   │   │                   ├── WigaiExtension.java             # Main extension class
-│   │   │                   ├── WigaiExtensionDefinition.java   # Extension definition class
+│   │   │                   ├── WigAIExtension.java             # Main extension class
+│   │   │                   ├── WigAIExtensionDefinition.java   # Extension definition class
 │   │   │                   ├── common/                         # Shared utilities, constants
 │   │   │                   │   └── Logger.java
 │   │   │                   │   └── AppConstants.java
@@ -96,8 +96,8 @@ wigai-bitwig-extension/
       * **`gradle/wrapper/`**: Contains the Gradle Wrapper files.
       * **`src/`**: Contains all source code and resources.
           * **`src/main/java/io/github/fabb/wigai/`**: This is where the core Java source code for the extension resides, under the root package `io.github.fabb.wigai`.
-              * `WigaiExtension.java`: The main entry point class, extending `ControllerExtension`.
-              * `WigaiExtensionDefinition.java`: Defines metadata for the extension, extending `ControllerExtensionDefinition`.
+              * `WigAIExtension.java`: The main entry point class, extending `ControllerExtension`.
+              * `WigAIExtensionDefinition.java`: Defines metadata for the extension, extending `ControllerExtensionDefinition`.
               * `common/`: Utility classes, constants, and shared services like `Logger.java`.
               * `config/`: Configuration management, like `ConfigManager.java`.
               * `mcp/`: Components related to the MCP server.

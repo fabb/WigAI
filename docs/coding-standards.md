@@ -28,7 +28,7 @@ The following high-level architectural and design patterns have been adopted for
     * **Static Analysis:** Consider tools like Checkstyle or PMD if a more rigorous automated check is desired, configured with a subset of rules focusing on maintainability and common pitfalls. For MVP, IDE-integrated checks might suffice.
 * **Naming Conventions:**
     * **Packages:** `lowercase.with.dots` (e.g., `io.github.fabb.wigai.common`, `io.github.fabb.wigai.mcp.command`)
-    * **Classes & Interfaces:** `PascalCase` (e.g., `WigaiExtension`, `McpServerManager`, `CommandParser`)
+    * **Classes & Interfaces:** `PascalCase` (e.g., `WigAIExtension`, `McpServerManager`, `CommandParser`)
     * **Methods:** `camelCase` (e.g., `initializeServer()`, `parseCommand()`)
     * **Variables (local, instance):** `camelCase` (e.g., `host`, `mcpPort`, `currentTrack`)
     * **Constants (static final):** `UPPER_SNAKE_CASE` (e.g., `DEFAULT_MCP_PORT`, `MAX_PARAMETERS`)

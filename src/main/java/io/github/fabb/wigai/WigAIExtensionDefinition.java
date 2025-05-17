@@ -11,7 +11,7 @@ import java.util.UUID;
  * Definition class for the WigAI extension.
  * This defines metadata such as name, author, version, etc.
  */
-public class WigaiExtensionDefinition extends ControllerExtensionDefinition {
+public class WigAIExtensionDefinition extends ControllerExtensionDefinition {
     private static final UUID DRIVER_ID = UUID.fromString("f379badd-ba64-4234-90e9-5fd6bfe8c7c3");
 
     @Override
@@ -77,7 +77,7 @@ public class WigaiExtensionDefinition extends ControllerExtensionDefinition {
     }
 
     @Override
-    public WigaiExtension createInstance(final ControllerHost host) {
-        return new WigaiExtension(this, host);
+    public WigAIExtension createInstance(final ControllerHost host) {
+        return new WigAIExtension(this, host);
     }
 }

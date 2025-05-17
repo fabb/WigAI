@@ -1,7 +1,7 @@
 # Epic 1: Core Extension Setup, MCP Server Initialization, and Basic Transport Control
 
 **Goal:** Establish the foundational Bitwig Java extension, implement the basic MCP server listener, and enable start/stop transport control via MCP commands. This proves the core communication pathway and fulfills PRD Objective 2.
-**Architectural Alignment:** This epic leverages the `WigaiExtension`, `WigaiExtensionDefinition`, `Logger`, `ConfigManager`, `McpServerManager`, `RequestRouter`, `McpCommandParser`, `TransportController`, and `BitwigApiFacade` components. It also relies on `docs/project-structure.md`, `docs/coding-standards.md`, `docs/tech-stack.md`, and `docs/mcp-api-spec.md`.
+**Architectural Alignment:** This epic leverages the `WigAIExtension`, `WigAIExtensionDefinition`, `Logger`, `ConfigManager`, `McpServerManager`, `RequestRouter`, `McpCommandParser`, `TransportController`, and `BitwigApiFacade` components. It also relies on `docs/project-structure.md`, `docs/coding-standards.md`, `docs/tech-stack.md`, and `docs/mcp-api-spec.md`.
 
 ## Story List
 
@@ -12,17 +12,17 @@
     * The root package shall be `io.github.fabb.wigai`.
     * Include `com.bitwig.extension-api:19` and the latest stable MCP Java SDK as dependencies in `build.gradle.kts`.
     * Configure the Gradle build script (`build.gradle.kts`) to compile the extension and package it into a `.bwextension` file (as detailed in technical story TS6).
-    * Create initial `io.github.fabb.wigai.WigaiExtension.java` (extending `ControllerExtension`) and `io.github.fabb.wigai.WigaiExtensionDefinition.java` (extending `ControllerExtensionDefinition`) classes.
+    * Create initial `io.github.fabb.wigai.WigAIExtension.java` (extending `ControllerExtension`) and `io.github.fabb.wigai.WigAIExtensionDefinition.java` (extending `ControllerExtensionDefinition`) classes.
     * Implement basic `Logger` (`io.github.fabb.wigai.common.Logger.java`) and `ConfigManager` (`io.github.fabb.wigai.config.ConfigManager.java`) stubs as per technical story TS1.
     * The project structure must adhere to `docs/project-structure.md`.
     * The basic extension should successfully load into Bitwig Studio (latest version, all platforms) without errors, identifiable in Bitwig's extension list with its name and version.
-    * The extension should output a "WigAI Extension Loaded - Version X.Y.Z" message (including its version from `WigaiExtensionDefinition`) to the Bitwig extension console via the `Logger` on startup.
+    * The extension should output a "WigAI Extension Loaded - Version X.Y.Z" message (including its version from `WigAIExtensionDefinition`) to the Bitwig extension console via the `Logger` on startup.
 * **Acceptance Criteria (ACs):**
     * AC1: The project compiles successfully via Gradle into a `.bwextension` file.
     * AC2: The generated `.bwextension` file can be loaded into Bitwig Studio (latest version) without errors.
     * AC3: The specified confirmation message with the correct version appears in the Bitwig extension console when the extension is activated.
     * AC4: The project structure and initial classes adhere to `docs/project-structure.md` and use the package `io.github.fabb.wigai`.
-    * AC5: `Logger` and `ConfigManager` stubs are present and integrated into `WigaiExtension`.
+    * AC5: `Logger` and `ConfigManager` stubs are present and integrated into `WigAIExtension`.
 
 ---
 
@@ -33,8 +33,8 @@
     * This manager will use the MCP Java SDK to configure and start an embedded HTTP server supporting the MCP Streamable HTTP transport (which utilizes SSE for streaming).
     * The listening IP address should default to `localhost`.
     * The port number should be retrieved from the `ConfigManager` (defaulting to `61169` as per `AppConstants`).
-    * The server (managed by `McpServerManager`) should start when the `WigaiExtension`'s `init()` method is called and the extension is enabled.
-    * The server should shut down gracefully when the `WigaiExtension`'s `exit()` method is called (extension is disabled or Bitwig closes).
+    * The server (managed by `McpServerManager`) should start when the `WigAIExtension`'s `init()` method is called and the extension is enabled.
+    * The server should shut down gracefully when the `WigAIExtension`'s `exit()` method is called (extension is disabled or Bitwig closes).
     * Log server status (e.g., "MCP Server started on http://localhost:61169/mcp", "MCP Server stopped") to the Bitwig extension console via the `Logger` service.
     * The server should be able to accept incoming HTTP connections on its defined MCP endpoint (e.g., `/mcp`).
 * **Acceptance Criteria (ACs):**
@@ -58,17 +58,17 @@
             "status": "success",
             "data": {
               "response": "pong",
-              "wigai_version": "0.1.0" // Fetched from WigaiExtensionDefinition
+              "wigai_version": "0.1.0" // Fetched from WigAIExtensionDefinition
             }
           }
           ```
-    * The version reported in `wigai_version` should be dynamically retrieved from the `WigaiExtensionDefinition` (or a constant reflecting it).
+    * The version reported in `wigai_version` should be dynamically retrieved from the `WigAIExtensionDefinition` (or a constant reflecting it).
     * The `RequestRouter` should log the receipt of the "ping" command and the response sent.
 * **Acceptance Criteria (ACs):**
     * AC1: Sending a valid "ping" MCP command (e.g., `{"command": "ping"}`) to the WigAI server's MCP endpoint results in a successful MCP response with `Content-Type: application/json` and the body matching the specified JSON structure (including "pong" and the current WigAI version).
     * AC2: The `Logger` service logs the receipt of the "ping" command and the content of the response.
     * AC3: Invalid or malformed "ping" commands (e.g., incorrect JSON, missing `command` field) result in an appropriate MCP error response (e.g., `INVALID_REQUEST` as per `docs/mcp-api-spec.md`) or are safely ignored and logged if error response generation is not yet fully implemented for this specific case.
-    * AC4: The `wigai_version` in the response accurately reflects the version set in `WigaiExtensionDefinition`.
+    * AC4: The `wigai_version` in the response accurately reflects the version set in `WigAIExtensionDefinition`.
 
 ---
 
