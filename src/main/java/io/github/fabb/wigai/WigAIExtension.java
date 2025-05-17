@@ -4,6 +4,7 @@ import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.ControllerHost;
 import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.config.ConfigManager;
+import io.github.fabb.wigai.mcp.McpServerManager;
 
 /**
  * Main extension class for the WigAI extension.
@@ -12,6 +13,7 @@ import io.github.fabb.wigai.config.ConfigManager;
 public class WigAIExtension extends ControllerExtension {
     private Logger logger;
     private ConfigManager configManager;
+    private McpServerManager mcpServerManager;
 
     /**
      * Creates a new WigAIExtension instance.
@@ -37,6 +39,10 @@ public class WigAIExtension extends ControllerExtension {
         // Initialize the config manager
         configManager = new ConfigManager(logger);
 
+        // Initialize and start the MCP server
+        mcpServerManager = new McpServerManager(logger, configManager);
+        mcpServerManager.start();
+
         // Log startup message
         logger.info(String.format("WigAI Extension Loaded - Version %s", getExtensionDefinition().getVersion()));
     }
@@ -50,6 +56,11 @@ public class WigAIExtension extends ControllerExtension {
     public void exit() {
         if (logger != null) {
             logger.info("WigAI Extension shutting down");
+        }
+
+        // Stop the MCP server if it exists
+        if (mcpServerManager != null) {
+            mcpServerManager.stop();
         }
     }
 
