@@ -45,18 +45,18 @@ tasks.withType<Test> {
 
 // Task to create the .bwextension file
 tasks.register<Zip>("bwextension") {
-    dependsOn("jar")
+    dependsOn("jar", "classes")
 
     archiveFileName.set("WigAI.bwextension")
     destinationDirectory.set(layout.buildDirectory.dir("extensions"))
 
-    from(layout.buildDirectory.dir("libs")) {
-        include("*.jar")
-        into("lib")
-    }
+    // Include compiled class files directly
+    from(layout.buildDirectory.dir("classes/java/main"))
 
-    from("src/main/resources") {
-        include("META-INF/**")
+    // Include the services directory at the root level
+    from("src/main/resources/META-INF") {
+        include("services/**")
+        into("META-INF")
     }
 }
 

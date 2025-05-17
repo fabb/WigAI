@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Implementation-Vendor: fabb
+Implementation-Title: WigAI
+Implementation-Version: 0.1.0
