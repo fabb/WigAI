@@ -32,7 +32,7 @@ WigAI/
 │   │   │       ├── mcp/                        # MCP Server implementation
 │   │   │       │   ├── McpServerManager.java   # Manages MCP server lifecycle
 │   │   │       │   └── tool/                   # MCP tool implementations
-│   │   │       │       ├── PingTool.java       # Ping tool implementation
+│   │   │       │       ├── StatusTool.java     # Status tool implementation
 │   │   │       │       ├── TransportTool.java  # Transport control tools (start/stop)
 │   │   │       │       ├── DeviceParamTool.java # Device parameter management tools
 │   │   │       │       ├── ClipTool.java       # Clip launching tools
@@ -96,3 +96,4 @@ WigAI/
 | Update        | 2025-05-18 | 0.4     | Updated for MCP Java SDK integration. Under `mcp/` package, replace `RequestRouter.java` and command handling with `tool/` package containing tool implementations like `PingTool.java`.  | Architect Agent    |
 | Update        | 2025-05-18 | 0.5     | Corrected root directory name from "wigai-bitwig-extension" to "WigAI" for consistency. | GitHub Copilot    |
 | Update        | 2025-05-18 | 0.6     | Added more detailed descriptions of specific tool implementation files in the MCP tool package. | GitHub Copilot    |
+| Update        | 2025-05-18 | 0.7     | Updated tool implementations to replace PingTool with StatusTool to follow the MCP specification which already includes a native ping functionality. | Technical Scrum Master Agent |

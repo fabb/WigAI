@@ -24,8 +24,8 @@ The MCP Java SDK handles the protocol-level structures for JSON-RPC 2.0. WigAI i
 * **Standard JSON-RPC 2.0 Request Structure:**
     * `jsonrpc`: String (Value: "2.0")
     * `id`: Number or String (unique request identifier)
-    * `method`: String (e.g., "tools/list", "tools/call")
-    * `params`: Object (method-specific parameters)
+    * `method`: String (e.g., "ping", "tools/list", "tools/call")
+    * `params`: Object (method-specific parameters, not used for "ping")
 * **Standard Tool Call Request Structure:**
     * `name`: String (tool name, e.g., "ping", "transport_start")
     * `arguments`: Object (tool-specific arguments)
@@ -39,12 +39,12 @@ The MCP Java SDK handles the protocol-level structures for JSON-RPC 2.0. WigAI i
 
 ### 3.2. Tool-Specific Data Structures
 
-#### 3.2.1. Ping Tool
-* **Tool Name:** `ping`
+#### 3.2.1. Status Tool
+* **Tool Name:** `status`
 * **Input Schema:** Empty object (no arguments required)
-* **Output Schema (`PingToolResult`):**
+* **Output Schema (`StatusToolResult`):**
     * `type`: String (Value: "text")
-    * `text`: String (Value: "pong (WigAI v0.2.0)")
+    * `text`: String (Value: "WigAI v0.2.0 is operational")
 
 #### 3.2.2. Transport Control Tools
 * **Tool Name:** `transport_start`
@@ -136,3 +136,4 @@ Not applicable for MVP. WigAI does not use external state files for its core ope
 | --------------------------- | ---------- | ------- | ------------------------------------------------------- | ------------------- |
 | Initial draft               | 2025-05-16 | 0.1.0   | First draft of data models.                            | 3-architect BMAD v2 |
 | Updated to MCP tools format | 2025-05-17 | 0.2.0   | Converted to official MCP tools and JSON-RPC 2.0 format | GitHub Copilot      |
+| Updated tool names          | 2025-05-18 | 0.2.1   | Replaced custom PingTool with StatusTool and added support for standard MCP ping method | Technical Scrum Master Agent |
