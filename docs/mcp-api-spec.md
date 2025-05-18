@@ -7,7 +7,7 @@ Date: 2025-05-17
 
 This document specifies the Model Context Protocol (MCP) Application Programming Interface (API) for WigAI, a Bitwig Studio extension. WigAI enables external AI agents to interact with Bitwig Studio for various control and query tasks.
 
-This API adheres to the official MCP specification (2025-03-26), utilizing the Streamable HTTP transport and implementing the tools interface. All requests and responses are JSON-RPC 2.0 formatted.
+This API adheres to the official MCP specification (2025-03-26), utilizing the Streamable HTTP transport and implementing the tools interface. All requests and responses are JSON-RPC 2.0 formatted. WigAI implements this specification using the official MCP Java SDK (version 0.8.0+), leveraging the SDK's tool-based architecture pattern for registering, validating, and handling MCP requests.
 
 ## 2. General Principles
 
@@ -175,7 +175,7 @@ In addition to standard JSON-RPC errors, tools may report execution errors throu
         "content": [
           {
             "type": "text",
-            "text": "pong (WigAI v0.2.0)"
+            "text": "pong (WigAI v0.2.0)" // Version fetched dynamically from WigAIExtensionDefinition
           }
         ],
         "isError": false
@@ -861,3 +861,5 @@ WigAI declares its supported capabilities in response to capability queries:
 | --------------------------- | ---------- | ------- | ---------------------------------------------------- | ------------------- |
 | Initial draft              | 2025-05-16 | 0.1.0   | First draft of MCP API commands.                     | 3-architect BMAD v2 |
 | Updated to official MCP spec | 2025-05-17 | 0.2.0   | Converted command API to tools-based API per MCP spec. | GitHub Copilot      |
+| Ping tool update            | 2025-05-18 | 0.2.1   | Added clarification about version retrieval from WigAIExtensionDefinition for ping tool response. | Architect Agent    |
+| SDK reference update        | 2025-05-18 | 0.2.2   | Added explicit reference to MCP Java SDK version 0.8.0+ and tool-based architecture pattern. | GitHub Copilot    |

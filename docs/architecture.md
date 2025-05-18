@@ -115,18 +115,18 @@ graph TD
 
   * **`MCP Server (MCP_Server_Node)`**:
 
-      * **Responsibility:** Implements the MCP Streamable HTTP transport using components from the MCP Java SDK (e.g., a Servlet-based SSE transport). Listens for incoming HTTP connections on the configured port, handles the raw HTTP communication, and manages the lifecycle of client connections. Passes raw request data to the `Request_Router_Node`.
-      * **Interactions:** Receives HTTP requests from external AI agents. Delegates request handling to the `Request_Router_Node`. Sends responses/streams back to clients. Managed by `Extension_Lifecycle_Node`. Uses `Config_Manager_Node` for port.
+      * **Responsibility:** Leverages the MCP Java SDK to configure and run an MCP-compliant server with the Streamable HTTP/SSE transport. This includes setting up the server with proper capabilities, registering tools, and handling the server lifecycle. Uses the SDK's built-in JSON-RPC 2.0 message processing, tool registry, and transport implementation.
+      * **Interactions:** Manages the MCP server lifecycle. Configures and initializes the SDK's server components. Registers tool implementations. Managed by `Extension_Lifecycle_Node`. Uses `Config_Manager_Node` for configuration.
 
-  * **`Request Router & Dispatcher (Request_Router_Node)`**:
+  * **`MCP SDK Tool Registry (Request_Router_Node)`**:
 
-      * **Responsibility:** Receives incoming MCP messages (likely as JSON strings or already partially processed objects from the MCP Java SDK's transport layer). Determines the type of MCP command and dispatches it to the `Command_Parser_Node` and then to the appropriate `Feature Module`.
-      * **Interactions:** Receives data from `MCP_Server_Node`. Sends data to `Command_Parser_Node`.
+      * **Responsibility:** Leverages the MCP Java SDK's built-in tool registry system to register, manage, and route requests to the appropriate tool implementation. Replaces the need for a custom request router and command parser with the SDK's tool routing capabilities.
+      * **Interactions:** Integrated with the MCP Java SDK's server components. Routes tool calls to the appropriate tool implementation classes.
 
-  * **`MCP Command Parser (Command_Parser_Node)`**:
+  * **`MCP Tool Implementations (Command_Parser_Node)`**:
 
-      * **Responsibility:** Parses the JSON payload of MCP commands, validates their structure and parameters against the defined MCP API specification for WigAI. Transforms valid commands into internal objects/ DTOs.
-      * **Interactions:** Receives raw command data from `Request_Router_Node`. Sends parsed/validated command objects to the relevant `Feature Module` within `Feature_Modules_Group`.
+      * **Responsibility:** Implements the MCP Java SDK's tool interfaces for each supported tool (ping, transport_start, etc.). Each tool implementation defines its schema, validates inputs using the SDK's facilities, and handles the tool-specific business logic.
+      * **Interactions:** Receives tool calls from the MCP SDK's routing system. Interacts with the appropriate `Feature Module` within `Feature_Modules_Group`.
 
   * **`Feature Modules (Feature_Modules_Group)`**: This group encapsulates the logic for handling specific categories of MCP commands.
 
@@ -149,14 +149,18 @@ This section highlights the significant architectural choices made for WigAI and
       * **Decision:** WigAI is designed as a single, deployable Bitwig Extension (`.bwextension` file) but with a clear internal modular structure (as shown in the Component View).
       * **Justification:** Bitwig extensions are inherently monolithic in their deployment. A modular internal design promotes separation of concerns, testability, and maintainability within this constraint. This approach avoids the complexity of inter-process communication for a system that naturally runs embedded within Bitwig.
   * **MCP Java SDK for Core Protocol Handling:**
-      * **Decision:** Utilize the official MCP Java SDK for implementing the MCP server logic, including message parsing, validation, and managing MCP operations.
-      * **Justification:** This SDK is specifically designed for the Model Context Protocol, ensuring spec compliance and reducing the boilerplate code needed for protocol handling. It provides built-in support for necessary transport mechanisms like Streamable HTTP with SSE.
+      * **Decision:** Utilize the official MCP Java SDK (0.8.0+) for implementing the MCP server logic, including JSON-RPC 2.0 message processing, tool registration and validation, and standard endpoint handling.
+      * **Justification:** This SDK is specifically designed for the Model Context Protocol, ensuring spec compliance and reducing the boilerplate code needed for protocol handling. It provides built-in support for necessary transport mechanisms like Streamable HTTP with SSE, as well as comprehensive tool registration, validation, and request handling components.
   * **Streamable HTTP Transport (utilizing SSE):**
       * **Decision:** Adopt the MCP Streamable HTTP transport, leveraging Server-Sent Events for server-to-client streaming.
       * **Justification:** This is the modern MCP standard for remote communication, allowing for a single HTTP endpoint for requests and responses/notifications. SSE is well-suited for the potentially real-time updates required for controlling a DAW and is supported by the MCP Java SDK.
   * **Facade Pattern for Bitwig API Interaction (`Bitwig API Facade`):**
       * **Decision:** Introduce a facade component to abstract direct interactions with the Bitwig Java Extension API.
       * **Justification:** This simplifies the code in the `Feature Modules` by providing a cleaner, more domain-specific interface to Bitwig functionalities. It also centralizes Bitwig API knowledge, making it easier to adapt to potential Bitwig API changes in the future.
+  * **Tool-Based Interface Pattern:**
+      * **Decision:** Implement all WigAI functionality as MCP "tools" using the SDK's tool interfaces and registry system rather than custom command handlers.
+      * **Justification:** The MCP Java SDK provides a standardized way to define tools with schemas, handle their registration, and process requests. This approach simplifies implementation, ensures proper validation, and enables automatic discovery through the standard `tools/list` endpoint.
+
   * **Lightweight Embedded Server:**
       * **Decision:** The MCP server (provided by or configured through the MCP Java SDK) will be lightweight and embedded directly within the Java extension.
       * **Justification:** To minimize resource footprint and avoid unnecessary complexity within the Bitwig Studio environment. We aim to avoid pulling in heavy frameworks like a full Spring Boot application context if the MCP Java SDK's server components can be used more directly.
@@ -208,4 +212,5 @@ This architecture document should be read in conjunction with the following deta
 | Change        | Date       | Version | Description                                      | Author              |
 | ------------- | ---------- | ------- | ------------------------------------------------ | ------------------- |
 | Initial draft | 2025-05-16 | 0.1     | Initial draft of architecture document sections. | 3-architect BMAD v2 |
+| Update        | 2025-05-18 | 0.2     | Updated component descriptions to align with MCP Java SDK 0.8.0+ integration. Revised MCP components to reflect the SDK's tool-based approach. | Architect Agent    |
 

@@ -5,11 +5,11 @@ Date: 2025-05-16
 
 ## 1. Overall Philosophy & Goals
 
-The testing strategy for WigAI aims to ensure the extension is reliable, correctly implements the specified MCP commands, and integrates seamlessly with Bitwig Studio without causing instability. We will focus on a combination of automated unit tests for isolated logic and manual/semi-automated integration and end-to-end tests due to the nature of interacting with a host DAW.
+The testing strategy for WigAI aims to ensure the extension is reliable, correctly implements the specified MCP tools, and integrates seamlessly with Bitwig Studio without causing instability. We will focus on a combination of automated unit tests for isolated logic and manual/semi-automated integration and end-to-end tests due to the nature of interacting with a host DAW.
 
 **Key Goals:**
 
-* **Correctness:** Verify that all implemented MCP commands perform the correct actions in Bitwig Studio and return the specified responses.
+* **Correctness:** Verify that all implemented MCP tools perform the correct actions in Bitwig Studio and return the specified responses.
 * **Robustness:** Ensure the extension handles invalid inputs, unexpected Bitwig states, and errors gracefully without crashing itself or Bitwig Studio.
 * **Reliability:** Confirm that features work consistently across different scenarios.
 * **Maintainability:** Tests should be easy to understand, write, and maintain alongside the codebase.
@@ -20,8 +20,8 @@ The testing strategy for WigAI aims to ensure the extension is reliable, correct
 ### 2.1. Unit Tests
 
 * **Scope:** Test individual Java classes and methods in isolation, particularly focusing on:
-    * `McpCommandParser`: Parsing and validation of MCP command JSON payloads into DTOs.
-    * Logic within `Feature Modules` (e.g., `TransportController`, `DeviceController`, `SceneController`) that doesn't directly depend on live Bitwig API objects. This includes parameter validation, state transitions, and response formatting.
+    * MCP Tool implementations: Validation of MCP tool arguments and conversion to appropriate actions.
+    * Logic within specific tool implementations (e.g., tools for transport control, device parameter management, scene launching) that doesn't directly depend on live Bitwig API objects. This includes parameter validation, state transitions, and response formatting.
     * Utility classes in `common/` and `config/`.
     * Abstracted logic within `BitwigApiFacade` that can be tested without a live Bitwig `Host` instance (e.g., data transformation).
 * **Tools:**
@@ -40,8 +40,8 @@ The testing strategy for WigAI aims to ensure the extension is reliable, correct
 ### 2.2. Integration Tests (Within WigAI Extension)
 
 * **Scope:** Test the interaction between different components *within* the WigAI extension, but still potentially without a fully running Bitwig instance, or by using more complex mock setups for the Bitwig API. For example:
-    * `RequestRouter` correctly dispatching to the `McpCommandParser` and then to the appropriate `FeatureModule`.
-    * Interaction between `FeatureModules` and a mocked `BitwigApiFacade`.
+    * The MCP Java SDK's tool registry correctly routing tool calls to the appropriate tool implementations.
+    * Interaction between tool implementations and a mocked `BitwigApiFacade`.
 * **Tools:**
     * JUnit 5.
     * Mockito for parts of the Bitwig API that are complex to simulate live in this context.
@@ -58,19 +58,19 @@ The testing strategy for WigAI aims to ensure the extension is reliable, correct
         * Launch Bitwig Studio and ensure the WigAI extension is active and the MCP server is running (check Bitwig's extension console for logs).
         * Prepare a Bitwig project with necessary elements (e.g., tracks, clips, scenes, devices) for specific test scenarios.
     2.  **Execution:**
-        * Use a simple MCP client (e.g., a Python script, Node.js script, `curl`, or a tool like Postman) to send MCP commands (as defined in `docs/mcp-api-spec.md`) to the WigAI server endpoint.
+        * Use a simple MCP client (e.g., a Python script, Node.js script, `curl`, or a tool like Postman) to send MCP tool calls (as defined in `docs/mcp-api-spec.md`) to the WigAI server endpoint.
         * Observe the behavior in Bitwig Studio (e.g., does playback start/stop? Does the correct clip launch? Do device parameters change?).
-        * Inspect the MCP responses received by the client for correctness (status, data payload, error messages).
+        * Inspect the MCP responses received by the client for correctness (result content, error status).
     3.  **Verification:**
         * Compare actual outcomes against the Acceptance Criteria defined in the Epic stories.
 * **Test Scenarios:** Based directly on the User Stories and Acceptance Criteria in `epic1.md`, `epic2.md`, and `epic3.md`. Examples:
-    * Send `ping` command, verify `pong` response.
-    * Send `transport_start`, verify Bitwig plays.
-    * Send `transport_stop`, verify Bitwig stops.
-    * Select a device in Bitwig, send `get_selected_device_parameters`, verify response matches device state.
-    * Send `set_selected_device_parameter`, verify parameter changes in Bitwig and response is correct.
-    * Send `launch_clip` for a specific clip, verify it plays.
-    * Test error conditions: non-existent track, invalid parameter index, etc., and verify appropriate error responses.
+    * Call the `ping` tool, verify `pong` response.
+    * Call the `transport_start` tool, verify Bitwig plays.
+    * Call the `transport_stop` tool, verify Bitwig stops.
+    * Select a device in Bitwig, call the `get_selected_device_parameters` tool, verify response matches device state.
+    * Call the `set_selected_device_parameter` tool, verify parameter changes in Bitwig and response is correct.
+    * Call the `launch_clip` tool for a specific clip, verify it plays.
+    * Test error conditions: non-existent track, invalid parameter index, etc., and verify appropriate error responses with `isError: true`.
 * **Tools:**
     * **Bitwig Studio:** Essential for hosting the extension and observing effects.
     * **MCP Client:**
@@ -109,3 +109,4 @@ The testing strategy for WigAI aims to ensure the extension is reliable, correct
 | Change        | Date       | Version | Description                  | Author              |
 | ------------- | ---------- | ------- | ---------------------------- | ------------------- |
 | Initial draft | 2025-05-16 | 0.1.0   | First draft of testing strategy. | 3-architect BMAD v2 |
+| Update        | 2025-05-18 | 0.2.0   | Updated terminology to align with MCP tool-based architecture rather than commands. | GitHub Copilot      |
