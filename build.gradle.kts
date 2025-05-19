@@ -23,6 +23,7 @@ dependencies {
     implementation("com.bitwig:extension-api:19")
 
     // MCP Java SDK
+    // stay on version 0.9.0 for now
     // you can look up the documentation with tool context7
     // example implementation: https://modelcontextprotocol.io/sdk/java/mcp-server
     // version 0.9.0 uses MCP specification version 2024-11-05: https://modelcontextprotocol.io/specification/2024-11-05/basic/transports

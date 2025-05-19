@@ -3,8 +3,6 @@ package io.github.fabb.wigai.mcp;
 import io.github.fabb.wigai.WigAIExtensionDefinition;
 import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.config.ConfigManager;
-import io.modelcontextprotocol.spec.*;
-import io.modelcontextprotocol.util.*;
 import io.modelcontextprotocol.server.*;
 import io.modelcontextprotocol.server.transport.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,8 +10,8 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-
-import java.util.Map;
+import io.github.fabb.wigai.mcp.tool.StatusTool;
+import io.modelcontextprotocol.spec.McpSchema;
 
 /**
  * Manages the MCP server for the WigAI extension.
@@ -70,6 +68,9 @@ public class McpServerManager {
                     .tools(true)
                     .logging()
                     .build())
+                .tools(
+                    StatusTool.specification(this.extensionDefinition, logger)
+                )
                 .build();
 
             // 4. Servlet Container Setup (Embedded Jetty)
