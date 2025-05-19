@@ -39,6 +39,10 @@ This will generate a `.bwextension` file in the `build/extensions` directory.
 
 Once the extension is activated in Bitwig Studio, the MCP server will be available at `http://localhost:61169/mcp`. External AI agents can connect to this endpoint to send commands and receive responses.
 
+## Development
+
+This project is developed using the [BMAD v2 method](https://github.com/bmadcode/BMAD-METHOD) with AI Agents. The files in folders `agents`, `ai` and `docs` used for this development method.
+
 ## License
 
 [MIT License](LICENSE)

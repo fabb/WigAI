@@ -51,7 +51,7 @@ public class McpServerManager {
     public McpServerManager(Logger logger, ConfigManager configManager, WigAIExtensionDefinition extensionDefinition) {
         this(logger, configManager, extensionDefinition, null);
     }
-    
+
     /**
      * Creates a new McpServerManager instance with a controller host.
      *
@@ -67,7 +67,7 @@ public class McpServerManager {
         this.extensionDefinition = extensionDefinition;
         this.controllerHost = controllerHost;
     }
-    
+
     /**
      * Gets the Bitwig controller host.
      *
@@ -104,11 +104,11 @@ public class McpServerManager {
             // supported by the MCP Java SDK. The StatusTool implementation handles its own
             // logging. If more detailed logging is needed, we should investigate alternative
             // approaches with the MCP SDK.
-            
+
             // Create the BitwigApiFacade and feature controllers
             BitwigApiFacade bitwigApiFacade = new BitwigApiFacade(getHost(), logger);
             TransportController transportController = new TransportController(bitwigApiFacade, logger);
-            
+
             this.mcpServer = McpServer.sync(this.transportProvider)
                 .serverInfo("WigAI", extensionDefinition.getVersion())
                 .capabilities(McpSchema.ServerCapabilities.builder()
