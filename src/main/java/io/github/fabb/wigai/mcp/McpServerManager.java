@@ -1,8 +1,10 @@
 package io.github.fabb.wigai.mcp;
 
 import io.github.fabb.wigai.WigAIExtensionDefinition;
+import io.github.fabb.wigai.bitwig.BitwigApiFacade;
 import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.config.ConfigManager;
+import io.github.fabb.wigai.features.TransportController;
 import io.modelcontextprotocol.server.*;
 import io.modelcontextprotocol.server.transport.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +13,9 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import io.github.fabb.wigai.mcp.tool.StatusTool;
+import io.github.fabb.wigai.mcp.tool.TransportTool;
 import io.modelcontextprotocol.spec.McpSchema;
+import com.bitwig.extension.controller.api.ControllerHost;
 
 /**
  * Manages the MCP server for the WigAI extension.
@@ -21,7 +25,7 @@ import io.modelcontextprotocol.spec.McpSchema;
  * This implementation:
  * - Sets up the MCP Java SDK with SSE transport
  * - Implements standard MCP ping functionality
- * - Registers custom tools like the "status" tool
+ * - Registers custom tools like the "status" tool and "transport_start" tool
  * - Configures the appropriate error handling
  * - Provides logging for MCP requests and responses
  */
@@ -30,6 +34,7 @@ public class McpServerManager {
     private final String host;
     private final int port;
     private final WigAIExtensionDefinition extensionDefinition;
+    private final ControllerHost controllerHost;
 
     private McpSyncServer mcpServer;
     private volatile boolean isRunning;
@@ -44,10 +49,36 @@ public class McpServerManager {
      * @param extensionDefinition The extension definition to get version information
      */
     public McpServerManager(Logger logger, ConfigManager configManager, WigAIExtensionDefinition extensionDefinition) {
+        this(logger, configManager, extensionDefinition, null);
+    }
+    
+    /**
+     * Creates a new McpServerManager instance with a controller host.
+     *
+     * @param logger             The logger to use for logging server events
+     * @param configManager      The configuration manager to get server settings from
+     * @param extensionDefinition The extension definition to get version information
+     * @param controllerHost     The Bitwig controller host, or null if not available
+     */
+    public McpServerManager(Logger logger, ConfigManager configManager, WigAIExtensionDefinition extensionDefinition, ControllerHost controllerHost) {
         this.logger = logger;
         this.host = configManager.getMcpHost();
         this.port = configManager.getMcpPort();
         this.extensionDefinition = extensionDefinition;
+        this.controllerHost = controllerHost;
+    }
+    
+    /**
+     * Gets the Bitwig controller host.
+     *
+     * @return The controller host
+     * @throws IllegalStateException if the controller host is not available
+     */
+    public ControllerHost getHost() {
+        if (controllerHost == null) {
+            throw new IllegalStateException("Controller host is not available");
+        }
+        return controllerHost;
     }
 
     /**
@@ -73,6 +104,11 @@ public class McpServerManager {
             // supported by the MCP Java SDK. The StatusTool implementation handles its own
             // logging. If more detailed logging is needed, we should investigate alternative
             // approaches with the MCP SDK.
+            
+            // Create the BitwigApiFacade and feature controllers
+            BitwigApiFacade bitwigApiFacade = new BitwigApiFacade(getHost(), logger);
+            TransportController transportController = new TransportController(bitwigApiFacade, logger);
+            
             this.mcpServer = McpServer.sync(this.transportProvider)
                 .serverInfo("WigAI", extensionDefinition.getVersion())
                 .capabilities(McpSchema.ServerCapabilities.builder()
@@ -80,7 +116,8 @@ public class McpServerManager {
                     .logging()
                     .build())
                 .tools(
-                    StatusTool.specification(this.extensionDefinition, logger)
+                    StatusTool.specification(this.extensionDefinition, logger),
+                    TransportTool.transportStartSpecification(transportController, logger)
                 )
                 .build();
 
