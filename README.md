@@ -15,7 +15,7 @@ The extension enables external AI agents (e.g., IDE-based copilots, standalone A
 
 ## Requirements
 
--   Bitwig Studio (latest version)
+-   Bitwig Studio (5.2.7 or later)
 -   Java 21 LTS
 -   External AI agent supporting Model Context Protocol
 
