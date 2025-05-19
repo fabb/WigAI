@@ -13,6 +13,9 @@ import java.util.function.BiFunction;
  * Custom MCP "status" tool for WigAI, returns version info.
  */
 public class StatusTool {
+    // Store the handler function so it can be accessed for testing
+    private static BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> handlerFunction;
+
     public static McpServerFeatures.SyncToolSpecification specification(WigAIExtensionDefinition extensionDefinition, Logger logger) {
         var schema = """
             {
@@ -24,13 +27,19 @@ public class StatusTool {
             "Get WigAI operational status and version information.",
             schema
         );
-        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> handler = (exchange, arguments) -> {
+        // Create and store the handler function
+        handlerFunction = (exchange, arguments) -> {
             String version = extensionDefinition.getVersion();
             String statusText = String.format("WigAI v%s is operational", version);
             logger.info("Received 'status' tool call");
             logger.info("Responding with: " + statusText);
             return new McpSchema.CallToolResult(statusText, false);
         };
-        return new McpServerFeatures.SyncToolSpecification(tool, handler);
+        return new McpServerFeatures.SyncToolSpecification(tool, handlerFunction);
+    }
+
+    // Accessor for testing
+    public static BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> getHandler() {
+        return handlerFunction;
     }
 }

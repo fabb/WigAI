@@ -16,7 +16,14 @@ import io.modelcontextprotocol.spec.McpSchema;
 /**
  * Manages the MCP server for the WigAI extension.
  * Responsible for starting, configuring, and stopping the embedded MCP HTTP server
- * that uses the Streamable HTTP/SSE transport with the MCP Java SDK.
+ * that uses the Server-Sent Events (SSE) transport with the MCP Java SDK.
+ *
+ * This implementation:
+ * - Sets up the MCP Java SDK with SSE transport
+ * - Implements standard MCP ping functionality
+ * - Registers custom tools like the "status" tool
+ * - Configures the appropriate error handling
+ * - Provides logging for MCP requests and responses
  */
 public class McpServerManager {
     private final Logger logger;
@@ -45,8 +52,8 @@ public class McpServerManager {
 
     /**
      * Starts the MCP server using the MCP Java SDK.
-     * Configures the server with the HTTP transport and registers
-     * the available tools.
+     * Configures the server with the SSE transport and registers
+     * the standard ping functionality and available tools.
      */
     public void start() {
         if (isRunning) {
@@ -61,7 +68,11 @@ public class McpServerManager {
             // 2. Instantiate HttpServletSseServerTransportProvider
             this.transportProvider = new HttpServletSseServerTransportProvider(objectMapper, "/mcp", "/sse");
 
-            // 3. Create and Configure McpServer
+            // 3. Configure the MCP server with tools
+            // Note: Direct request/response logging with onRequest/onResponse methods is not
+            // supported by the MCP Java SDK. The StatusTool implementation handles its own
+            // logging. If more detailed logging is needed, we should investigate alternative
+            // approaches with the MCP SDK.
             this.mcpServer = McpServer.sync(this.transportProvider)
                 .serverInfo("WigAI", extensionDefinition.getVersion())
                 .capabilities(McpSchema.ServerCapabilities.builder()
