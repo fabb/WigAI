@@ -27,10 +27,10 @@
 ---
 
 ### Refined Story 1.2: MCP Server Listener Implementation
-* **User Story / Goal:** As the WigAI System, I want to initialize an MCP server listener (using the MCP Java SDK with Streamable HTTP/SSE transport) on a configurable local network port when the Bitwig extension starts, so that external AI agents can connect and send MCP commands.
+* **User Story / Goal:** As the WigAI System, I want to initialize an MCP server listener (using the MCP Java SDK with SSE transport; Streamable HTTP planned) on a configurable local network port when the Bitwig extension starts, so that external AI agents can connect and send MCP commands.
 * **Detailed Requirements:**
     * Implement an `McpServerManager` class within the `io.github.fabb.wigai.mcp` package.
-    * This manager will use the MCP Java SDK to configure and start an embedded HTTP server supporting the MCP Streamable HTTP transport (which utilizes SSE for streaming).
+    * This manager will use the MCP Java SDK to configure and start an embedded HTTP server supporting the MCP SSE transport (Streamable HTTP will be used once supported).
     * The listening IP address should default to `localhost`.
     * The port number should be retrieved from the `ConfigManager` (defaulting to `61169` as per `AppConstants`).
     * The server (managed by `McpServerManager`) should start when the `WigAIExtension`'s `init()` method is called and the extension is enabled.

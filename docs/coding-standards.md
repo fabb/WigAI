@@ -8,7 +8,7 @@ The following high-level architectural and design patterns have been adopted for
 
 * **Modular Monolith within Extension:** The extension is a single deployable unit with clear internal module boundaries.
 * **MCP Java SDK for Protocol Handling:** Leveraging the official SDK for MCP logic.
-* **Streamable HTTP Transport (utilizing SSE):** For MCP communication.
+* **Server-Sent Events (SSE) Transport:** For MCP communication. The MCP Java SDK currently only supports legacy SSE for streaming; Streamable HTTP will be adopted once supported by the SDK.
 * **Facade Pattern (`BitwigApiFacade`):** To abstract Bitwig API interactions.
 * **Dependency Injection (Implicit/Manual):** While not using a full DI framework like Spring for the core extension, dependencies will be manually injected or passed where appropriate (e.g., `Host` object from Bitwig, `Logger`, `ConfigManager` to components that need them) to promote loose coupling and testability.
 * **Clear Separation of Concerns:**

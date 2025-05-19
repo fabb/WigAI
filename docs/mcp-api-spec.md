@@ -7,11 +7,11 @@ Date: 2025-05-17
 
 This document specifies the Model Context Protocol (MCP) Application Programming Interface (API) for WigAI, a Bitwig Studio extension. WigAI enables external AI agents to interact with Bitwig Studio for various control and query tasks.
 
-This API adheres to the official MCP specification (2025-03-26), utilizing the Streamable HTTP transport and implementing the tools interface. All requests and responses are JSON-RPC 2.0 formatted. WigAI implements this specification using the official MCP Java SDK (version 0.8.0+), leveraging the SDK's tool-based architecture pattern for registering, validating, and handling MCP requests.
+This API adheres to the official MCP specification (2025-03-26), utilizing the SSE transport (Streamable HTTP planned) and implementing the tools interface. All requests and responses are JSON-RPC 2.0 formatted. WigAI implements this specification using the official MCP Java SDK (version 0.8.0+), leveraging the SDK's tool-based architecture pattern for registering, validating, and handling MCP requests.
 
 ## 2. General Principles
 
-* **Transport:** MCP Streamable HTTP. A single HTTP endpoint will be used for all communication. The server uses Server-Sent Events (SSE) for streaming responses or notifications over this connection.
+* **Transport:** MCP SSE (Streamable HTTP planned). A single HTTP endpoint will be used for all communication. The server uses Server-Sent Events (SSE) for streaming responses or notifications over this connection. Streamable HTTP will be adopted once supported by the SDK.
 * **Request Method:** Clients MUST use HTTP POST for sending MCP messages, with the JSON-RPC 2.0 message as the request body.
 * **Content Type:** All JSON payloads MUST use `application/json`.
 * **Endpoint:** A single configurable endpoint (e.g., `http://localhost:61169/mcp`). The port `61169` ("WIGAI") is the suggested default.
@@ -851,7 +851,7 @@ WigAI declares its supported capabilities in response to capability queries:
 
 ## 6. Future Considerations / Expansion
 
-* Implement notifications from WigAI to the client (e.g., when a device is selected in Bitwig, track changes, etc.) using the SSE aspect of Streamable HTTP.
+* Implement notifications from WigAI to the client (e.g., when a device is selected in Bitwig, track changes, etc.) using the SSE transport. Streamable HTTP will be used once supported by the SDK.
 * Add more discovery mechanisms (e.g., list available tracks, scenes, devices) as additional tools.
 * Support tool list change notifications when tools are dynamically added.
 

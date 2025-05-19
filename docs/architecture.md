@@ -2,14 +2,14 @@
 
 ## 1. Technical Summary
 
-WigAI is a Bitwig Studio Java Extension that functions as a Model Context Protocol (MCP) server. It enables external AI agents to interact with and control Bitwig Studio for functionalities such as transport control (start/stop playback), clip and scene launching, and reading/writing parameters of the currently selected device. The architecture is designed to be lightweight and run efficiently within the Bitwig Studio environment. It utilizes Java 21 LTS, the official Bitwig Extension API v19, and the MCP Java SDK. WigAI implements the **MCP Streamable HTTP transport**, which uses a single HTTP endpoint for communication and can leverage **Server-Sent Events (SSE)** for streaming server-to-client updates. The primary goal is to provide a stable and responsive bridge between AI agents and Bitwig's creative functionalities, adhering to the open-source and no-cost constraints of the project.
+WigAI is a Bitwig Studio Java Extension that functions as a Model Context Protocol (MCP) server. It enables external AI agents to interact with and control Bitwig Studio for functionalities such as transport control (start/stop playback), clip and scene launching, and reading/writing parameters of the currently selected device. The architecture is designed to be lightweight and run efficiently within the Bitwig Studio environment. It utilizes Java 21 LTS, the official Bitwig Extension API v19, and the MCP Java SDK. WigAI implements the **MCP SSE transport** (Streamable HTTP planned), which uses a single HTTP endpoint for communication and leverages **Server-Sent Events (SSE)** for streaming server-to-client updates. The primary goal is to provide a stable and responsive bridge between AI agents and Bitwig's creative functionalities, adhering to the open-source and no-cost constraints of the project.
 
 ## 2. High-Level Overview
 
-WigAI operates as an embedded server within the Bitwig Studio Java Extension. The primary architectural style is a **modular monolith** confined to the extension's process space. An external AI agent (e.g., a copilot in an IDE, a standalone AI assistant) acts as the client. This client sends MCP commands (as JSON payloads) to WigAI over a single HTTP connection, adhering to the **MCP Streamable HTTP transport** specification. WigAI then translates these commands into actions using the Bitwig Java Extension API. Responses and asynchronous updates are sent back to the AI agent over the same HTTP connection, with the MCP Java SDK utilizing **Server-Sent Events (SSE)** to enable the streaming of these server-to-client messages as part of the Streamable HTTP transport.
+WigAI operates as an embedded server within the Bitwig Studio Java Extension. The primary architectural style is a **modular monolith** confined to the extension's process space. An external AI agent (e.g., a copilot in an IDE, a standalone AI assistant) acts as the client. This client sends MCP commands (as JSON payloads) to WigAI over a single HTTP connection, adhering to the **MCP SSE transport** specification (Streamable HTTP planned). WigAI then translates these commands into actions using the Bitwig Java Extension API. Responses and asynchronous updates are sent back to the AI agent over the same HTTP connection, with the MCP Java SDK utilizing **Server-Sent Events (SSE)** to enable the streaming of these server-to-client messages as part of the SSE transport. Streamable HTTP will be adopted once supported by the SDK.
 
 The core interaction flow is:
-1. External AI Agent (Client) establishes an HTTP connection to the WigAI MCP Server's single endpoint (Streamable HTTP transport) running within the Bitwig Extension.
+1. External AI Agent (Client) establishes an HTTP connection to the WigAI MCP Server's single endpoint (SSE transport; Streamable HTTP planned) running within the Bitwig Extension.
 2. Client sends an MCP request (e.g., "start playback", "get device parameters") to this endpoint.
 3. WigAI Server (using MCP Java SDK components) parses the MCP request.
 4. WigAI's core logic maps the MCP command to the appropriate Bitwig Java Extension API calls.
@@ -24,7 +24,7 @@ graph TD
 
     subgraph "Bitwig Studio"
         subgraph "WigAI Extension (MCP Server)"
-            MCP_Server_Endpoint["MCP Streamable HTTP Endpoint (utilizing SSE for streaming)"]
+            MCP_Server_Endpoint["MCP SSE Endpoint (utilizing SSE for streaming; Streamable HTTP planned)"]
             MCP_Handler["MCP Request/Response Handler (MCP Java SDK)"]
             WigAI_Core_Logic["WigAI Core Logic"]
             Bitwig_API_Adapter["Bitwig API Adapter"]
@@ -32,7 +32,7 @@ graph TD
         Bitwig_Host["Bitwig Studio Host Application & API"]
     end
 
-    AI_Agent -- "MCP JSON via Streamable HTTP (SSE for streaming)" --> MCP_Server_Endpoint
+    AI_Agent -- "MCP JSON via SSE (SSE for streaming; Streamable HTTP planned)" --> MCP_Server_Endpoint
     MCP_Server_Endpoint --> MCP_Handler
     MCP_Handler --> WigAI_Core_Logic
     WigAI_Core_Logic --> Bitwig_API_Adapter
@@ -40,7 +40,7 @@ graph TD
     Bitwig_Host -- "API Responses/Events" --> Bitwig_API_Adapter
     Bitwig_API_Adapter --> WigAI_Core_Logic
     WigAI_Core_Logic --> MCP_Handler
-    MCP_Handler -- "MCP JSON via Streamable HTTP (SSE for streaming)" --> AI_Agent
+    MCP_Handler -- "MCP JSON via SSE (SSE for streaming; Streamable HTTP planned)" --> AI_Agent
 
     style WigAI_Extension fill:#f9f,stroke:#333,stroke-width:2px
     style Bitwig_Studio fill:#ccf,stroke:#333,stroke-width:2px
@@ -55,7 +55,7 @@ graph TD
     subgraph WigAI_Extension ["WigAI Extension (Java)"]
         direction LR
 
-        MCP_Server_Node["MCP Server (MCP Java SDK - Streamable HTTP/SSE Transport)"]
+        MCP_Server_Node["MCP Server (MCP Java SDK - SSE Transport; Streamable HTTP planned)"]
         Request_Router_Node["Request Router and Dispatcher"]
         Command_Parser_Node["MCP Command Parser"]
         
@@ -115,7 +115,7 @@ graph TD
 
   * **`MCP Server (MCP_Server_Node)`**:
 
-      * **Responsibility:** Leverages the MCP Java SDK to configure and run an MCP-compliant server with the Streamable HTTP/SSE transport. This includes setting up the server with proper capabilities, registering tools, and handling the server lifecycle. Uses the SDK's built-in JSON-RPC 2.0 message processing, tool registry, and transport implementation.
+      * **Responsibility:** Leverages the MCP Java SDK to configure and run an MCP-compliant server with the SSE transport (Streamable HTTP planned). This includes setting up the server with proper capabilities, registering tools, and handling the server lifecycle. Uses the SDK's built-in JSON-RPC 2.0 message processing, tool registry, and transport implementation.
       * **Interactions:** Manages the MCP server lifecycle. Configures and initializes the SDK's server components. Registers tool implementations. Managed by `Extension_Lifecycle_Node`. Uses `Config_Manager_Node` for configuration.
 
   * **`MCP SDK Tool Registry (Request_Router_Node)`**:
@@ -150,10 +150,9 @@ This section highlights the significant architectural choices made for WigAI and
       * **Justification:** Bitwig extensions are inherently monolithic in their deployment. A modular internal design promotes separation of concerns, testability, and maintainability within this constraint. This approach avoids the complexity of inter-process communication for a system that naturally runs embedded within Bitwig.
   * **MCP Java SDK for Core Protocol Handling:**
       * **Decision:** Utilize the official MCP Java SDK (0.8.0+) for implementing the MCP server logic, including JSON-RPC 2.0 message processing, tool registration and validation, and standard endpoint handling.
-      * **Justification:** This SDK is specifically designed for the Model Context Protocol, ensuring spec compliance and reducing the boilerplate code needed for protocol handling. It provides built-in support for necessary transport mechanisms like Streamable HTTP with SSE, as well as comprehensive tool registration, validation, and request handling components.
-  * **Streamable HTTP Transport (utilizing SSE):**
-      * **Decision:** Adopt the MCP Streamable HTTP transport, leveraging Server-Sent Events for server-to-client streaming.
-      * **Justification:** This is the modern MCP standard for remote communication, allowing for a single HTTP endpoint for requests and responses/notifications. SSE is well-suited for the potentially real-time updates required for controlling a DAW and is supported by the MCP Java SDK.
+      * **Justification:** This SDK is specifically designed for the Model Context Protocol, ensuring spec compliance and reducing the boilerplate code needed for protocol handling. It provides built-in support for necessary transport mechanisms like SSE (Streamable HTTP planned), as well as comprehensive tool registration, validation, and request handling components.
+  * **SSE Transport:**
+    * **Purpose:** Provides streaming server-to-client updates for MCP. Streamable HTTP will be adopted once supported by the SDK.
   * **Facade Pattern for Bitwig API Interaction (`Bitwig API Facade`):**
       * **Decision:** Introduce a facade component to abstract direct interactions with the Bitwig Java Extension API.
       * **Justification:** This simplifies the code in the `Feature Modules` by providing a cleaner, more domain-specific interface to Bitwig functionalities. It also centralizes Bitwig API knowledge, making it easier to adapt to potential Bitwig API changes in the future.
