@@ -40,7 +40,7 @@ public class WigAIExtension extends ControllerExtension {
         configManager = new ConfigManager(logger);
 
         // Initialize and start the MCP server
-        mcpServerManager = new McpServerManager(logger, configManager);
+        mcpServerManager = new McpServerManager(logger, configManager, (WigAIExtensionDefinition)getExtensionDefinition());
         mcpServerManager.start();
 
         // Log startup message

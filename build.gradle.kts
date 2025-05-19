@@ -3,6 +3,7 @@ import org.gradle.api.tasks.bundling.Zip
 plugins {
     // Apply the Java plugin to add support for Java
     java
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "io.github.fabb"
@@ -22,10 +23,16 @@ dependencies {
     implementation("com.bitwig:extension-api:19")
 
     // MCP Java SDK
-    // TODO: Replace with actual MCP Java SDK dependency once available
-    // For initial development, this dependency might not be used directly yet
-    // as the MCP server implementation will be stubbed in Story 1.2
-    // implementation("io.modelcontextprotocol:mcp-java-sdk:1.0.0")
+    // you can look up the documentation with tool context7
+    // example implementation: https://modelcontextprotocol.io/sdk/java/mcp-server
+    implementation(platform("io.modelcontextprotocol.sdk:mcp-bom:0.9.0"))
+    implementation("io.modelcontextprotocol.sdk:mcp")
+    implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+    testImplementation("io.modelcontextprotocol.sdk:mcp-test")
+
+    // Jetty 11 for embedded server and servlet support (EE9)
+    implementation("org.eclipse.jetty:jetty-server:11.0.20")
+    implementation("org.eclipse.jetty:jetty-servlet:11.0.20")
 
     // Use JUnit Jupiter for testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
@@ -43,15 +50,22 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
+// Configure the Shadow JAR (fat JAR with all dependencies)
+tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
+    archiveBaseName.set("wigai-all")
+    archiveClassifier.set("") // No classifier, so it's just wigai-all-0.1.0.jar
+    mergeServiceFiles() // Merge META-INF/services for SPI
+}
+
 // Task to create the .bwextension file
 tasks.register<Zip>("bwextension") {
-    dependsOn("jar", "classes")
-
+    dependsOn("shadowJar")
     archiveFileName.set("WigAI.bwextension")
     destinationDirectory.set(layout.buildDirectory.dir("extensions"))
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // Avoid duplicate META-INF/services
 
-    // Include compiled class files directly
-    from(layout.buildDirectory.dir("classes/java/main"))
+    // Include all classes and dependencies from the fat JAR
+    from(zipTree(tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar").get().archiveFile))
 
     // Include the services directory at the root level
     from("src/main/resources/META-INF") {
