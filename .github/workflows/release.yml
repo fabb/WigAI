@@ -6,6 +6,9 @@ on:
     branches:
       - main # Triggers on pushes to the main branch
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -44,7 +47,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: WigAI.bwextension
-          # path: default path is fine, it will be in a directory named after the artifact
+          path: . # Download directly into the current workspace directory
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -63,6 +66,6 @@ jobs:
           tag_name: release-$(date +'%Y%m%d%H%M%S')
           name: Release $(date +'%Y.%m.%d-%H%M%S')
           body_path: RELEASE_NOTES.md
-          files: WigAI.bwextension/WigAI.bwextension # Path to the downloaded artifact
+          files: WigAI.bwextension # Updated path
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
