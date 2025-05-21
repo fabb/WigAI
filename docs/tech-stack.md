@@ -8,7 +8,7 @@
 | **Runtime** | Bitwig Studio JVM       | As provided by Bitwig    | Execution environment within Bitwig Studio             | Requirement for Bitwig extensions.                                                       |
 | **Build Tool** | Gradle                  | Latest stable (e.g., 8.x) | Dependency management and build automation             | Common for Java projects; used by reference projects like "DrivenByMoss".                |
 | **Bitwig API** | Bitwig Extension API    | 19                       | Interface for interacting with Bitwig Studio           | Specified in PRD; core requirement for functionality.                                    |
-| **MCP Implementation** | MCP Java SDK            | 0.8.0+ (Latest stable)  | For MCP server logic and message handling              | Official SDK for MCP; provides spec-compliant components including JSON-RPC 2.0 processing, tool registry, and server transport. |
+| **MCP Implementation** | MCP Java SDK            | 0.9.0+ (Latest stable)  | For MCP server logic and message handling              | Official SDK for MCP; provides spec-compliant components including JSON-RPC 2.0 processing, tool registry, and server transport. |
 | **HTTP Server (MCP)**| MCP Java SDK's built-in SSE transport (Streamable HTTP planned) | Chosen by MCP Java SDK | Hosts the MCP server endpoint for SSE (Streamable HTTP in future) | The MCP Java SDK currently provides only Server-Sent Events (SSE) support for streaming responses. Streamable HTTP will be used once supported. |
 | **MCP Transport** | SSE (Streamable HTTP planned)   | MCP Specification        | Protocol for communication between AI agent and WigAI    | MCP Java SDK currently supports only SSE; Streamable HTTP will be adopted when available. |
 | **Testing** | JUnit                   | 5.x (Jupiter)            | Unit testing Java components                           | Standard Java testing framework.                                                         |
@@ -27,4 +27,4 @@
 | ------------- | ---------- | ------- | ---------------------------- | -------------- |
 | Initial draft | 2025-05-16 | 0.1     | First draft based on research and decisions | 3-architect BMAD v2 |
 | Update        | 2025-05-16 | 0.2     | Added VS Code as IDE option  | 3-architect BMAD v2 |
-| Update        | 2025-05-18 | 0.3     | Updated MCP Java SDK version to 0.8.0+ and clarified transport implementation | Architect Agent |
+| Update        | 2025-05-18 | 0.3     | Updated MCP Java SDK version to 0.9.0+ and clarified transport implementation | Architect Agent |

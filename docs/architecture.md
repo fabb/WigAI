@@ -149,7 +149,7 @@ This section highlights the significant architectural choices made for WigAI and
       * **Decision:** WigAI is designed as a single, deployable Bitwig Extension (`.bwextension` file) but with a clear internal modular structure (as shown in the Component View).
       * **Justification:** Bitwig extensions are inherently monolithic in their deployment. A modular internal design promotes separation of concerns, testability, and maintainability within this constraint. This approach avoids the complexity of inter-process communication for a system that naturally runs embedded within Bitwig.
   * **MCP Java SDK for Core Protocol Handling:**
-      * **Decision:** Utilize the official MCP Java SDK (0.8.0+) for implementing the MCP server logic, including JSON-RPC 2.0 message processing, tool registration and validation, and standard endpoint handling.
+      * **Decision:** Utilize the official MCP Java SDK (0.9.0+) for implementing the MCP server logic, including JSON-RPC 2.0 message processing, tool registration and validation, and standard endpoint handling.
       * **Justification:** This SDK is specifically designed for the Model Context Protocol, ensuring spec compliance and reducing the boilerplate code needed for protocol handling. It provides built-in support for necessary transport mechanisms like SSE (Streamable HTTP planned), as well as comprehensive tool registration, validation, and request handling components.
   * **SSE Transport:**
     * **Purpose:** Provides streaming server-to-client updates for MCP. Streamable HTTP will be adopted once supported by the SDK.
@@ -211,5 +211,5 @@ This architecture document should be read in conjunction with the following deta
 | Change        | Date       | Version | Description                                      | Author              |
 | ------------- | ---------- | ------- | ------------------------------------------------ | ------------------- |
 | Initial draft | 2025-05-16 | 0.1     | Initial draft of architecture document sections. | 3-architect BMAD v2 |
-| Update        | 2025-05-18 | 0.2     | Updated component descriptions to align with MCP Java SDK 0.8.0+ integration. Revised MCP components to reflect the SDK's tool-based approach. | Architect Agent    |
+| Update        | 2025-05-18 | 0.2     | Updated component descriptions to align with MCP Java SDK 0.9.0+ integration. Revised MCP components to reflect the SDK's tool-based approach. | Architect Agent    |
 
