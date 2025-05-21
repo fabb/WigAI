@@ -60,11 +60,15 @@ jobs:
       - name: Generate release notes
         run: conventional-changelog -p angular -i CHANGELOG.md -s -r 0 > RELEASE_NOTES.md && cat RELEASE_NOTES.md
 
+      - name: Generate tag name
+        id: generate_tag # id is not strictly needed here as we are using GITHUB_ENV but good practice
+        run: echo "TAG_NAME=release-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: release-$(date +'%Y%m%d%H%M%S')
-          name: Release $(date +'%Y.%m.%d-%H%M%S')
+          tag_name: ${{ env.TAG_NAME }}
+          name: Release ${{ env.TAG_NAME }}
           body_path: RELEASE_NOTES.md
           files: WigAI.bwextension # Updated path
         env:
