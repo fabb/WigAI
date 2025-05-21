@@ -1,0 +1,6 @@
+# User-Defined Preferred Patterns and Preferences
+
+See example files in this folder.
+list out your technical preferences, patterns you like to follow, language framework or starter project preferences. 
+
+Anything you learn or prefer over time to drive future project choices, add the here.
