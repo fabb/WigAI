@@ -2,9 +2,9 @@ name: Release Extension
 
 on:
   workflow_dispatch: # Allows manual triggering
-  push:
-    branches:
-      - main # Triggers on pushes to the main branch
+#   push:
+#     branches:
+#       - main # Triggers on pushes to the main branch
 
 permissions:
   contents: write
