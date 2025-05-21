@@ -55,7 +55,7 @@ jobs:
         run: npm install -g conventional-changelog-cli conventional-commits-parser
 
       - name: Generate release notes
-        run: conventional-changelog -p angular -o RELEASE_NOTES.md -s -r 0
+        run: conventional-changelog -p angular -i CHANGELOG.md -s -o RELEASE_NOTES.md -r 0 && cat RELEASE_NOTES.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
