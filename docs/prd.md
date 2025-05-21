@@ -564,7 +564,6 @@ This section outlines the results of validating this PRD against the `pm-checkli
     - N/A: The "handoff" to the Architect agent serves as an implicit approval for this stage.
 
 ---
-*(The PRD & EPIC VALIDATION SUMMARY table from the checklist is omitted here as this report serves a similar purpose item by item)*
 
 ## Initial Architect Prompt
 
