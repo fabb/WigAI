@@ -30,6 +30,13 @@ The Minimum Viable Product (MVP) for WigAI will focus on delivering the followin
 * **AI-driven Clip Launching:** The AI agent will be able to trigger specific clips within a Bitwig project based on user commands.
 * **AI-driven Device Parameter Control:** The AI agent will interface with Bitwig to read and modify the eight (8) parameters of the currently selected device. This includes responding to precise user instructions for parameter value changes as well as more abstract creative prompts (e.g., "make the sound brighter," "add some rhythmic movement").
 
+## Post MVP Features / Scope and Ideas
+
+- Comprehensive Bitwig API Implementation: Aim to implement a substantial majority of the Bitwig Java extension API to unlock extensive control and interaction capabilities.
+- Feature Idea 1: Advanced device parameter mapping and modulation (e.g., LFOs, envelopes controlled by AI).
+- Feature Idea 2: AI-driven note generation or manipulation within clips.
+- Feature Idea 3: Integration with external AI services for more complex musical analysis or generation.
+
 ## Known Technical Constraints or Preferences
 
 * **Constraints:**
@@ -49,3 +56,7 @@ Initial research and exploration have included:
 
 * **Model Context Protocol (MCP):** Familiarization with the MCP specifications via `https://modelcontextprotocol.io/`, including the development of a small local demo application in TypeScript to understand its practical implementation.
 * **Bitwig Extension API Examples:** Awareness of existing complex Bitwig extensions that utilize the Java API, such as "DrivenByMoss" (`https://github.com/git-moss/DrivenByMoss`), which serves as a reference for API capabilities and extension structure.
+
+## PM Prompt
+
+This Project Brief provides the full context for WigAI. Please start in 'PRD Generation Mode', review the brief thoroughly to work with the user to create the PRD section by section 1 at a time, asking for any necessary clarification or suggesting improvements as your mode 1 programming allows.
