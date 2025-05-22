@@ -86,25 +86,7 @@ To define the technical architecture for the frontend application. This includes
 
     - **a. Explain Purpose & Draft Section:** Explain the purpose of the section and present a draft for that section.
     - **b. Initial Discussion & Feedback:** Discuss the draft with the user, incorporate their feedback, and iterate as needed for initial revisions.
-    - **c. Offer Advanced Reflective & Elicitation Options:**
-      <critical_rule>After incorporating the user's initial round of feedback on the drafted frontend architecture section, you will then present the user with the following list of 'Advanced Reflective, Elicitation & Brainstorming Actions'. Explain that these are optional steps to help ensure quality, explore alternatives, and deepen the understanding of the current draft before finalizing it and moving on. The user can select an action by number, or choose to skip this and proceed to finalize the section.</critical_rule>
-
-      "We've incorporated your initial feedback into the draft for the current frontend architecture section: **[Specific Frontend Architecture Section Name]**. To ensure its robustness, explore alternatives, and consider all angles, I can perform one of the following actions. Please choose a number, or let me know if you're ready to finalize this section:
-
-      **Advanced Reflective, Elicitation & Brainstorming Actions I Can Take:**
-
-      {Instruction for AI Agent: Just display the title of each numbered item below. If the user asks what a specific option means, provide a brief explanation of the action you will take, drawing from detailed descriptions tailored for a Frontend Architecture context.}
-
-      1.  **Critical Self-Review & Requirements Alignment**
-      2.  **Generate & Evaluate Alternative Architectural Approaches**
-      3.  **Resilience, Scalability & Performance Stress Test (Conceptual)**
-      4.  **Deep Dive into Technical Assumptions, Constraints & Dependencies**
-      5.  **Maintainability & Testability Audit Review & Probing Questions**
-      6.  **Collaborative Design Brainstorming & Pattern/Tech Exploration**
-      7.  **Elicit 'Unforeseen Implications' & Future-Proofing Questions**
-      8.  **Finalize this Section and Proceed.**
-
-      After I perform the selected action, we can discuss the outcome and decide on any further revisions for this section."
+    - **c. [Offer Advanced Self-Refinement & Elicitation Options](#offer-advanced-self-refinement--elicitation-options)**
 
     - **d. Final Approval & Documentation:** Obtain explicit user approval for the section. Ensure all placeholder links and references are correctly noted within each section. Then proceed to the next section.
 
@@ -137,3 +119,28 @@ To define the technical architecture for the frontend application. This includes
   - Any items marked N/A and a brief reason.
   - A brief note on any significant discussions or changes made as a result of the checklist review.
 - The goal is to ensure the `front-end-architecture` is a complete and actionable document.
+
+## Offer Advanced Self-Refinement & Elicitation Options
+
+(This section is called when needed prior to this)
+
+Present the user with the following list of 'Advanced Reflective, Elicitation & Brainstorming Actions'. Explain that these are optional steps to help ensure quality, explore alternatives, and deepen the understanding of the current section before finalizing it and moving on. The user can select an action by number, or choose to skip this and proceed to finalize the section.
+
+"To ensure the quality of the current section: **[Specific Section Name]** and to ensure its robustness, explore alternatives, and consider all angles, I can perform any of the following actions. Please choose a number (8 to finalize and proceed):
+
+**Advanced Reflective, Elicitation & Brainstorming Actions I Can Take:**
+
+{Instruction for AI Agent: Display the title of each numbered item below. If the user asks what a specific option means, provide a brief explanation of the action you will take, drawing from detailed descriptions tailored for the context.}
+
+1.  **Critical Self-Review & User Goal Alignment**
+2.  **Generate & Evaluate Alternative Design Solutions**
+3.  **User Journey & Interaction Stress Test (Conceptual)**
+4.  **Deep Dive into Design Assumptions & Constraints**
+5.  **Usability & Accessibility Audit Review & Probing Questions**
+6.  **Collaborative Ideation & UI Feature Brainstorming**
+7.  **Elicit 'Unforeseen User Needs' & Future Interaction Questions**
+8.  **Finalize this Section and Proceed.**
+
+After I perform the selected action, we can discuss the outcome and decide on any further revisions for this section."
+
+REPEAT by Asking the user if they would like to perform another Reflective, Elicitation & Brainstorming Action UNIT the user indicates it is time to proceed ot the next section (or selects #8)

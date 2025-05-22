@@ -15,7 +15,7 @@ Remember as you follow the upcoming instructions:
 
 ## Instructions
 
-### Define Project Workflow Context
+### 1. Define Project Workflow Context
 
 - Before PRD generation, ask the user to choose their intended workflow:
 
@@ -25,44 +25,50 @@ Remember as you follow the upcoming instructions:
 
 - Explain this choice sets a default detail level, which can be fine-tuned later per story/epic.
 
-### 2\. Determine Interaction Mode (for PRD Structure & Detail)
+### 2. Determine Interaction Mode (for PRD Structure & Detail)
 
 - Confirm with the user their preferred interaction style for creating the PRD if unknown - INCREMENTAL or YOLO?:
   - **Incrementally (Default):** Address PRD sections sequentially, seeking feedback on each. For Epics/Stories: first present the ordered Epic list for approval, then detail stories for each Epic one by one.
   - **"YOLO" Mode:** Draft a more comprehensive PRD (or significant portions with multiple sections, epics, and stories) for a single, larger review.
 
-### 3\. Review inputs provided
+### 3. Review inputs provided
 
 Review the inputs provided so far, such as a project brief, any research, and user input and ideas.
 
-### 4\. Process PRD Sections
+### 4. Process PRD Sections
 
-\<important_note\>The interaction mode chosen in step 2 above (Incremental or YOLO) will determine how the following PRD sectioning and epic/story generation steps are handled.\</important_note\>
-Inform the user we will work through the PRD sections in order 1 at a time (if not YOLO) - the template contains your instructions for each section.
+Inform the user we will work through the PRD sections in order 1 at a time (if not YOLO) - the template contains your instructions for each section. After presenting the section to the user, also [Offer Advanced Self-Refinement & Elicitation Options](#offer-advanced-self-refinement--elicitation-options)
 
-\<important_note\>When working on the "Technical Assumptions" section of the PRD, explicitly guide the user through discussing and deciding on the repository structure (Monorepo vs. Polyrepo) and the high-level service architecture (e.g., Monolith, Microservices, Serverless functions within a Monorepo). Emphasize that this is a critical decision point that will be formally documented here with its rationale, impacting MVP scope and informing the Architect. Ensure this decision is captured in the PRD's `Technical Assumptions` and then reiterated in the `Initial Architect Prompt` section of the PRD.\</important_note\>
+<important_note>When working on the "Technical Assumptions" section of the PRD, explicitly guide the user through discussing and deciding on the repository structure (Monorepo vs. Polyrepo) and the high-level service architecture (e.g., Monolith, Microservices, Serverless functions within a Monorepo). Emphasize that this is a critical decision point that will be formally documented here with its rationale, impacting MVP scope and informing the Architect. Ensure this decision is captured in the PRD's `Technical Assumptions` and then reiterated in the `Initial Architect Prompt` section of the PRD.</important_note>
 
-\<important_note\>Specifically for "Simplified PM-to-Development Workflow":
+<important_note>Specifically for "Simplified PM-to-Development Workflow":
 After discussing initial PRD sections (like Problem, Goals, User Personas) and before or in parallel with defining detailed Epics and Stories, you must introduce and populate the "[OPTIONAL: For Simplified PM-to-Development Workflow Only] Core Technical Decisions & Application Structure" section of the PRD.
-When doing so, first check if a `technical-preferences` file exists. If it does, inform the user you will consult it to help guide these technical decisions, while still confirming all choices with them. Ask targeted questions such as:
+
+    When doing so, first check if a `docs/technical-preferences.md` file exists or has been provided. If it does, inform the user you will consult it to help guide these technical decisions, while still confirming all choices with them. Ask targeted questions such as:
 
 1.  "What are your preliminary thoughts on the primary programming languages and frameworks for the backend and frontend (if applicable)? (I will cross-reference any preferences you've noted in `technical-preferences`.)"
 2.  "Which database system are you considering? (Checking preferences...)"
 3.  "Are there any specific cloud services, key libraries, or deployment platforms we should plan for at this stage? (Checking preferences...)"
 4.  "How do you envision the high-level folder structure or main modules of the application? Could you describe the key components and their responsibilities? (I'll consider any structural preferences noted.)"
 5.  "Will this be a monorepo or are you thinking of separate repositories for different parts of the application?"
-    This section should be collaboratively filled and updated as needed if subsequent epic/story discussions reveal new requirements or constraints.\</important_note\>
+    This section should be collaboratively filled and updated as needed if subsequent epic/story discussions reveal new requirements or constraints.
 
-\<important_note\>Note: For the Epic and Story Section (if in Incremental mode for these), prepare in memory what you think the initial epic and story list so we can work through this incrementally, use all of the information you have learned that has been provided thus far to follow the guidelines in the section below [Guiding Principles for Epic and User Story Generation](https://www.google.com/search?q=%23guiding-principles-for-epic-and-user-story-generation).\</important_note\>
+</important_note\>
+
+<important_note>
+
+For the Epic and Story Section (if in Incremental mode for these), prepare in memory what you think the initial epic and story list so we can work through this incrementally, use all of the information you have learned that has been provided thus far to follow the guidelines in the section below [Guiding Principles for Epic and User Story Generation](https://www.google.com/search?q=%23guiding-principles-for-epic-and-user-story-generation).
+
+</important_note>
 
 #### 4A. Epic Presentation and Drafting Strategy
 
-(If Incremental Mode for Epics) You will first present the user with the epic titles and descriptions, so that the user can determine if it is correct and what is expected, or if there is a major epic missing.
-(If YOLO Mode) You will draft all epics and stories as part of the larger PRD draft.
+You will first present the user with the epic titles and descriptions, so that the user can determine if it is correct and what is expected, or if there is a major epic missing.
 
 #### 4B. Story Generation and Review within Epics (Incremental Mode)
 
-\<critical_rule\>(If Incremental Mode for Stories, following Epic approval) Once the Epic List is approved, THEN for each Epic, you will proceed as follows:\</critical_rule\>
+**Once the Epic List is approved, THEN for each Epic, you will proceed as follows:**
+
 i. **Draft All Stories for the Current Epic:** Based on the Epic's goal and your discussions, draft all the necessary User Stories for this Epic, following the "Guiding Principles for Epic and User Story Generation".
 ii. **Perform Internal Story Analysis & Propose Order:** Before presenting the stories for detailed review, you will internally:
 a. **Re-evaluate for Cross-Cutting Concerns:** Ensure no drafted stories should actually be ACs or notes within other stories, as per the guiding principle. Make necessary adjustments.
@@ -73,29 +79,8 @@ a. The complete list of (potentially revised) User Stories for the Epic.
 b. The proposed sequence for these stories.
 c. Your brief rationale for the sequencing and any key dependencies you've noted (e.g., "I suggest this order because Story 2 builds upon the data prepared in Story 1, and Story 3 then uses the results from Story 2.").
 iv. **Collaborative Review of Sequence & Story Shells:** Discuss this proposed structure and sequence with the user. Make any adjustments to the story list or their order based on user feedback.
-v. \<critical_rule\>Once the overall structure and sequence of stories for the Epic are agreed upon, THEN you will work with the user to review the details (description, Acceptance Criteria) of each story in the agreed-upon sequence for that Epic.\</critical_rule\>
-
-##### 4B1. Offer Advanced Self-Refinement & Elicitation Options
-
-Before concluding work on the current Epic/Story set or PRD section and moving to the next, you (the AI Agent executing this task) will present the user with the following list of advanced actions. The user can select one by number to trigger it.
-
-{Instruction for AI Agent: Just display the title of each numbered item below. Explain the selected action to the user if they ask what it is, based on the detailed descriptions previously defined for these actions.}
-
-"We've refined the draft for [specific Epic/Story/Section]. To ensure its quality, explore it further, or expand on our ideas, I can perform one of the following actions. Please choose a number, or let me know if you're ready to move on:
-
-**Advanced Refinement, Elicitation & Brainstorming Actions I Can Take:**
-
-1.  **Critical Self-Review & Goal Alignment with the Guiding Principles for Epic and User Story Generation**
-2.  **Generate & Evaluate Alternatives**
-3.  **Conceptual Scenario & Edge Case Simulation**
-4.  **Deep Dive into Assumptions & Dependencies**
-5.  **'Devil's Advocate' Review & Probing Questions**
-6.  **Guided Brainstorming & Idea Expansion**
-7.  **Elicit 'Unasked Questions' & Hidden Requirements**
-8.  **Proceed to the Next [Logical Group, eg Epic]**
-
-After I perform the selected action, we can discuss the outcome and decide on any further revisions or if we should proceed.
-When you're satisfied with the current draft as is, we can move directly to [the next logical step, e.g., 'the next Epic,' 'the Checklist Assessment,' etc.]."
+v. Once the overall structure and sequence of stories for the Epic are agreed upon, THEN you will work with the user to review the details (description, Acceptance Criteria) of each story in the agreed-upon sequence for that Epic.
+vi. [Offer Advanced Self-Refinement & Elicitation Options](#offer-advanced-self-refinement--elicitation-options)
 
 #### 4C. Present Complete Draft
 
@@ -123,7 +108,7 @@ Produce the PRD with PM Prompt per the `prd-tmpl` utilizing the following guidan
 - Crucially, DO NOT truncate information that has not changed from a previous version.
 - For complete documents, begin directly with the content (no introductory text is needed).
 
-\<important_note\>
+<important_note>
 **Next Steps for UI/UX Specification (If Applicable):**
 
 - If the product described in this PRD includes a user interface:
@@ -158,7 +143,7 @@ Produce the PRD with PM Prompt per the `prd-tmpl` utilizing the following guidan
       b. Second, _after_ the Design Architect has completed its UI/UX specification work, the user should then proceed to engage the **Architect** agent (using the 'Initial Architect Prompt' also contained in this PRD). The PRD, now enriched with UI/UX details, will provide a more complete basis for technical architecture design.
 
 - If the product does not include a user interface, you will simply recommend proceeding to the Architect agent using the 'Initial Architect Prompt' in the PRD.
-  \</important_note\>
+  </important_note>
 
 ## Guiding Principles for Epic and User Story Generation
 
@@ -217,3 +202,28 @@ Your aim is to ensure User Stories remain focused on delivering measurable user 
 
 Maintain Clarity for Handoff and Architectural Freedom: User Stories, their descriptions, and Acceptance Criteria must be detailed enough to provide the Architect with a clear and comprehensive understanding of "what is required," while allowing for architectural flexibility on the "how."
 Confirm "Ready" State: Before considering an Epic's stories complete, ensure each story is effectively "ready" for subsequent architectural review or development planning – meaning it's clear, understandable, testable, its dependencies are noted, and any foundational work (like from the first epic) is accounted for.
+
+## Offer Advanced Self-Refinement & Elicitation Options
+
+(This section is called when needed prior to this)
+
+Present the user with the following list of 'Advanced Reflective, Elicitation & Brainstorming Actions'. Explain that these are optional steps to help ensure quality, explore alternatives, and deepen the understanding of the current section before finalizing it and moving on. The user can select an action by number, or choose to skip this and proceed to finalize the section.
+
+"To ensure the quality of the current section: **[Specific Section Name]** and to ensure its robustness, explore alternatives, and consider all angles, I can perform any of the following actions. Please choose a number (8 to finalize and proceed):
+
+**Advanced Reflective, Elicitation & Brainstorming Actions I Can Take:**
+
+{Instruction for AI Agent: Display the title of each numbered item below. If the user asks what a specific option means, provide a brief explanation of the action you will take, drawing from detailed descriptions tailored for the context.}
+
+1.  **Critical Self-Review & User Goal Alignment**
+2.  **Generate & Evaluate Alternative Design Solutions**
+3.  **User Journey & Interaction Stress Test (Conceptual)**
+4.  **Deep Dive into Design Assumptions & Constraints**
+5.  **Usability & Accessibility Audit Review & Probing Questions**
+6.  **Collaborative Ideation & UI Feature Brainstorming**
+7.  **Elicit 'Unforeseen User Needs' & Future Interaction Questions**
+8.  **Finalize this Section and Proceed.**
+
+After I perform the selected action, we can discuss the outcome and decide on any further revisions for this section."
+
+REPEAT by Asking the user if they would like to perform another Reflective, Elicitation & Brainstorming Action UNIT the user indicates it is time to proceed ot the next section (or selects #8)

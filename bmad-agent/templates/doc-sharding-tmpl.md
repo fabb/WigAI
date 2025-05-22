@@ -6,7 +6,7 @@ This plan directs the agent on how to break down large source documents into sma
 
 ## 1. Source Document: PRD (Project Requirements Document)
 
-- **Note to Agent:** Confirm the exact filename of the PRD with the user (e.g., `PRD.md`, `ProjectRequirements.md`, `8-prd-po-updated.md`).
+- **Note to Agent:** Confirm the exact filename of the PRD with the user (e.g., `PRD.md`, `ProjectRequirements.md`, `prdx.y.z.md`).
 
 ### 1.1. Epic Granulation
 

@@ -53,29 +53,9 @@
           - The convention for unit test file location (e.g., co-located with source files, or in a separate folder like `tests/` or `__tests__/`).
           - The naming convention for unit test files (e.g., `*.test.js`, `*.spec.ts`, `test_*.py`).
         - When discussing Coding Standards, inform the user that these will serve as firm rules for the AI developer agent. Emphasize that these standards should be kept to the minimum necessary to prevent undesirable or messy code from the agent. Guide the user to understand that overly prescriptive or obvious standards (e.g., "use SOLID principles," which well-trained LLMs should already know) should be avoided, as the user, knowing the specific agents and tools they will employ, can best judge the appropriate level of detail.
-      - **Incorporate Feedback:** Discuss the draft with the user, incorporate their feedback, and iterate as needed.
-      - Offer Advanced Reflective & Elicitation Options:
-        <critical_rule>Once a draft of a significant architecture document section (e.g., 'Component View', 'Data Management Strategy', 'Security Architecture') has been created and you (the AI Agent executing this task) have incorporated the user's initial round of feedback and revisions for that specific draft, you will then present the user with the following list of 'Advanced Reflective, Elicitation & Brainstorming Actions'. Explain that these are optional steps to help ensure quality, explore alternatives, and deepen the understanding of the current draft before moving on. The user can select an action by number, or choose to skip this and proceed.</critical_rule>
-
-        "We've refined the draft for the current architecture section: [Specific Architecture Section/Component]. To ensure its robustness, explore alternatives, and consider all angles, I can perform one of the following actions. Please choose a number, or let me know if you're ready to move on:
-
-        **Advanced Reflective, Elicitation & Brainstorming Actions I Can Take:**
-
-        {Instruction for AI Agent: Just display the title of each numbered item below. If the user asks what a specific option means, provide a brief explanation of the action you will take, drawing from detailed descriptions outlined for an Architect's context.}
-
-        1.  **Critical Self-Review & Requirements Alignment**
-        2.  **Generate & Evaluate Alternative Architectural Approaches**
-        3.  **Resilience, Scalability & Performance Stress Test (Conceptual)**
-        4.  **Deep Dive into Technical Assumptions, Constraints & Dependencies**
-        5.  **Security & Risk Assessment Review & Probing Questions**
-        6.  **Collaborative Design Brainstorming & Pattern Exploration**
-        7.  **Elicit 'Unforeseen Implications' & Future-Proofing Questions**
-        8.  **Proceed to the Next [Architectural Section/Task].**
-
-        After I perform the selected action, we can discuss the outcome and decide on any further revisions.
-        When you're satisfied with the current draft of this section, we can move directly to [the next logical step, e.g., 'the next architectural component,' or if all sections are drafted, 'Step 5: Identify Missing Technical Stories / Refine Epics' or 'Step 6: Validate Architecture Against Checklist & Finalize Output']."
-
-      - **Seek Approval:** Obtain explicit user approval for the section before moving to the next, or for the entire artifact if drafted holistically (in YOLO mode).
+        - **Incorporate Feedback:** Discuss the draft with the user, incorporate their feedback, and iterate as needed.
+        - [Offer Advanced Self-Refinement & Elicitation Options](#offer-advanced-self-refinement--elicitation-options)
+        - **Seek Approval:** Obtain explicit user approval for the section before moving to the next, or for the entire artifact if drafted holistically (in YOLO mode).
 
 5.  **Identify Missing Technical Stories / Refine Epics (Interactive):**
 
@@ -117,3 +97,28 @@
 - A summary of any identified changes (additions, updates, modifications) required for existing epics or user stories, or an explicit confirmation if no such changes are needed.
 - A completed `architect-checklist` (or a summary of its validation).
 - Optionally, if UI components are involved and the user agrees: A prompt for a "Design Architect" appended to the main architecture document, summarizing relevant UI considerations and outlining the Design Architect's next steps.
+
+## Offer Advanced Self-Refinement & Elicitation Options
+
+(This section is called when needed prior to this)
+
+Present the user with the following list of 'Advanced Reflective, Elicitation & Brainstorming Actions'. Explain that these are optional steps to help ensure quality, explore alternatives, and deepen the understanding of the current section before finalizing it and moving on. The user can select an action by number, or choose to skip this and proceed to finalize the section.
+
+"To ensure the quality of the current section: **[Specific Section Name]** and to ensure its robustness, explore alternatives, and consider all angles, I can perform any of the following actions. Please choose a number (8 to finalize and proceed):
+
+**Advanced Reflective, Elicitation & Brainstorming Actions I Can Take:**
+
+{Instruction for AI Agent: Display the title of each numbered item below. If the user asks what a specific option means, provide a brief explanation of the action you will take, drawing from detailed descriptions tailored for the context.}
+
+1.  **Critical Self-Review & User Goal Alignment**
+2.  **Generate & Evaluate Alternative Design Solutions**
+3.  **User Journey & Interaction Stress Test (Conceptual)**
+4.  **Deep Dive into Design Assumptions & Constraints**
+5.  **Usability & Accessibility Audit Review & Probing Questions**
+6.  **Collaborative Ideation & UI Feature Brainstorming**
+7.  **Elicit 'Unforeseen User Needs' & Future Interaction Questions**
+8.  **Finalize this Section and Proceed.**
+
+After I perform the selected action, we can discuss the outcome and decide on any further revisions for this section."
+
+REPEAT by Asking the user if they would like to perform another Reflective, Elicitation & Brainstorming Action UNIT the user indicates it is time to proceed ot the next section (or selects #8)

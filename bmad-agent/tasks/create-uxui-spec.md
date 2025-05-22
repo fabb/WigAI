@@ -2,12 +2,12 @@
 
 ## Purpose
 
-To collaboratively work with the user to define and document the User Interface (UI) and User Experience (UX) specifications for the project. This involves understanding user needs, defining information architecture, outlining user flows, and ensuring a solid foundation for visual design and frontend development. The output will populate the `front-end-spec-tmpl` template.
+To collaboratively work with the user to define and document the User Interface (UI) and User Experience (UX) specifications for the project. This involves understanding user needs, defining information architecture, outlining user flows, and ensuring a solid foundation for visual design and frontend development. The output will populate a new document called `front-end-spec.md` following the `front-end-spec-tmpl` template.
 
 ## Inputs
 
-- Project Brief (`project-brief-tmpl` or equivalent)
-- Product Requirements Document (PRD) (`prd-tmpl` or equivalent)
+- Project Brief (`project-brief.md` or equivalent)
+- Product Requirements Document (PRD) (`prd.md` or equivalent)
 - User feedback or research (if available)
 
 ## Key Activities & Instructions
@@ -66,26 +66,30 @@ To collaboratively work with the user to define and document the User Interface 
 ### 10. Output Generation & Iterative Refinement (Guided by `front-end-spec-tmpl`)
 
 - **a. Draft Section:** Incrementally populate one logical section of the `front-end-spec-tmpl` file based on your discussions.
-- **b. Present & Incorporate Initial Feedback:** Present the drafted section to the user for review. Discuss and incorporate their initial feedback and revisions directly.
-- **c. Offer Advanced Reflective & Elicitation Options:**
-  <critical_rule>Once the initial draft of a UI/UX specification section (e.g., 'Information Architecture', 'Key User Flows', 'Accessibility Requirements') has been created and you have incorporated the user's initial round of feedback, you will then present the user with the following list of 'Advanced Reflective, Elicitation & Brainstorming Actions'. Explain that these are optional steps to help ensure quality, explore alternatives, and deepen the understanding of the current draft before finalizing it and moving on. The user can select an action by number, or choose to skip this and proceed to finalize the section.</critical_rule>
+- **b. Present & Incorporate Initial Feedback:** Present the drafted section to the user for review. Discuss, explain and incorporate their initial feedback and revisions directly.
+- **c. [Offer Advanced Self-Refinement & Elicitation Options](#offer-advanced-self-refinement--elicitation-options)**
 
-  "We've refined the draft for the current UI/UX section: **[Specific UI/UX Section Name]**. To ensure its robustness, explore alternatives, and consider all angles, I can perform one of the following actions. Please choose a number, or let me know if you're ready to finalize this section:
+## Offer Advanced Self-Refinement & Elicitation Options
 
-  **Advanced Reflective, Elicitation & Brainstorming Actions I Can Take:**
+(This section is called when needed prior to this)
 
-  {Instruction for AI Agent: Just display the title of each numbered item below. If the user asks what a specific option means, provide a brief explanation of the action you will take, drawing from detailed descriptions tailored for a UI/UX context.}
+Present the user with the following list of 'Advanced Reflective, Elicitation & Brainstorming Actions'. Explain that these are optional steps to help ensure quality, explore alternatives, and deepen the understanding of the current section before finalizing it and moving on. The user can select an action by number, or choose to skip this and proceed to finalize the section.
 
-  1.  **Critical Self-Review & User Goal Alignment**
-  2.  **Generate & Evaluate Alternative Design Solutions**
-  3.  **User Journey & Interaction Stress Test (Conceptual)**
-  4.  **Deep Dive into Design Assumptions & Constraints**
-  5.  **Usability & Accessibility Audit Review & Probing Questions**
-  6.  **Collaborative Ideation & UI Feature Brainstorming**
-  7.  **Elicit 'Unforeseen User Needs' & Future Interaction Questions**
-  8.  **Finalize this Section and Proceed.**
+"To ensure the quality of the current section: **[Specific Section Name]** and to ensure its robustness, explore alternatives, and consider all angles, I can perform any of the following actions. Please choose a number (8 to finalize and proceed):
 
-  After I perform the selected action, we can discuss the outcome and decide on any further revisions for this section."
+**Advanced Reflective, Elicitation & Brainstorming Actions I Can Take:**
 
-- **d. Finalize Section:** Once the user is satisfied (either after reflective actions or if they skipped them), confirm that this section of the `front-end-spec-tmpl` is considered complete for now.
-- **e. Repeat for all sections:** Ensure all placeholder links and references are correctly noted as you complete each section.
+{Instruction for AI Agent: Display the title of each numbered item below. If the user asks what a specific option means, provide a brief explanation of the action you will take, drawing from detailed descriptions tailored for the context.}
+
+1.  **Critical Self-Review & User Goal Alignment**
+2.  **Generate & Evaluate Alternative Design Solutions**
+3.  **User Journey & Interaction Stress Test (Conceptual)**
+4.  **Deep Dive into Design Assumptions & Constraints**
+5.  **Usability & Accessibility Audit Review & Probing Questions**
+6.  **Collaborative Ideation & UI Feature Brainstorming**
+7.  **Elicit 'Unforeseen User Needs' & Future Interaction Questions**
+8.  **Finalize this Section and Proceed.**
+
+After I perform the selected action, we can discuss the outcome and decide on any further revisions for this section."
+
+REPEAT by Asking the user if they would like to perform another Reflective, Elicitation & Brainstorming Action UNIT the user indicates it is time to proceed ot the next section (or selects #8)
