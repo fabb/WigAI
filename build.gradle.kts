@@ -3,7 +3,7 @@ import org.gradle.api.tasks.bundling.Zip
 plugins {
     // Apply the Java plugin to add support for Java
     java
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.0"
 }
 
 group = "io.github.fabb"
