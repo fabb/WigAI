@@ -25,8 +25,8 @@ dependencies {
     // MCP Java SDK
     // you can look up the documentation with tool context7
     // example implementation: https://modelcontextprotocol.io/sdk/java/mcp-server
-    // version 0.9.0 uses MCP specification version 2024-11-05: https://modelcontextprotocol.io/specification/2024-11-05/basic/transports
-    implementation(platform("io.modelcontextprotocol.sdk:mcp-bom:0.9.0"))
+    // version 0.10.0 uses MCP specification version 2024-11-05: https://modelcontextprotocol.io/specification/2024-11-05/basic/transports
+    implementation(platform("io.modelcontextprotocol.sdk:mcp-bom:0.10.0"))
     implementation("io.modelcontextprotocol.sdk:mcp")
     implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
     testImplementation("io.modelcontextprotocol.sdk:mcp-test")
