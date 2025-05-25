@@ -49,6 +49,9 @@ Communication is message-based, typically using JSON-RPC or a similar structured
       }
     }
     ```
+*   **Notes**:
+    - The command is idempotent: calling it when playback is already stopped is handled gracefully.
+    - All actions and responses are logged via the Logger service.
 
 #### `project_getName`
 *   **Description**: Get the name of the current Bitwig Studio project.

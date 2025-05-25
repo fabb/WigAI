@@ -117,7 +117,8 @@ public class McpServerManager {
                     .build())
                 .tools(
                     StatusTool.specification(this.extensionDefinition, logger),
-                    TransportTool.transportStartSpecification(transportController, logger)
+                    TransportTool.transportStartSpecification(transportController, logger),
+                    TransportTool.transportStopSpecification(transportController, logger)
                 )
                 .build();
 

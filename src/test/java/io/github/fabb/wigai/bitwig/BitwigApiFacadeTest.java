@@ -44,4 +44,16 @@ public class BitwigApiFacadeTest {
         // Verify logging
         verify(mockLogger).info("BitwigApiFacade: Starting transport playback");
     }
+
+    @Test
+    void testStopTransport() {
+        // Execute the facade method
+        bitwigApiFacade.stopTransport();
+
+        // Verify the transport.stop() was called
+        verify(mockTransport).stop();
+
+        // Verify logging
+        verify(mockLogger).info("BitwigApiFacade: Stopping transport playback");
+    }
 }

@@ -34,6 +34,14 @@ public class BitwigApiFacade {
     }
 
     /**
+     * Stops the transport playback.
+     */
+    public void stopTransport() {
+        logger.info("BitwigApiFacade: Stopping transport playback");
+        transport.stop();
+    }
+
+    /**
      * Get the ControllerHost instance.
      *
      * @return The ControllerHost

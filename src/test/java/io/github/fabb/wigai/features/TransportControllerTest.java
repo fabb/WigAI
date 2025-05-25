@@ -61,4 +61,37 @@ public class TransportControllerTest {
         verify(mockLogger).info("TransportController: Starting transport playback");
         verify(mockLogger).info(contains("TransportController: Error starting transport playback"));
     }
+
+    @Test
+    void testStopTransport() {
+        // Execute the controller method
+        String result = transportController.stopTransport();
+
+        // Verify the result
+        assertEquals("Transport playback stopped.", result);
+
+        // Verify the bitwigApiFacade was called
+        verify(mockBitwigApiFacade).stopTransport();
+
+        // Verify logging
+        verify(mockLogger).info("TransportController: Stopping transport playback");
+    }
+
+    @Test
+    void testStopTransportWithException() {
+        // Setup the mock to throw an exception
+        doThrow(new RuntimeException("Test exception")).when(mockBitwigApiFacade).stopTransport();
+
+        // Execute and verify exception is thrown
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            transportController.stopTransport();
+        });
+
+        // Verify exception message
+        assertTrue(exception.getMessage().contains("Failed to stop transport playback"));
+
+        // Verify logging
+        verify(mockLogger).info("TransportController: Stopping transport playback");
+        verify(mockLogger).info(contains("TransportController: Error stopping transport playback"));
+    }
 }

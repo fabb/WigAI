@@ -92,3 +92,8 @@ graph TD
 
       * **Responsibility:** Provides a simplified and tailored interface to the Bitwig Java Extension API. It abstracts the complexities of the Bitwig API, offering clear methods for actions required by the `Feature Modules` (e.g., `startPlayback()`, `getSelectedDeviceParameters()`, `launchClip(trackName, clipIndex)`). It also handles callbacks or listeners from the Bitwig API if needed for observing state changes.
       * **Interactions:** Called by `Feature Modules`. Interacts directly with the Bitwig `Host` object and other Bitwig API objects.
+
+- The TransportTool and TransportController now support both `transport_start` and `transport_stop` MCP commands.
+- The BitwigApiFacade provides startTransport() and stopTransport() methods, abstracting Bitwig's Transport API.
+- The MCP server (McpServerManager) registers both tools and exposes them via the tools/list endpoint.
+- All actions are logged using the Logger service.

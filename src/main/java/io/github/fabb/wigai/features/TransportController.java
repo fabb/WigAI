@@ -37,4 +37,20 @@ public class TransportController {
             throw new RuntimeException("Failed to start transport playback", e);
         }
     }
+
+    /**
+     * Stops the transport playback.
+     *
+     * @return A message indicating the operation result
+     */
+    public String stopTransport() {
+        try {
+            logger.info("TransportController: Stopping transport playback");
+            bitwigApiFacade.stopTransport();
+            return "Transport playback stopped.";
+        } catch (Exception e) {
+            logger.info("TransportController: Error stopping transport playback: " + e.getMessage());
+            throw new RuntimeException("Failed to stop transport playback", e);
+        }
+    }
 }
