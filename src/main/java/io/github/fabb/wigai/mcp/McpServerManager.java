@@ -5,6 +5,7 @@ import io.github.fabb.wigai.bitwig.BitwigApiFacade;
 import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.config.ConfigManager;
 import io.github.fabb.wigai.features.TransportController;
+import io.github.fabb.wigai.features.DeviceController;
 import io.modelcontextprotocol.server.*;
 import io.modelcontextprotocol.server.transport.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import io.github.fabb.wigai.mcp.tool.StatusTool;
 import io.github.fabb.wigai.mcp.tool.TransportTool;
+import io.github.fabb.wigai.mcp.tool.DeviceParamTool;
 import io.modelcontextprotocol.spec.McpSchema;
 import com.bitwig.extension.controller.api.ControllerHost;
 
@@ -108,6 +110,7 @@ public class McpServerManager {
             // Create the BitwigApiFacade and feature controllers
             BitwigApiFacade bitwigApiFacade = new BitwigApiFacade(getHost(), logger);
             TransportController transportController = new TransportController(bitwigApiFacade, logger);
+            DeviceController deviceController = new DeviceController(bitwigApiFacade, logger);
 
             this.mcpServer = McpServer.sync(this.transportProvider)
                 .serverInfo("WigAI", extensionDefinition.getVersion())
@@ -118,7 +121,8 @@ public class McpServerManager {
                 .tools(
                     StatusTool.specification(this.extensionDefinition, logger),
                     TransportTool.transportStartSpecification(transportController, logger),
-                    TransportTool.transportStopSpecification(transportController, logger)
+                    TransportTool.transportStopSpecification(transportController, logger),
+                    DeviceParamTool.getSelectedDeviceParametersSpecification(deviceController, logger)
                 )
                 .build();
 

@@ -15,7 +15,7 @@ For the MVP, there are no complex internal domain objects that are distinctly se
 
 ## 3. MCP API Data Structures
 
-These structures define the data formats used by the WigAI MCP API implementation, following the JSON-RPC 2.0 format as specified in the official MCP standard. They correspond to the JSON examples provided in `docs/mcp-api-spec.md`. Below are conceptual representations, which will translate to Java Records or classes.
+These structures define the data formats used by the WigAI MCP API implementation, following the JSON-RPC 2.0 format as specified in the official MCP standard. They correspond to the JSON examples provided in `docs/api-reference.md`. Below are conceptual representations, which will translate to Java Records or classes.
 
 ### 3.1. MCP Protocol Structures
 

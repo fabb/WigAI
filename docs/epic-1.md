@@ -1,7 +1,7 @@
 # Epic 1: Core Extension Setup, MCP Server Initialization, and Basic Transport Control
 
 **Goal:** Establish the foundational Bitwig Java extension, implement the basic MCP server listener, and enable start/stop transport control via MCP commands. This proves the core communication pathway and fulfills PRD Objective 2.
-**Architectural Alignment:** This epic leverages the `WigAIExtension`, `WigAIExtensionDefinition`, `Logger`, `ConfigManager`, `McpServerManager`, `RequestRouter`, `McpCommandParser`, `TransportController`, and `BitwigApiFacade` components. It also relies on `docs/project-structure.md`, `docs/coding-standards.md`, `docs/tech-stack.md`, and `docs/mcp-api-spec.md`.
+**Architectural Alignment:** This epic leverages the `WigAIExtension`, `WigAIExtensionDefinition`, `Logger`, `ConfigManager`, `McpServerManager`, `RequestRouter`, `McpCommandParser`, `TransportController`, and `BitwigApiFacade` components. It also relies on `docs/project-structure.md`, `docs/coding-standards.md`, `docs/tech-stack.md`, and `docs/api-reference.md`.
 
 ## Story List
 
@@ -49,10 +49,10 @@
 * **User Story / Goal:** As an External AI Agent Developer, I want to send a "ping" command via MCP to the WigAI server and receive a success response as defined in the API specification, so that I can verify connectivity and that WigAI is operational.
 * **Detailed Requirements:**
     * The WigAI MCP server (specifically the `RequestRouter` and `McpCommandParser` components) must be able to receive and parse an MCP command for "ping".
-    * The command structure is `{"command": "ping"}` with no additional payload, as per `docs/mcp-api-spec.md`.
+    * The command structure is `{"command": "ping"}` with no additional payload, as per `docs/api-reference.md`.
     * Upon receiving a valid "ping" command:
         * WigAI should not need to interact with the Bitwig API for this command.
-        * It should construct a success response as specified in `docs/mcp-api-spec.md`:
+        * It should construct a success response as specified in `docs/api-reference.md`:
           ```json
           {
             "status": "success",
@@ -67,7 +67,7 @@
 * **Acceptance Criteria (ACs):**
     * AC1: Sending a valid "ping" MCP command (e.g., `{"command": "ping"}`) to the WigAI server's MCP endpoint results in a successful MCP response with `Content-Type: application/json` and the body matching the specified JSON structure (including "pong" and the current WigAI version).
     * AC2: The `Logger` service logs the receipt of the "ping" command and the content of the response.
-    * AC3: Invalid or malformed "ping" commands (e.g., incorrect JSON, missing `command` field) result in an appropriate MCP error response (e.g., `INVALID_REQUEST` as per `docs/mcp-api-spec.md`) or are safely ignored and logged if error response generation is not yet fully implemented for this specific case.
+    * AC3: Invalid or malformed "ping" commands (e.g., incorrect JSON, missing `command` field) result in an appropriate MCP error response (e.g., `INVALID_REQUEST` as per `docs/api-reference.md`) or are safely ignored and logged if error response generation is not yet fully implemented for this specific case.
     * AC4: The `wigai_version` in the response accurately reflects the version set in `WigAIExtensionDefinition`.
 
 ---
@@ -76,9 +76,9 @@
 * **User Story / Goal:** As a Musician (via an External AI Agent), I want to command WigAI to start Bitwig's playback via an MCP message, so that I can control transport hands-free.
 * **Detailed Requirements:**
     * The WigAI MCP server (via `RequestRouter`, `McpCommandParser`, and the `TransportController` feature module) must handle the "transport_start" command.
-    * The command structure is `{"command": "transport_start"}` with no additional payload, as per `docs/mcp-api-spec.md`.
+    * The command structure is `{"command": "transport_start"}` with no additional payload, as per `docs/api-reference.md`.
     * Upon receiving this command, the `TransportController` will use the `BitwigApiFacade` to call the appropriate Bitwig API method to start the main transport playback (e.g., `host.transport().play()`).
-    * Return an MCP success response as specified in `docs/mcp-api-spec.md`:
+    * Return an MCP success response as specified in `docs/api-reference.md`:
       ```json
       {
         "status": "success",
@@ -101,9 +101,9 @@
 * **User Story / Goal:** As a Musician (via an External AI Agent), I want to command WigAI to stop Bitwig's playback via an MCP message, so that I can control transport hands-free.
 * **Detailed Requirements:**
     * The WigAI MCP server (via `RequestRouter`, `McpCommandParser`, and the `TransportController` feature module) must handle the "transport_stop" command.
-    * The command structure is `{"command": "transport_stop"}` with no additional payload, as per `docs/mcp-api-spec.md`.
+    * The command structure is `{"command": "transport_stop"}` with no additional payload, as per `docs/api-reference.md`.
     * Upon receiving this command, the `TransportController` will use the `BitwigApiFacade` to call the appropriate Bitwig API method to stop the main transport playback (e.g., `host.transport().stop()`).
-    * Return an MCP success response as specified in `docs/mcp-api-spec.md`:
+    * Return an MCP success response as specified in `docs/api-reference.md`:
       ```json
       {
         "status": "success",

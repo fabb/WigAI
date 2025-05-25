@@ -7,7 +7,7 @@ This architecture document should be read in conjunction with the following deta
   * `docs/tech-stack.md`: Specifies all technologies, frameworks, and library versions used in the project.
   * `docs/project-structure.md`: Defines the organization of directories and files within the project. (To be created)
   * `docs/coding-standards.md`: Outlines coding conventions, patterns, and best practices to be followed. (To be created)
-  * `docs/api-reference.md` (or `docs/mcp-api-spec.md`): Details the specific MCP commands, their JSON structures, parameters, and expected responses that WigAI will support. (To be created)
+  * `docs/api-reference.md` (or `docs/api-reference.md`): Details the specific MCP commands, their JSON structures, parameters, and expected responses that WigAI will support. (To be created)
   * `docs/data-models.md`: Describes any significant data structures or objects used internally or in API communication. (To be created, if necessary beyond API spec)
   * `docs/environment-vars.md`: Documents any environment variables used for configuration (though MVP aims for minimal). (To be created)
   * `docs/testing-strategy.md`: Outlines the approach to unit, integration, and end-to-end testing. (To be created)

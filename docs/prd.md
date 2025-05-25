@@ -119,7 +119,7 @@ The primary interaction model is:
 This section outlines the foundational technical decisions and context for WigAI.
 
 -   **Core Technology:** WigAI is implemented as a Bitwig Java Extension. The primary programming language is Java, adhering to the requirements of the Bitwig Extension API (version 19).
--   **Communication Protocol:** The extension functions as a Model Context Protocol (MCP) server, listening for and processing incoming MCP messages on a configurable local network port. The exact MCP message structures for WigAI's features will be defined in `docs/mcp-api-spec.md`.
+-   **Communication Protocol:** The extension functions as a Model Context Protocol (MCP) server, listening for and processing incoming MCP messages on a configurable local network port. The exact MCP message structures for WigAI's features will be defined in `docs/api-reference.md`.
 -   **Operating System Compatibility:** The extension must be compatible with macOS, Windows, and Linux—all platforms where Bitwig Studio runs. The Java code should be platform-agnostic.
 -   **Resource Management:** The extension must be efficient in its use of CPU and memory to avoid performance degradation or instability in Bitwig Studio.
 -   **Budget & Licensing:** Development will use exclusively open-source tools and libraries, free of charge. The project itself will be open-source (e.g., MIT or Apache 2.0 license).
@@ -165,7 +165,7 @@ Validating WigAI's functionality will involve several layers:
 -   `docs/architecture.md` (To be created by Architect)
 -   `docs/epic1.md`, `docs/epic2.md`, `docs/epic3.md` (To be created)
 -   `docs/tech-stack.md` (To be created by Architect, will primarily list Java, Bitwig API, MCP)
--   `docs/mcp-api-spec.md` (To be created, detailing MCP commands for WigAI)
+-   `docs/api-reference.md` (To be created, detailing MCP commands for WigAI)
 -   `docs/testing-strategy.md` (To be created by Architect/Dev)
 
 ## Post-MVP / Future Enhancements
@@ -193,13 +193,13 @@ Validating WigAI's functionality will involve several layers:
 *   **Risk: Extension Stability:** Bugs in the extension could cause instability in Bitwig Studio.
     *   **Mitigation:** Adhere to Bitwig extension development best practices. Implement robust error handling and logging. Conduct thorough testing (Unit, Integration).
 *   **Risk: Limited Adoption by AI Agents:** External AI agent developers might not integrate with WigAI if the MCP API is unclear, unstable, or not compelling.
-    *   **Mitigation:** Provide clear and comprehensive documentation for the MCP API (`docs/mcp-api-spec.md`). Ensure the MVP features are genuinely useful and reliable.
+    *   **Mitigation:** Provide clear and comprehensive documentation for the MCP API (`docs/api-reference.md`). Ensure the MVP features are genuinely useful and reliable.
 *   **Risk: Development Resource Constraints:** As a hobby project, time for extensive testing (especially cross-platform) and feature development is limited.
     *   **Mitigation:** Focus on a lean MVP. Prioritize core functionality and stability. Leverage community feedback if the project is shared.
 
 ## Open Issues and Questions
 
-*   **MCP API Specification:** The detailed MCP message structures and API specifications need to be documented in `docs/mcp-api-spec.md`.
+*   **MCP API Specification:** The detailed MCP message structures and API specifications need to be documented in `docs/api-reference.md`.
 *   **Cross-Platform Testing Scope:** The extent of formal testing on all supported platforms (macOS, Windows, Linux) is dependent on hobbyist developer resources and setup.
 
 ## Change Log
@@ -301,7 +301,7 @@ This section outlines the results of validating this PRD against the `pm-checkli
 - [x] Critical path highlighted
     - Covered: The described interaction model is the critical path.
 - [x] Edge cases considered
-    - Partially Covered: "Success Criteria" mentions "Basic error states (e.g., clip not found, invalid parameter index) are communicated back..." which touches on edge cases. Deeper edge case handling would be in `mcp-api-spec.md`.
+    - Partially Covered: "Success Criteria" mentions "Basic error states (e.g., clip not found, invalid parameter index) are communicated back..." which touches on edge cases. Deeper edge case handling would be in `api-reference.md`.
 
 #### 3.2 Usability Requirements
 - [x] Accessibility considerations documented
@@ -323,7 +323,7 @@ This section outlines the results of validating this PRD against the `pm-checkli
 - [x] Visual design guidelines referenced (if applicable)
     - N/A: No direct UI.
 - [x] Content requirements specified
-    - N/A: No direct UI. MCP message content will be in `mcp-api-spec.md`.
+    - N/A: No direct UI. MCP message content will be in `api-reference.md`.
 - [x] High-level navigation structure defined
     - N/A: No direct UI.
 
@@ -481,7 +481,7 @@ This section outlines the results of validating this PRD against the `pm-checkli
 - [x] Non-negotiable technical requirements highlighted
     - Covered: Use of Bitwig Java Extension API v19, Java language.
 - [ ] Areas requiring technical investigation identified
-    - Partially Covered: "Open Issues" like `mcp-api-spec.md` imply investigation/definition is needed.
+    - Partially Covered: "Open Issues" like `api-reference.md` imply investigation/definition is needed.
 - [ ] Guidance on technical debt approach provided
     - N/A: Not explicitly covered, but "Maintainability" NFR implies good coding practices to avoid debt.
 
@@ -505,7 +505,7 @@ This section outlines the results of validating this PRD against the `pm-checkli
 - [ ] Data storage requirements specified
     - N/A: No significant data storage by WigAI itself.
 - [ ] Data quality requirements defined
-    - N/A: Not applicable in the traditional sense. Input (MCP commands) and output (parameter values) must be valid per `mcp-api-spec.md`.
+    - N/A: Not applicable in the traditional sense. Input (MCP commands) and output (parameter values) must be valid per `api-reference.md`.
 - [ ] Data retention policies identified
     - N/A.
 - [ ] Data migration needs addressed (if applicable)
@@ -517,11 +517,11 @@ This section outlines the results of validating this PRD against the `pm-checkli
 - [x] External system integrations identified
     - Covered: "Technical Assumptions" -> "Integration Requirements (High-Level)" (External AI Agent, Bitwig Studio).
 - [x] API requirements documented
-    - Covered: The need for `docs/mcp-api-spec.md` is documented. High-level interactions are described.
+    - Covered: The need for `docs/api-reference.md` is documented. High-level interactions are described.
 - [x] Authentication for integrations specified
     - Covered: "Non-Functional Requirements (NFRs)" -> "Security" (none for MVP).
 - [x] Data exchange formats defined
-    - Covered: MCP implies a message-based format, likely JSON over a chosen transport. Details in `mcp-api-spec.md`.
+    - Covered: MCP implies a message-based format, likely JSON over a chosen transport. Details in `api-reference.md`.
 - [x] Integration testing requirements outlined
     - Covered: "Technical Assumptions" -> "Testing Requirements" (MCP client simulation).
 
@@ -582,7 +582,7 @@ This section outlines the results of validating this PRD against the `pm-checkli
     *   Budget & Licensing (Open Source)
     *   Repository & Service Architecture (Monorepo, Monolithic Component)
     *   Detailed Testing Requirements & Local Development Environment setup (Gradle, Java IDE).
-*   **MCP Server Details:** The "Backend Platform" is the WigAI Java extension itself, hosting an MCP server (e.g., using a lightweight HTTP server library or raw socket listener). Specifics of the MCP message structures will be in `docs/mcp-api-spec.md` (to be created).
+*   **MCP Server Details:** The "Backend Platform" is the WigAI Java extension itself, hosting an MCP server (e.g., using a lightweight HTTP server library or raw socket listener). Specifics of the MCP message structures will be in `docs/api-reference.md` (to be created).
 *   **Deployment:** The output is a `.bwextension` file. A Gradle build script is expected. CI/CD is not an MVP requirement. The extension runs within the Bitwig Studio JVM environment.
 *   **Key NFRs:** Pay close attention to Non-Functional Requirements such as Performance, Reliability, and Maintainability detailed in the "Non-Functional Requirements (NFRs)" section.
 *   **API Evolution & Error Handling:** Consider Bitwig API evolution. Implement robust error handling; the extension should not crash Bitwig. Errors in MCP processing should be logged and communicated via MCP if possible. Design for simplicity in MVP.

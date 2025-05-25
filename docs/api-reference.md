@@ -66,7 +66,7 @@ Communication is message-based, typically using JSON-RPC or a similar structured
     }
     ```
 
-#### `device_getSelectedParameters`
+#### `get_selected_device_parameters`
 *   **Description**: Get the names and values of the eight addressable parameters of the user-selected device in Bitwig.
 *   **Parameters**: None
 *   **Returns**:

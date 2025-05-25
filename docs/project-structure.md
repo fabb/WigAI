@@ -15,7 +15,7 @@ WigAI/
 ├── build/                      # Compiled output and build artifacts (git-ignored)
 ├── docs/                       # Project documentation
 │   ├── architecture.md         # Architecture document
-│   ├── mcp-api-spec.md         # MCP API specification
+│   ├── api-reference.md         # MCP API specification
 │   ├── project-structure.md    # This file
 │   ├── tech-stack.md           # Technology stack document
 │   ├── epic1.md, epic2.md...   # Epic documentation

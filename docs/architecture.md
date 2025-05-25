@@ -106,7 +106,7 @@ This section highlights the significant architectural choices made for WigAI and
 
 ### Internal APIs Provided
 
-(Details of the MCP commands, their JSON structures, parameters, and expected responses will be provided in `docs/mcp-api-spec.md` as per PRD.)
+(Details of the MCP commands, their JSON structures, parameters, and expected responses will be provided in `docs/api-reference.md` as per PRD.)
 
 ### External APIs Consumed
 

@@ -71,7 +71,7 @@ This section outlines the coding standards, design patterns, and best practices 
         * `DEBUG` (Conditional): For verbose logging useful during development, potentially toggled by a flag if needed in the future (for MVP, always on DEBUG might be too noisy).
     * **Context:** Log messages should include relevant context (e.g., MCP command details, affected Bitwig entity).
 * **MCP Responses for Errors:**
-    * If an MCP command cannot be processed successfully (e.g., invalid parameters, Bitwig action fails), WigAI should attempt to return a structured MCP error response to the client, as defined in `docs/mcp-api-spec.md`. The MCP Java SDK might provide utilities for this.
+    * If an MCP command cannot be processed successfully (e.g., invalid parameters, Bitwig action fails), WigAI should attempt to return a structured MCP error response to the client, as defined in `docs/api-reference.md`. The MCP Java SDK might provide utilities for this.
     * Do not let exceptions propagate to the point where they crash the Bitwig extension or Bitwig Studio itself. The main extension class and MCP request handling entry points should have top-level error handling.
 * **Input Validation:**
     * Validate incoming MCP command parameters (e.g., types, ranges, presence of required fields) in the `McpCommandParser` or at the beginning of `Feature Module` handlers.
@@ -143,7 +143,7 @@ The testing strategy for WigAI aims to ensure the extension is reliable, correct
         * Launch Bitwig Studio and ensure the WigAI extension is active and the MCP server is running (check Bitwig's extension console for logs).
         * Prepare a Bitwig project with necessary elements (e.g., tracks, clips, scenes, devices) for specific test scenarios.
     2.  **Execution:**
-        * Use a simple MCP client (e.g., a Python script, Node.js script, `curl`, or a tool like Postman) to send MCP tool calls (as defined in `docs/mcp-api-spec.md`) to the WigAI server endpoint.
+        * Use a simple MCP client (e.g., a Python script, Node.js script, `curl`, or a tool like Postman) to send MCP tool calls (as defined in `docs/api-reference.md`) to the WigAI server endpoint.
         * Observe the behavior in Bitwig Studio (e.g., does playback start/stop? Does the correct clip launch? Do device parameters change?).
         * Inspect the MCP responses received by the client for correctness (result content, error status).
     3.  **Verification:**
