@@ -3,8 +3,11 @@ package io.github.fabb.wigai.features;
 import io.github.fabb.wigai.bitwig.BitwigApiFacade;
 import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.common.data.ParameterInfo;
+import io.github.fabb.wigai.common.data.ParameterSetting;
+import io.github.fabb.wigai.common.data.ParameterSettingResult;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Controller class for device parameter control features.
@@ -72,6 +75,91 @@ public class DeviceController {
             logger.error("DeviceController: Error setting parameter " + parameterIndex + ": " + e.getMessage());
             throw new RuntimeException("Failed to set device parameter", e);
         }
+    }
+
+    /**
+     * Sets multiple parameter values for the currently selected device.
+     * Processes each parameter independently, returning structured results for each.
+     * Supports partial success - some parameters may succeed while others fail.
+     *
+     * @param parameters List of parameter settings to apply
+     * @return List of results indicating success/failure for each parameter
+     * @throws RuntimeException if no device is selected (top-level error)
+     */
+    public List<ParameterSettingResult> setMultipleSelectedDeviceParameters(List<ParameterSetting> parameters) {
+        logger.info("DeviceController: Setting " + parameters.size() + " parameters");
+
+        // First, validate device selection (top-level validation)
+        try {
+            bitwigApiFacade.getSelectedDeviceName(); // This will throw if no device selected
+        } catch (Exception e) {
+            logger.error("DeviceController: No device selected for batch parameter setting");
+            throw new RuntimeException("No device is currently selected", e);
+        }
+
+        List<ParameterSettingResult> results = new ArrayList<>();
+
+        for (ParameterSetting param : parameters) {
+            try {
+                logger.info("DeviceController: Processing parameter " + param.parameter_index() + " = " + param.value());
+
+                // Use existing single parameter setting method which handles validation
+                bitwigApiFacade.setSelectedDeviceParameter(param.parameter_index(), param.value());
+
+                // Create success result
+                ParameterSettingResult result = new ParameterSettingResult(
+                    param.parameter_index(),
+                    "success",
+                    param.value(),
+                    null,
+                    null
+                );
+                results.add(result);
+
+                logger.info("DeviceController: Successfully set parameter " + param.parameter_index() + " to " + param.value());
+
+            } catch (IllegalArgumentException e) {
+                // Parameter validation failed
+                String errorCode;
+                if (e.getMessage().contains("Parameter index must be between 0-7")) {
+                    errorCode = "INVALID_PARAMETER_INDEX";
+                } else if (e.getMessage().contains("Parameter value must be between 0.0-1.0")) {
+                    errorCode = "INVALID_PARAMETER";
+                } else {
+                    errorCode = "INVALID_PARAMETER";
+                }
+
+                ParameterSettingResult result = new ParameterSettingResult(
+                    param.parameter_index(),
+                    "error",
+                    null,
+                    errorCode,
+                    e.getMessage()
+                );
+                results.add(result);
+
+                logger.error("DeviceController: Validation error for parameter " + param.parameter_index() + ": " + e.getMessage());
+
+            } catch (Exception e) {
+                // Other errors (likely Bitwig API errors)
+                ParameterSettingResult result = new ParameterSettingResult(
+                    param.parameter_index(),
+                    "error",
+                    null,
+                    "BITWIG_ERROR",
+                    "Error setting parameter: " + e.getMessage()
+                );
+                results.add(result);
+
+                logger.error("DeviceController: Error setting parameter " + param.parameter_index() + ": " + e.getMessage());
+            }
+        }
+
+        long successCount = results.stream().filter(r -> "success".equals(r.status())).count();
+        long errorCount = results.size() - successCount;
+        logger.info("DeviceController: Batch operation completed - " + successCount + " succeeded, " + errorCount + " failed");
+
+        return results;
     }
 
     /**

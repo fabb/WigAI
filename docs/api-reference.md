@@ -89,7 +89,7 @@ Communication is message-based, typically using JSON-RPC or a similar structured
     ```
 *   **Errors**: None specific, `parameters` will be empty if no device or no parameters.
 
-#### `device_setParameter`
+#### `set_selected_device_parameter`
 *   **Description**: Set a specific value for a single parameter (by its index 0-7) of the user-selected device in Bitwig.
 *   **Parameters**:
     ```json
@@ -116,7 +116,7 @@ Communication is message-based, typically using JSON-RPC or a similar structured
     *   `INVALID_PARAMETER` (for value out of range)
     *   `BITWIG_ERROR`
 
-#### `device_setMultipleParameters`
+#### `set_selected_device_parameters`
 *   **Description**: Set multiple parameter values (by index 0-7) of the user-selected device in Bitwig simultaneously.
 *   **Parameters**:
     ```json
