@@ -48,6 +48,33 @@ public class DeviceController {
     }
 
     /**
+     * Sets a specific parameter value for the currently selected device.
+     *
+     * @param parameterIndex The index of the parameter to set (0-7)
+     * @param value          The value to set (0.0-1.0)
+     * @throws IllegalArgumentException if parameterIndex is out of range or value is out of range
+     * @throws RuntimeException        if no device is selected or Bitwig API error occurs
+     */
+    public void setSelectedDeviceParameter(int parameterIndex, double value) {
+        try {
+            logger.info("DeviceController: Setting parameter " + parameterIndex + " to " + value);
+
+            // Use BitwigApiFacade to perform the actual parameter setting
+            // This will handle all validation (parameter index, value range, device selection)
+            bitwigApiFacade.setSelectedDeviceParameter(parameterIndex, value);
+
+            logger.info("DeviceController: Successfully set parameter " + parameterIndex + " to " + value);
+
+        } catch (IllegalArgumentException e) {
+            logger.error("DeviceController: Validation error setting parameter " + parameterIndex + ": " + e.getMessage());
+            throw e; // Re-throw validation errors as-is
+        } catch (Exception e) {
+            logger.error("DeviceController: Error setting parameter " + parameterIndex + ": " + e.getMessage());
+            throw new RuntimeException("Failed to set device parameter", e);
+        }
+    }
+
+    /**
      * Result record for device parameter queries.
      */
     public record DeviceParametersResult(

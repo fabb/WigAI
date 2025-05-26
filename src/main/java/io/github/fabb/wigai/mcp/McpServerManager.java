@@ -122,7 +122,8 @@ public class McpServerManager {
                     StatusTool.specification(this.extensionDefinition, logger),
                     TransportTool.transportStartSpecification(transportController, logger),
                     TransportTool.transportStopSpecification(transportController, logger),
-                    DeviceParamTool.getSelectedDeviceParametersSpecification(deviceController, logger)
+                    DeviceParamTool.getSelectedDeviceParametersSpecification(deviceController, logger),
+                    DeviceParamTool.setSelectedDeviceParameterSpecification(deviceController, logger)
                 )
                 .build();
 

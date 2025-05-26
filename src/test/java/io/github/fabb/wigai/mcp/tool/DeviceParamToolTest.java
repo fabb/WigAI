@@ -184,4 +184,303 @@ public class DeviceParamToolTest {
         assertTrue(responseText.contains("\"device_name\":\"Empty Device\""));
         assertTrue(responseText.contains("\"parameters\":[]"));
     }
+
+    @Test
+    void testSetSelectedDeviceParameter_ToolSpecification() {
+        // Arrange & Act
+        McpServerFeatures.SyncToolSpecification setToolSpec =
+            DeviceParamTool.setSelectedDeviceParameterSpecification(mockDeviceController, mockLogger);
+
+        // Assert
+        assertNotNull(setToolSpec);
+        assertNotNull(setToolSpec.tool());
+        assertEquals("set_selected_device_parameter", setToolSpec.tool().name());
+        assertEquals("Set a specific value for a single parameter (by its index 0-7) of the user-selected device in Bitwig.",
+                     setToolSpec.tool().description());
+        assertNotNull(setToolSpec.tool().inputSchema());
+
+        // Verify schema contains required fields
+        String schema = setToolSpec.tool().inputSchema().toString();
+        assertTrue(schema.contains("parameter_index"));
+        assertTrue(schema.contains("value"));
+        assertTrue(schema.contains("required"));
+    }
+
+    @Test
+    void testSetSelectedDeviceParameter_Success() {
+        // Arrange
+        Map<String, Object> arguments = Map.of(
+            "parameter_index", 3,
+            "value", 0.75
+        );
+
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> setHandler =
+            DeviceParamTool.getSetParameterHandler();
+
+        // Mock the setSelectedDeviceParameterSpecification to initialize the handler
+        DeviceParamTool.setSelectedDeviceParameterSpecification(mockDeviceController, mockLogger);
+        setHandler = DeviceParamTool.getSetParameterHandler();
+
+        // Act
+        McpSchema.CallToolResult toolResult = setHandler.apply(mockExchange, arguments);
+
+        // Assert
+        assertNotNull(toolResult);
+        assertFalse(toolResult.isError());
+        assertEquals(1, toolResult.content().size());
+
+        // Verify device controller was called
+        verify(mockDeviceController).setSelectedDeviceParameter(3, 0.75);
+
+        // Verify JSON response
+        McpSchema.TextContent textContent = (McpSchema.TextContent) toolResult.content().get(0);
+        String responseText = textContent.text();
+
+        assertTrue(responseText.contains("\"status\":\"success\""));
+        assertTrue(responseText.contains("\"action\":\"parameter_set\""));
+        assertTrue(responseText.contains("\"parameter_index\":3"));
+        assertTrue(responseText.contains("\"new_value\":0.75"));
+        assertTrue(responseText.contains("\"message\":\"Parameter 3 set to 0.75.\""));
+
+        // Verify logging
+        verify(mockLogger).info(contains("Received 'set_selected_device_parameter' tool call with arguments:"));
+        verify(mockLogger).info("Successfully set parameter 3 to 0.75");
+    }
+
+    @Test
+    void testSetSelectedDeviceParameter_MissingParameterIndex() {
+        // Arrange
+        Map<String, Object> arguments = Map.of("value", 0.5);
+
+        // Initialize handler
+        DeviceParamTool.setSelectedDeviceParameterSpecification(mockDeviceController, mockLogger);
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> setHandler =
+            DeviceParamTool.getSetParameterHandler();
+
+        // Act
+        McpSchema.CallToolResult toolResult = setHandler.apply(mockExchange, arguments);
+
+        // Assert
+        assertNotNull(toolResult);
+        assertTrue(toolResult.isError());
+        assertEquals(1, toolResult.content().size());
+
+        // Verify error response
+        McpSchema.TextContent errorContent = (McpSchema.TextContent) toolResult.content().get(0);
+        String errorText = errorContent.text();
+        assertTrue(errorText.contains("\"status\":\"error\""));
+        assertTrue(errorText.contains("\"error_code\":\"INVALID_PARAMETER\""));
+        assertTrue(errorText.contains("Missing required parameter: parameter_index"));
+
+        // Verify device controller was not called
+        verify(mockDeviceController, never()).setSelectedDeviceParameter(anyInt(), anyDouble());
+    }
+
+    @Test
+    void testSetSelectedDeviceParameter_MissingValue() {
+        // Arrange
+        Map<String, Object> arguments = Map.of("parameter_index", 0);
+
+        // Initialize handler
+        DeviceParamTool.setSelectedDeviceParameterSpecification(mockDeviceController, mockLogger);
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> setHandler =
+            DeviceParamTool.getSetParameterHandler();
+
+        // Act
+        McpSchema.CallToolResult toolResult = setHandler.apply(mockExchange, arguments);
+
+        // Assert
+        assertNotNull(toolResult);
+        assertTrue(toolResult.isError());
+        assertEquals(1, toolResult.content().size());
+
+        // Verify error response
+        McpSchema.TextContent errorContent = (McpSchema.TextContent) toolResult.content().get(0);
+        String errorText = errorContent.text();
+        assertTrue(errorText.contains("\"status\":\"error\""));
+        assertTrue(errorText.contains("\"error_code\":\"INVALID_PARAMETER\""));
+        assertTrue(errorText.contains("Missing required parameter: value"));
+
+        // Verify device controller was not called
+        verify(mockDeviceController, never()).setSelectedDeviceParameter(anyInt(), anyDouble());
+    }
+
+    @Test
+    void testSetSelectedDeviceParameter_InvalidParameterIndex() {
+        // Arrange
+        Map<String, Object> arguments = Map.of(
+            "parameter_index", 8, // Invalid index
+            "value", 0.5
+        );
+
+        // Mock controller to throw validation error
+        doThrow(new IllegalArgumentException("Parameter index must be between 0-7, got: 8"))
+            .when(mockDeviceController).setSelectedDeviceParameter(8, 0.5);
+
+        // Initialize handler
+        DeviceParamTool.setSelectedDeviceParameterSpecification(mockDeviceController, mockLogger);
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> setHandler =
+            DeviceParamTool.getSetParameterHandler();
+
+        // Act
+        McpSchema.CallToolResult toolResult = setHandler.apply(mockExchange, arguments);
+
+        // Assert
+        assertNotNull(toolResult);
+        assertTrue(toolResult.isError());
+        assertEquals(1, toolResult.content().size());
+
+        // Verify error response
+        McpSchema.TextContent errorContent = (McpSchema.TextContent) toolResult.content().get(0);
+        String errorText = errorContent.text();
+        assertTrue(errorText.contains("\"status\":\"error\""));
+        assertTrue(errorText.contains("\"error_code\":\"INVALID_PARAMETER_INDEX\""));
+        assertTrue(errorText.contains("Parameter index must be between 0-7, got: 8"));
+
+        // Verify device controller was called and threw the error
+        verify(mockDeviceController).setSelectedDeviceParameter(8, 0.5);
+    }
+
+    @Test
+    void testSetSelectedDeviceParameter_InvalidValue() {
+        // Arrange
+        Map<String, Object> arguments = Map.of(
+            "parameter_index", 0,
+            "value", 1.5 // Invalid value
+        );
+
+        // Mock controller to throw validation error
+        doThrow(new IllegalArgumentException("Parameter value must be between 0.0-1.0, got: 1.5"))
+            .when(mockDeviceController).setSelectedDeviceParameter(0, 1.5);
+
+        // Initialize handler
+        DeviceParamTool.setSelectedDeviceParameterSpecification(mockDeviceController, mockLogger);
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> setHandler =
+            DeviceParamTool.getSetParameterHandler();
+
+        // Act
+        McpSchema.CallToolResult toolResult = setHandler.apply(mockExchange, arguments);
+
+        // Assert
+        assertNotNull(toolResult);
+        assertTrue(toolResult.isError());
+        assertEquals(1, toolResult.content().size());
+
+        // Verify error response
+        McpSchema.TextContent errorContent = (McpSchema.TextContent) toolResult.content().get(0);
+        String errorText = errorContent.text();
+        assertTrue(errorText.contains("\"status\":\"error\""));
+        assertTrue(errorText.contains("\"error_code\":\"INVALID_PARAMETER\""));
+        assertTrue(errorText.contains("Parameter value must be between 0.0-1.0, got: 1.5"));
+    }
+
+    @Test
+    void testSetSelectedDeviceParameter_NoDeviceSelected() {
+        // Arrange
+        Map<String, Object> arguments = Map.of(
+            "parameter_index", 0,
+            "value", 0.5
+        );
+
+        // Mock controller to throw device not selected error
+        doThrow(new RuntimeException("No device is currently selected"))
+            .when(mockDeviceController).setSelectedDeviceParameter(0, 0.5);
+
+        // Initialize handler
+        DeviceParamTool.setSelectedDeviceParameterSpecification(mockDeviceController, mockLogger);
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> setHandler =
+            DeviceParamTool.getSetParameterHandler();
+
+        // Act
+        McpSchema.CallToolResult toolResult = setHandler.apply(mockExchange, arguments);
+
+        // Assert
+        assertNotNull(toolResult);
+        assertTrue(toolResult.isError());
+        assertEquals(1, toolResult.content().size());
+
+        // Verify error response
+        McpSchema.TextContent errorContent = (McpSchema.TextContent) toolResult.content().get(0);
+        String errorText = errorContent.text();
+        assertTrue(errorText.contains("\"status\":\"error\""));
+        assertTrue(errorText.contains("\"error_code\":\"DEVICE_NOT_SELECTED\""));
+        assertTrue(errorText.contains("No device is currently selected"));
+    }
+
+    @Test
+    void testSetSelectedDeviceParameter_BitwigError() {
+        // Arrange
+        Map<String, Object> arguments = Map.of(
+            "parameter_index", 0,
+            "value", 0.5
+        );
+
+        // Mock controller to throw Bitwig API error
+        doThrow(new RuntimeException("Bitwig API internal error"))
+            .when(mockDeviceController).setSelectedDeviceParameter(0, 0.5);
+
+        // Initialize handler
+        DeviceParamTool.setSelectedDeviceParameterSpecification(mockDeviceController, mockLogger);
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> setHandler =
+            DeviceParamTool.getSetParameterHandler();
+
+        // Act
+        McpSchema.CallToolResult toolResult = setHandler.apply(mockExchange, arguments);
+
+        // Assert
+        assertNotNull(toolResult);
+        assertTrue(toolResult.isError());
+        assertEquals(1, toolResult.content().size());
+
+        // Verify error response
+        McpSchema.TextContent errorContent = (McpSchema.TextContent) toolResult.content().get(0);
+        String errorText = errorContent.text();
+        assertTrue(errorText.contains("\"status\":\"error\""));
+        assertTrue(errorText.contains("\"error_code\":\"BITWIG_ERROR\""));
+        assertTrue(errorText.contains("Bitwig API internal error"));
+    }
+
+    @Test
+    void testSetSelectedDeviceParameter_BoundaryValues() {
+        // Initialize handler
+        DeviceParamTool.setSelectedDeviceParameterSpecification(mockDeviceController, mockLogger);
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> setHandler =
+            DeviceParamTool.getSetParameterHandler();
+
+        // Test minimum boundary values
+        Map<String, Object> minArgs = Map.of("parameter_index", 0, "value", 0.0);
+        McpSchema.CallToolResult minResult = setHandler.apply(mockExchange, minArgs);
+        assertFalse(minResult.isError());
+        verify(mockDeviceController).setSelectedDeviceParameter(0, 0.0);
+
+        // Test maximum boundary values
+        Map<String, Object> maxArgs = Map.of("parameter_index", 7, "value", 1.0);
+        McpSchema.CallToolResult maxResult = setHandler.apply(mockExchange, maxArgs);
+        assertFalse(maxResult.isError());
+        verify(mockDeviceController).setSelectedDeviceParameter(7, 1.0);
+    }
+
+    @Test
+    void testSetSelectedDeviceParameter_InvalidArgumentTypes() {
+        // Initialize handler
+        DeviceParamTool.setSelectedDeviceParameterSpecification(mockDeviceController, mockLogger);
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> setHandler =
+            DeviceParamTool.getSetParameterHandler();
+
+        // Test non-numeric parameter_index
+        Map<String, Object> invalidIndexArgs = Map.of(
+            "parameter_index", "not_a_number",
+            "value", 0.5
+        );
+        McpSchema.CallToolResult result1 = setHandler.apply(mockExchange, invalidIndexArgs);
+        assertTrue(result1.isError());
+
+        // Test non-numeric value
+        Map<String, Object> invalidValueArgs = Map.of(
+            "parameter_index", 0,
+            "value", "not_a_number"
+        );
+        McpSchema.CallToolResult result2 = setHandler.apply(mockExchange, invalidValueArgs);
+        assertTrue(result2.isError());
+    }
 }

@@ -33,11 +33,11 @@ public class BitwigApiFacade {
         CursorTrack cursorTrack = host.createCursorTrack(0, 0);
         this.cursorDevice = cursorTrack.createCursorDevice();
         this.deviceParameterBank = cursorDevice.createCursorRemoteControlsPage(8);
-        
+
         // Mark interest in device properties to enable value access
         cursorDevice.exists().markInterested();
         cursorDevice.name().markInterested();
-        
+
         // Mark interest in all parameter properties to enable value access
         for (int i = 0; i < 8; i++) {
             RemoteControl parameter = deviceParameterBank.getParameter(i);
@@ -125,5 +125,48 @@ public class BitwigApiFacade {
 
         logger.info("BitwigApiFacade: Retrieved " + parameters.size() + " parameters");
         return parameters;
+    }
+
+    /**
+     * Sets the value of a specific parameter for the currently selected device.
+     *
+     * @param parameterIndex The index of the parameter to set (0-7)
+     * @param value          The value to set (0.0-1.0)
+     * @throws IllegalArgumentException if parameterIndex is out of range or value is out of range
+     * @throws RuntimeException        if no device is selected or Bitwig API error occurs
+     */
+    public void setSelectedDeviceParameter(int parameterIndex, double value) {
+        logger.info("BitwigApiFacade: Setting parameter " + parameterIndex + " to " + value);
+
+        // Validate parameter index
+        if (parameterIndex < 0 || parameterIndex > 7) {
+            String errorMsg = "Parameter index must be between 0-7, got: " + parameterIndex;
+            logger.error("BitwigApiFacade: " + errorMsg);
+            throw new IllegalArgumentException(errorMsg);
+        }
+
+        // Validate value range
+        if (value < 0.0 || value > 1.0) {
+            String errorMsg = "Parameter value must be between 0.0-1.0, got: " + value;
+            logger.error("BitwigApiFacade: " + errorMsg);
+            throw new IllegalArgumentException(errorMsg);
+        }
+
+        // Check if device is selected
+        if (!isDeviceSelected()) {
+            String errorMsg = "No device is currently selected";
+            logger.error("BitwigApiFacade: " + errorMsg);
+            throw new RuntimeException(errorMsg);
+        }
+
+        try {
+            RemoteControl parameter = deviceParameterBank.getParameter(parameterIndex);
+            parameter.value().set(value);
+            logger.info("BitwigApiFacade: Successfully set parameter " + parameterIndex + " to " + value);
+        } catch (Exception e) {
+            String errorMsg = "Failed to set parameter " + parameterIndex + ": " + e.getMessage();
+            logger.error("BitwigApiFacade: " + errorMsg);
+            throw new RuntimeException(errorMsg, e);
+        }
     }
 }
