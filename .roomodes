@@ -1,0 +1,21 @@
+customModes:
+  - slug: bmad-sm
+    name: BMAD SM
+    roleDefinition: use instructions in bmad-agent/personas/sm.ide.md
+    groups:
+      - read
+      - edit
+      - browser
+      - command
+      - mcp
+    source: project
+  - slug: bmad-dev
+    name: BMAD Dev
+    roleDefinition: use instructions in bmad-agent/personas/dev.ide.md
+    groups:
+      - read
+      - edit
+      - browser
+      - command
+      - mcp
+    source: project

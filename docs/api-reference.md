@@ -153,12 +153,12 @@ Communication is message-based, typically using JSON-RPC or a similar structured
 
 ### Session Control Commands
 
-#### `session_launchClip`
-*   **Description**: Launch a specific clip in Bitwig by providing its track name and clip slot index (scene number).
+#### `launch_clip`
+*   **Description**: Launch a specific clip in Bitwig by providing its track name and clip slot index.
 *   **Parameters**:
     ```json
     {
-      "track_name": "Drums", // Case-sensitive
+      "track_name": "Drums", // Case-sensitive string
       "clip_index": 0 // Non-negative integer (0-based)
     }
     ```
@@ -175,9 +175,10 @@ Communication is message-based, typically using JSON-RPC or a similar structured
     }
     ```
 *   **Errors**:
-    *   `TRACK_NOT_FOUND`
-    *   `CLIP_INDEX_OUT_OF_BOUNDS`
-    *   `BITWIG_ERROR`
+    *   `INVALID_ARGUMENT`: Missing or invalid parameters (e.g., empty track_name, negative clip_index)
+    *   `TRACK_NOT_FOUND`: The specified track name was not found
+    *   `CLIP_INDEX_OUT_OF_BOUNDS`: The clip index is outside the valid range for the track
+    *   `BITWIG_ERROR`: Internal error occurred while launching clip
 
 #### `session_launchSceneByIndex`
 *   **Description**: Launch an entire scene in Bitwig by providing its numerical index.

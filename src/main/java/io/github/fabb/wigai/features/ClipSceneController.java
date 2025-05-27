@@ -78,38 +78,37 @@ public class ClipSceneController {
     }
 
     /**
-     * Result class for scene launch operations.
+     * Launches all clips in the scene with the given name (case-sensitive, first match wins).
+     *
+     * @param sceneName The name of the scene to launch
+     * @return SceneLaunchResult indicating success/failure and any error details
      */
-    public static class SceneLaunchResult {
-        private final boolean success;
-        private final String errorCode;
-        private final String message;
-
-        private SceneLaunchResult(boolean success, String errorCode, String message) {
-            this.success = success;
-            this.errorCode = errorCode;
-            this.message = message;
+    public SceneLaunchResult launchSceneByName(String sceneName) {
+        logger.info("Received request to launch scene by name: '" + sceneName + "'");
+        if (sceneName == null || sceneName.trim().isEmpty()) {
+            logger.warn("Scene name is empty or null");
+            return SceneLaunchResult.error("SCENE_NOT_FOUND", "scene_name must be a non-empty string");
         }
-
-        public static SceneLaunchResult success(String message) {
-            return new SceneLaunchResult(true, null, message);
+        int sceneIndex = bitwigApiFacade.findSceneByName(sceneName);
+        logger.info("Searching for scene '" + sceneName + "' (case-sensitive)");
+        if (sceneIndex < 0) {
+            logger.warn("Scene not found: '" + sceneName + "'");
+            return SceneLaunchResult.error("SCENE_NOT_FOUND", "Scene '" + sceneName + "' not found");
         }
-
-        public static SceneLaunchResult error(String errorCode, String message) {
-            return new SceneLaunchResult(false, errorCode, message);
+        logger.info("Found scene '" + sceneName + "' at index " + sceneIndex + ". Launching...");
+        SceneLaunchResult result = launchSceneByIndex(sceneIndex);
+        if (result.isSuccess()) {
+            String msg = "Scene '" + sceneName + "' launched.";
+            logger.info(msg);
+            return SceneLaunchResult.success(msg + " (index: " + sceneIndex + ")");
+        } else {
+            logger.error("Failed to launch scene by name: '" + sceneName + "' - " + result.getMessage());
+            return result;
         }
+    }
 
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public String getErrorCode() {
-            return errorCode;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+    public BitwigApiFacade getBitwigApiFacade() {
+        return bitwigApiFacade;
     }
 
     /**
@@ -212,6 +211,41 @@ public class ClipSceneController {
          *
          * @return success or error message
          */
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    /**
+     * Result class for scene launch operations.
+     */
+    public static class SceneLaunchResult {
+        private final boolean success;
+        private final String errorCode;
+        private final String message;
+
+        private SceneLaunchResult(boolean success, String errorCode, String message) {
+            this.success = success;
+            this.errorCode = errorCode;
+            this.message = message;
+        }
+
+        public static SceneLaunchResult success(String message) {
+            return new SceneLaunchResult(true, null, message);
+        }
+
+        public static SceneLaunchResult error(String errorCode, String message) {
+            return new SceneLaunchResult(false, errorCode, message);
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getErrorCode() {
+            return errorCode;
+        }
+
         public String getMessage() {
             return message;
         }

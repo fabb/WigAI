@@ -21,6 +21,7 @@ import io.github.fabb.wigai.mcp.tool.ClipTool;
 import io.github.fabb.wigai.mcp.tool.SceneTool;
 import io.modelcontextprotocol.spec.McpSchema;
 import com.bitwig.extension.controller.api.ControllerHost;
+import io.github.fabb.wigai.mcp.tool.SceneByNameTool;
 
 /**
  * Manages the MCP server for the WigAI extension.
@@ -130,7 +131,8 @@ public class McpServerManager {
                     DeviceParamTool.setSelectedDeviceParameterSpecification(deviceController, logger),
                     DeviceParamTool.setMultipleDeviceParametersSpecification(deviceController, logger),
                     ClipTool.launchClipSpecification(clipSceneController, logger),
-                    SceneTool.launchSceneByIndexSpecification(clipSceneController, logger)
+                    SceneTool.launchSceneByIndexSpecification(clipSceneController, logger),
+                    SceneByNameTool.launchSceneByNameSpecification(clipSceneController, logger)
                 )
                 .build();
 

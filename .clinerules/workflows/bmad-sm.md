@@ -1,0 +1,1 @@
+follow instructions in bmad-agent/personas/sm.ide.md

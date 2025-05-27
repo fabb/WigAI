@@ -46,6 +46,12 @@ public class BitwigApiFacadeTest {
     private ClipLauncherSlot mockClipLauncherSlot;
 
     @Mock
+    private SceneBank mockSceneBank;
+
+    @Mock
+    private Scene mockScene;
+
+    @Mock
     private Logger mockLogger;
 
     private BitwigApiFacade bitwigApiFacade;
@@ -66,6 +72,10 @@ public class BitwigApiFacadeTest {
         when(mockTrack.clipLauncherSlotBank()).thenReturn(mockClipLauncherSlotBank);
         when(mockClipLauncherSlotBank.getItemAt(anyInt())).thenReturn(mockClipLauncherSlot);
 
+        // Setup SceneBank mocks (new for scene launching)
+        when(mockHost.createSceneBank(8)).thenReturn(mockSceneBank);
+        when(mockSceneBank.getItemAt(anyInt())).thenReturn(mockScene);
+
         // Setup parameter mocks with lenient stubbing to avoid NPEs
         lenient().when(mockParameterBank.getParameter(anyInt())).thenReturn(mockRemoteControl);
 
@@ -81,6 +91,10 @@ public class BitwigApiFacadeTest {
         lenient().when(mockTrack.exists()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
         lenient().when(mockClipLauncherSlot.hasContent()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
         lenient().when(mockClipLauncherSlot.isPlaying()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+
+        // Setup SceneBank related mocks with lenient stubbing
+        lenient().when(mockScene.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+        lenient().when(mockScene.exists()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
 
         bitwigApiFacade = new BitwigApiFacade(mockHost, mockLogger);
     }

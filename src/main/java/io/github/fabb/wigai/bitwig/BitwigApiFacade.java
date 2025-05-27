@@ -18,6 +18,7 @@ public class BitwigApiFacade {
     private final CursorDevice cursorDevice;
     private final RemoteControlsPage deviceParameterBank;
     private final TrackBank trackBank;
+    private final SceneBankFacade sceneBankFacade;
 
     /**
      * Creates a new BitwigApiFacade instance.
@@ -37,6 +38,7 @@ public class BitwigApiFacade {
 
         // Initialize track bank for clip launching (8 tracks, 8 scenes should be sufficient for MVP)
         this.trackBank = host.createTrackBank(8, 0, 8);
+        this.sceneBankFacade = new SceneBankFacade(host, logger, 8); // 8 scenes for MVP
 
         // Mark interest in device properties to enable value access
         cursorDevice.exists().markInterested();
@@ -293,5 +295,27 @@ public class BitwigApiFacade {
 
         logger.error("BitwigApiFacade: Track '" + trackName + "' not found for clip launch");
         return false;
+    }
+
+    /**
+     * Finds the first scene index with the given name (case-sensitive).
+     * Returns -1 if not found.
+     */
+    public int findSceneByName(String sceneName) {
+        return sceneBankFacade.findSceneByName(sceneName);
+    }
+
+    /**
+     * Gets the name of the scene at the given index, or null if not present.
+     */
+    public String getSceneName(int index) {
+        return sceneBankFacade.getSceneName(index);
+    }
+
+    /**
+     * Gets the number of scenes in the scene bank.
+     */
+    public int getSceneCount() {
+        return sceneBankFacade.getSceneCount();
     }
 }
