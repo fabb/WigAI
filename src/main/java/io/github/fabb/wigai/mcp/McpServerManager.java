@@ -18,6 +18,7 @@ import io.github.fabb.wigai.mcp.tool.StatusTool;
 import io.github.fabb.wigai.mcp.tool.TransportTool;
 import io.github.fabb.wigai.mcp.tool.DeviceParamTool;
 import io.github.fabb.wigai.mcp.tool.ClipTool;
+import io.github.fabb.wigai.mcp.tool.SceneTool;
 import io.modelcontextprotocol.spec.McpSchema;
 import com.bitwig.extension.controller.api.ControllerHost;
 
@@ -128,7 +129,8 @@ public class McpServerManager {
                     DeviceParamTool.getSelectedDeviceParametersSpecification(deviceController, logger),
                     DeviceParamTool.setSelectedDeviceParameterSpecification(deviceController, logger),
                     DeviceParamTool.setMultipleDeviceParametersSpecification(deviceController, logger),
-                    ClipTool.launchClipSpecification(clipSceneController, logger)
+                    ClipTool.launchClipSpecification(clipSceneController, logger),
+                    SceneTool.launchSceneByIndexSpecification(clipSceneController, logger)
                 )
                 .build();
 

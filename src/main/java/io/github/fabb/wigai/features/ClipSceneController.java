@@ -25,6 +25,94 @@ public class ClipSceneController {
     }
 
     /**
+     * Launches all clips in the specified scene index across all tracks.
+     *
+     * @param sceneIndex The zero-based index of the scene to launch
+     * @return SceneLaunchResult indicating success/failure and any error details
+     */
+    public SceneLaunchResult launchSceneByIndex(int sceneIndex) {
+        try {
+            logger.info("Attempting to launch scene at index: " + sceneIndex);
+
+            // Validate scene index
+            if (sceneIndex < 0) {
+                logger.warn("Scene index " + sceneIndex + " is negative");
+                return SceneLaunchResult.error("SCENE_NOT_FOUND", "Scene index must be non-negative");
+            }
+
+            int trackCount = bitwigApiFacade.getTrackBankSize();
+            int launchedCount = 0;
+            boolean anyTrack = false;
+
+            for (int trackIdx = 0; trackIdx < trackCount; trackIdx++) {
+                String trackName = bitwigApiFacade.getTrackNameByIndex(trackIdx);
+                if (trackName != null) {
+                    anyTrack = true;
+                    int clipCount = bitwigApiFacade.getTrackClipCount(trackName);
+                    if (sceneIndex < clipCount) {
+                        boolean launched = bitwigApiFacade.launchClip(trackName, sceneIndex);
+                        if (launched) {
+                            launchedCount++;
+                        }
+                    }
+                }
+            }
+
+            if (!anyTrack) {
+                logger.warn("No tracks found in Bitwig session");
+                return SceneLaunchResult.error("SCENE_NOT_FOUND", "No tracks found in Bitwig session");
+            }
+
+            if (launchedCount > 0) {
+                String msg = "Scene " + sceneIndex + " launched on " + launchedCount + " track(s).";
+                logger.info(msg);
+                return SceneLaunchResult.success(msg);
+            } else {
+                logger.warn("Scene index " + sceneIndex + " out of bounds for all tracks");
+                return SceneLaunchResult.error("SCENE_NOT_FOUND", "Scene index " + sceneIndex + " is out of bounds for all tracks");
+            }
+        } catch (Exception e) {
+            logger.error("Unexpected error launching scene: " + e.getMessage(), e);
+            return SceneLaunchResult.error("BITWIG_ERROR", "Internal error occurred while launching scene: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Result class for scene launch operations.
+     */
+    public static class SceneLaunchResult {
+        private final boolean success;
+        private final String errorCode;
+        private final String message;
+
+        private SceneLaunchResult(boolean success, String errorCode, String message) {
+            this.success = success;
+            this.errorCode = errorCode;
+            this.message = message;
+        }
+
+        public static SceneLaunchResult success(String message) {
+            return new SceneLaunchResult(true, null, message);
+        }
+
+        public static SceneLaunchResult error(String errorCode, String message) {
+            return new SceneLaunchResult(false, errorCode, message);
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getErrorCode() {
+            return errorCode;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    /**
      * Launches a clip at the specified track and clip index.
      *
      * @param trackName The name of the track containing the clip (case-sensitive)

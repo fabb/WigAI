@@ -66,6 +66,32 @@ public class BitwigApiFacade {
     }
 
     /**
+     * Returns the number of tracks in the track bank.
+     *
+     * @return the size of the track bank
+     */
+    public int getTrackBankSize() {
+        return trackBank.getSizeOfBank();
+    }
+
+    /**
+     * Returns the name of the track at the given index, or null if not present.
+     *
+     * @param index the track index
+     * @return the track name, or null if not present
+     */
+    public String getTrackNameByIndex(int index) {
+        if (index < 0 || index >= trackBank.getSizeOfBank()) {
+            return null;
+        }
+        Track track = trackBank.getItemAt(index);
+        if (track.exists().get()) {
+            return track.name().get();
+        }
+        return null;
+    }
+
+    /**
      * Starts the transport playback.
      */
     public void startTransport() {
