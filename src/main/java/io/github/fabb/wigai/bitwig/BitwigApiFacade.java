@@ -17,6 +17,7 @@ public class BitwigApiFacade {
     private final Logger logger;
     private final CursorDevice cursorDevice;
     private final RemoteControlsPage deviceParameterBank;
+    private final TrackBank trackBank;
 
     /**
      * Creates a new BitwigApiFacade instance.
@@ -34,6 +35,9 @@ public class BitwigApiFacade {
         this.cursorDevice = cursorTrack.createCursorDevice();
         this.deviceParameterBank = cursorDevice.createCursorRemoteControlsPage(8);
 
+        // Initialize track bank for clip launching (8 tracks, 8 scenes should be sufficient for MVP)
+        this.trackBank = host.createTrackBank(8, 0, 8);
+
         // Mark interest in device properties to enable value access
         cursorDevice.exists().markInterested();
         cursorDevice.name().markInterested();
@@ -44,6 +48,20 @@ public class BitwigApiFacade {
             parameter.name().markInterested();
             parameter.value().markInterested();
             parameter.displayedValue().markInterested();
+        }
+
+        // Mark interest in track properties for clip launching
+        for (int trackIndex = 0; trackIndex < 8; trackIndex++) {
+            Track track = trackBank.getItemAt(trackIndex);
+            track.name().markInterested();
+            track.exists().markInterested();
+
+            ClipLauncherSlotBank trackSlots = track.clipLauncherSlotBank();
+            for (int slotIndex = 0; slotIndex < 8; slotIndex++) {
+                ClipLauncherSlot slot = trackSlots.getItemAt(slotIndex);
+                slot.hasContent().markInterested();
+                slot.isPlaying().markInterested();
+            }
         }
     }
 
@@ -168,5 +186,86 @@ public class BitwigApiFacade {
             logger.error("BitwigApiFacade: " + errorMsg);
             throw new RuntimeException(errorMsg, e);
         }
+    }
+
+    /**
+     * Finds a track by name using case-sensitive matching.
+     *
+     * @param trackName The name of the track to find
+     * @return true if the track is found, false otherwise
+     */
+    public boolean findTrackByName(String trackName) {
+        logger.info("BitwigApiFacade: Searching for track '" + trackName + "'");
+
+        for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
+            Track track = trackBank.getItemAt(i);
+            if (track.exists().get()) {
+                String currentTrackName = track.name().get();
+                if (trackName.equals(currentTrackName)) {
+                    logger.info("BitwigApiFacade: Found track '" + trackName + "' at index " + i);
+                    return true;
+                }
+            }
+        }
+
+        logger.info("BitwigApiFacade: Track '" + trackName + "' not found");
+        return false;
+    }
+
+    /**
+     * Gets the number of clip slots available for a track.
+     *
+     * @param trackName The name of the track
+     * @return The number of clip slots, or 0 if track not found
+     */
+    public int getTrackClipCount(String trackName) {
+        logger.info("BitwigApiFacade: Getting clip count for track '" + trackName + "'");
+
+        for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
+            Track track = trackBank.getItemAt(i);
+            if (track.exists().get() && trackName.equals(track.name().get())) {
+                // Return the number of available clip launcher slots (8 for MVP)
+                return track.clipLauncherSlotBank().getSizeOfBank();
+            }
+        }
+
+        logger.warn("BitwigApiFacade: Track '" + trackName + "' not found for clip count check");
+        return 0;
+    }
+
+    /**
+     * Launches a clip at the specified track and clip index.
+     *
+     * @param trackName The name of the track containing the clip
+     * @param clipIndex The zero-based index of the clip slot to launch
+     * @return true if the clip was launched successfully, false otherwise
+     */
+    public boolean launchClip(String trackName, int clipIndex) {
+        logger.info("BitwigApiFacade: Launching clip at " + trackName + "[" + clipIndex + "]");
+
+        for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
+            Track track = trackBank.getItemAt(i);
+            if (track.exists().get() && trackName.equals(track.name().get())) {
+                try {
+                    ClipLauncherSlotBank slotBank = track.clipLauncherSlotBank();
+
+                    if (clipIndex >= 0 && clipIndex < slotBank.getSizeOfBank()) {
+                        ClipLauncherSlot slot = slotBank.getItemAt(clipIndex);
+                        slot.launch();
+                        logger.info("BitwigApiFacade: Successfully launched clip at " + trackName + "[" + clipIndex + "]");
+                        return true;
+                    } else {
+                        logger.error("BitwigApiFacade: Clip index " + clipIndex + " out of bounds for track '" + trackName + "'");
+                        return false;
+                    }
+                } catch (Exception e) {
+                    logger.error("BitwigApiFacade: Error launching clip at " + trackName + "[" + clipIndex + "]: " + e.getMessage());
+                    return false;
+                }
+            }
+        }
+
+        logger.error("BitwigApiFacade: Track '" + trackName + "' not found for clip launch");
+        return false;
     }
 }

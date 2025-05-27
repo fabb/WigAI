@@ -1,11 +1,6 @@
 package io.github.fabb.wigai.bitwig;
 
-import com.bitwig.extension.controller.api.ControllerHost;
-import com.bitwig.extension.controller.api.Transport;
-import com.bitwig.extension.controller.api.CursorTrack;
-import com.bitwig.extension.controller.api.PinnableCursorDevice;
-import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
-import com.bitwig.extension.controller.api.RemoteControl;
+import com.bitwig.extension.controller.api.*;
 import io.github.fabb.wigai.common.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +34,18 @@ public class BitwigApiFacadeTest {
     private RemoteControl mockRemoteControl;
 
     @Mock
+    private TrackBank mockTrackBank;
+
+    @Mock
+    private Track mockTrack;
+
+    @Mock
+    private ClipLauncherSlotBank mockClipLauncherSlotBank;
+
+    @Mock
+    private ClipLauncherSlot mockClipLauncherSlot;
+
+    @Mock
     private Logger mockLogger;
 
     private BitwigApiFacade bitwigApiFacade;
@@ -53,6 +60,12 @@ public class BitwigApiFacadeTest {
         when(mockCursorTrack.createCursorDevice()).thenReturn(mockCursorDevice);
         when(mockCursorDevice.createCursorRemoteControlsPage(8)).thenReturn(mockParameterBank);
 
+        // Setup TrackBank mocks (new for clip launching)
+        when(mockHost.createTrackBank(8, 0, 8)).thenReturn(mockTrackBank);
+        when(mockTrackBank.getItemAt(anyInt())).thenReturn(mockTrack);
+        when(mockTrack.clipLauncherSlotBank()).thenReturn(mockClipLauncherSlotBank);
+        when(mockClipLauncherSlotBank.getItemAt(anyInt())).thenReturn(mockClipLauncherSlot);
+
         // Setup parameter mocks with lenient stubbing to avoid NPEs
         lenient().when(mockParameterBank.getParameter(anyInt())).thenReturn(mockRemoteControl);
 
@@ -62,6 +75,12 @@ public class BitwigApiFacadeTest {
         lenient().when(mockRemoteControl.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
         lenient().when(mockRemoteControl.value()).thenReturn(mock(com.bitwig.extension.controller.api.SettableRangedValue.class));
         lenient().when(mockRemoteControl.displayedValue()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+
+        // Setup TrackBank related mocks with lenient stubbing
+        lenient().when(mockTrack.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+        lenient().when(mockTrack.exists()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockClipLauncherSlot.hasContent()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockClipLauncherSlot.isPlaying()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
 
         bitwigApiFacade = new BitwigApiFacade(mockHost, mockLogger);
     }

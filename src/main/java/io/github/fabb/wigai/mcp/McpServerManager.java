@@ -6,6 +6,7 @@ import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.config.ConfigManager;
 import io.github.fabb.wigai.features.TransportController;
 import io.github.fabb.wigai.features.DeviceController;
+import io.github.fabb.wigai.features.ClipSceneController;
 import io.modelcontextprotocol.server.*;
 import io.modelcontextprotocol.server.transport.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +17,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import io.github.fabb.wigai.mcp.tool.StatusTool;
 import io.github.fabb.wigai.mcp.tool.TransportTool;
 import io.github.fabb.wigai.mcp.tool.DeviceParamTool;
+import io.github.fabb.wigai.mcp.tool.ClipTool;
 import io.modelcontextprotocol.spec.McpSchema;
 import com.bitwig.extension.controller.api.ControllerHost;
 
@@ -111,6 +113,7 @@ public class McpServerManager {
             BitwigApiFacade bitwigApiFacade = new BitwigApiFacade(getHost(), logger);
             TransportController transportController = new TransportController(bitwigApiFacade, logger);
             DeviceController deviceController = new DeviceController(bitwigApiFacade, logger);
+            ClipSceneController clipSceneController = new ClipSceneController(bitwigApiFacade, logger);
 
             this.mcpServer = McpServer.sync(this.transportProvider)
                 .serverInfo("WigAI", extensionDefinition.getVersion())
@@ -124,7 +127,8 @@ public class McpServerManager {
                     TransportTool.transportStopSpecification(transportController, logger),
                     DeviceParamTool.getSelectedDeviceParametersSpecification(deviceController, logger),
                     DeviceParamTool.setSelectedDeviceParameterSpecification(deviceController, logger),
-                    DeviceParamTool.setMultipleDeviceParametersSpecification(deviceController, logger)
+                    DeviceParamTool.setMultipleDeviceParametersSpecification(deviceController, logger),
+                    ClipTool.launchClipSpecification(clipSceneController, logger)
                 )
                 .build();
 
