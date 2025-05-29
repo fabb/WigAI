@@ -61,7 +61,7 @@ public class WigAIExtensionDefinition extends ControllerExtensionDefinition {
 
     @Override
     public String getHelpFilePath() {
-        return "";
+        return "https://github.com/fabb/WigAI/blob/main/README.md";
     }
 
     // This method may not be part of the current API version

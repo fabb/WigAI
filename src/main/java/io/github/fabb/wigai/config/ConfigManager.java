@@ -1,73 +1,43 @@
 package io.github.fabb.wigai.config;
 
-import io.github.fabb.wigai.common.AppConstants;
-import io.github.fabb.wigai.common.Logger;
-
 /**
- * Configuration manager for the WigAI extension.
- * For the initial version, this provides basic configuration options with
- * default values.
+ * Interface for configuration management in the WigAI extension.
+ * Provides a contract for retrieving and modifying MCP server settings,
+ * enabling polymorphic implementations (e.g., preferences-backed, file-based).
  */
-public class ConfigManager {
-    private final Logger logger;
-    private int mcpPort = AppConstants.DEFAULT_MCP_PORT;
-    private String mcpHost = "localhost";
-
-    /**
-     * Creates a new ConfigManager instance.
-     *
-     * @param logger The logger to use for logging configuration events
-     */
-    public ConfigManager(Logger logger) {
-        this.logger = logger;
-        logger.info("ConfigManager initialized with default settings");
-    }
-
+public interface ConfigManager {
     /**
      * Gets the configured MCP server host.
      *
      * @return The MCP server host
      */
-    public String getMcpHost() {
-        return mcpHost;
-    }
+    String getMcpHost();
 
     /**
      * Gets the configured MCP server port.
      *
      * @return The MCP server port
      */
-    public int getMcpPort() {
-        return mcpPort;
-    }
-
-    /**
-     * Sets the MCP server port.
-     *
-     * @param port The port to use for the MCP server
-     */
-    public void setMcpPort(int port) {
-        if (port <= 0 || port > 65535) {
-            logger.warn("Invalid port number: " + port + ". Using default: " + AppConstants.DEFAULT_MCP_PORT);
-            this.mcpPort = AppConstants.DEFAULT_MCP_PORT;
-        } else {
-            this.mcpPort = port;
-            logger.info("MCP server port set to: " + port);
-        }
-    }
+    int getMcpPort();
 
     /**
      * Sets the MCP server host.
      *
      * @param host The host to use for the MCP server
      */
-    public void setMcpHost(String host) {
-        if (host == null || host.isEmpty()) {
-            logger.warn("Invalid host: " + host + ". Using default: localhost");
-            this.mcpHost = "localhost";
-        } else {
-            this.mcpHost = host;
-            logger.info("MCP server host set to: " + host);
-        }
-    }
+    void setMcpHost(String host);
+
+    /**
+     * Sets the MCP server port.
+     *
+     * @param port The port to use for the MCP server
+     */
+    void setMcpPort(int port);
+
+    /**
+     * Adds an observer to be notified when configuration changes.
+     *
+     * @param observer The observer to add
+     */
+    void addObserver(ConfigChangeObserver observer);
 }

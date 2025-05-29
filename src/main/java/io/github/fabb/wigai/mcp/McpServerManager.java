@@ -3,6 +3,7 @@ package io.github.fabb.wigai.mcp;
 import io.github.fabb.wigai.WigAIExtensionDefinition;
 import io.github.fabb.wigai.bitwig.BitwigApiFacade;
 import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.config.ConfigChangeObserver;
 import io.github.fabb.wigai.config.ConfigManager;
 import io.github.fabb.wigai.features.TransportController;
 import io.github.fabb.wigai.features.DeviceController;
@@ -35,10 +36,9 @@ import io.github.fabb.wigai.mcp.tool.SceneByNameTool;
  * - Configures the appropriate error handling
  * - Provides logging for MCP requests and responses
  */
-public class McpServerManager {
+public class McpServerManager implements ConfigChangeObserver {
     private final Logger logger;
-    private final String host;
-    private final int port;
+    private final ConfigManager configManager;
     private final WigAIExtensionDefinition extensionDefinition;
     private final ControllerHost controllerHost;
 
@@ -46,6 +46,12 @@ public class McpServerManager {
     private volatile boolean isRunning;
     private Server jettyServer;
     private HttpServletSseServerTransportProvider transportProvider;
+
+    // Reusable controllers - initialized once during first start
+    private BitwigApiFacade bitwigApiFacade;
+    private TransportController transportController;
+    private DeviceController deviceController;
+    private ClipSceneController clipSceneController;
 
     /**
      * Creates a new McpServerManager instance.
@@ -68,8 +74,7 @@ public class McpServerManager {
      */
     public McpServerManager(Logger logger, ConfigManager configManager, WigAIExtensionDefinition extensionDefinition, ControllerHost controllerHost) {
         this.logger = logger;
-        this.host = configManager.getMcpHost();
-        this.port = configManager.getMcpPort();
+        this.configManager = configManager;
         this.extensionDefinition = extensionDefinition;
         this.controllerHost = controllerHost;
     }
@@ -111,11 +116,16 @@ public class McpServerManager {
             // logging. If more detailed logging is needed, we should investigate alternative
             // approaches with the MCP SDK.
 
-            // Create the BitwigApiFacade and feature controllers
-            BitwigApiFacade bitwigApiFacade = new BitwigApiFacade(getHost(), logger);
-            TransportController transportController = new TransportController(bitwigApiFacade, logger);
-            DeviceController deviceController = new DeviceController(bitwigApiFacade, logger);
-            ClipSceneController clipSceneController = new ClipSceneController(bitwigApiFacade, logger);
+            // Initialize controllers only once during first start to avoid Bitwig API restrictions
+            if (bitwigApiFacade == null) {
+                logger.info("McpServerManager: Initializing Bitwig API controllers");
+                bitwigApiFacade = new BitwigApiFacade(getHost(), logger);
+                transportController = new TransportController(bitwigApiFacade, logger);
+                deviceController = new DeviceController(bitwigApiFacade, logger);
+                clipSceneController = new ClipSceneController(bitwigApiFacade, logger);
+            } else {
+                logger.info("McpServerManager: Reusing existing Bitwig API controllers");
+            }
 
             this.mcpServer = McpServer.sync(this.transportProvider)
                 .serverInfo("WigAI", extensionDefinition.getVersion())
@@ -139,8 +149,8 @@ public class McpServerManager {
             // 4. Servlet Container Setup (Embedded Jetty)
             this.jettyServer = new Server();
             ServerConnector connector = new ServerConnector(this.jettyServer);
-            connector.setHost(this.host);
-            connector.setPort(this.port);
+            connector.setHost(configManager.getMcpHost());
+            connector.setPort(configManager.getMcpPort());
             this.jettyServer.addConnector(connector);
 
             ServletContextHandler contextHandler = new ServletContextHandler();
@@ -150,11 +160,11 @@ public class McpServerManager {
 
             this.jettyServer.start();
             isRunning = true;
-            logger.info(String.format("MCP Server started on http://%s:%d/mcp", host, port));
-            logger.info(String.format("MCP SSE endpoint available at http://%s:%d/sse", host, port));
+            logger.info(String.format("MCP Server started on http://%s:%d/mcp", configManager.getMcpHost(), configManager.getMcpPort()));
+            logger.info(String.format("MCP SSE endpoint available at http://%s:%d/sse", configManager.getMcpHost(), configManager.getMcpPort()));
         } catch (Exception e) {
             isRunning = false;
-            logger.error(String.format("Failed to start MCP Server on %s:%d", host, port), e);
+            logger.error(String.format("Failed to start MCP Server on %s:%d", configManager.getMcpHost(), configManager.getMcpPort()), e);
         }
     }
 
@@ -193,5 +203,59 @@ public class McpServerManager {
      */
     public boolean isRunning() {
         return isRunning;
+    }
+
+    /**
+     * Called when the MCP server host changes.
+     * Triggers a graceful restart of the MCP server with the new host.
+     *
+     * @param oldHost The previous host value
+     * @param newHost The new host value
+     */
+    @Override
+    public void onHostChanged(String oldHost, String newHost) {
+        logger.info("McpServerManager: Host changed from '" + oldHost + "' to '" + newHost + "', restarting MCP server");
+        restartServer();
+    }
+
+    /**
+     * Called when the MCP server port changes.
+     * Triggers a graceful restart of the MCP server with the new port.
+     *
+     * @param oldPort The previous port value
+     * @param newPort The new port value
+     */
+    @Override
+    public void onPortChanged(int oldPort, int newPort) {
+        logger.info("McpServerManager: Port changed from " + oldPort + " to " + newPort + ", restarting MCP server");
+        restartServer();
+    }
+
+    /**
+     * Gracefully restarts the MCP server.
+     * Stops the current server and starts a new one with updated configuration.
+     */
+    private void restartServer() {
+        try {
+            logger.info("McpServerManager: Beginning graceful restart");
+
+            // Stop the current server if running
+            if (isRunning()) {
+                logger.info("McpServerManager: Stopping current server for restart");
+                stop();
+            }
+
+            // Small delay to ensure clean shutdown
+            Thread.sleep(500);
+
+            // Start the server with new configuration
+            logger.info("McpServerManager: Starting server with updated configuration");
+            start();
+
+            logger.info("McpServerManager: Restart completed successfully");
+
+        } catch (Exception e) {
+            logger.error("McpServerManager: Error during server restart", e);
+        }
     }
 }

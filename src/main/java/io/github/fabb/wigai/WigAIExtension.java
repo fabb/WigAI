@@ -4,6 +4,7 @@ import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.ControllerHost;
 import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.config.ConfigManager;
+import io.github.fabb.wigai.config.PreferencesBackedConfigManager;
 import io.github.fabb.wigai.mcp.McpServerManager;
 
 /**
@@ -36,11 +37,16 @@ public class WigAIExtension extends ControllerExtension {
         // Initialize the logger
         logger = new Logger(host);
 
-        // Initialize the config manager
-        configManager = new ConfigManager(logger);
+        // Initialize the config manager with Bitwig preferences integration
+        configManager = new PreferencesBackedConfigManager(logger, host);
 
         // Initialize and start the MCP server
         mcpServerManager = new McpServerManager(logger, configManager, (WigAIExtensionDefinition)getExtensionDefinition(), host);
+
+        // Register MCP server as a configuration change observer
+        configManager.addObserver(mcpServerManager);
+
+        // Start the MCP server
         mcpServerManager.start();
 
         // Log startup message
