@@ -22,7 +22,6 @@ public class PreferencesBackedConfigManager implements ConfigManager {
 
     private final SettableStringValue hostSetting;
     private final SettableRangedValue portSetting;
-    private final SettableStringValue connectionUrlSetting;
 
     private String currentHost;
     private int currentPort;
@@ -64,24 +63,6 @@ public class PreferencesBackedConfigManager implements ConfigManager {
         this.currentHost = hostSetting.get();
         this.currentPort = (int) portSetting.getRaw();
 
-        // Create read-only connection URL display
-        this.connectionUrlSetting = preferences.getStringSetting(
-            "Connection URL",
-            "Network Settings",
-            200,
-            buildConnectionUrl()
-        );
-        // Note: Bitwig API doesn't support setEnabled() for SettableStringValue
-        // The connection URL will be read-only by design (user shouldn't edit it manually)
-
-        // Add helpful instructional text
-        preferences.getStringSetting(
-            "Instructions",
-            "Network Settings",
-            300,
-            "Configure MCP server connection. Use the Connection URL below to connect external AI agents to WigAI."
-        );
-        // Note: Instructions are meant to be informational, users can edit but it won't affect functionality
 
         // Set up change listeners
         setupChangeListeners();
@@ -98,7 +79,6 @@ public class PreferencesBackedConfigManager implements ConfigManager {
             if (newHost != null && !newHost.equals(currentHost)) {
                 String oldHost = currentHost;
                 currentHost = validateHost(newHost);
-                updateConnectionUrl();
                 notifyHostChanged(oldHost, currentHost);
                 logger.info("PreferencesBackedConfigManager: Host changed from '" + oldHost + "' to '" + currentHost + "'");
             }
@@ -110,7 +90,6 @@ public class PreferencesBackedConfigManager implements ConfigManager {
             if (newPortInt != currentPort) {
                 int oldPort = currentPort;
                 currentPort = validatePort(newPortInt);
-                updateConnectionUrl();
                 notifyPortChanged(oldPort, currentPort);
                 logger.info("PreferencesBackedConfigManager: Port changed from " + oldPort + " to " + currentPort);
             }
@@ -146,14 +125,6 @@ public class PreferencesBackedConfigManager implements ConfigManager {
         return String.format("http://%s:%d/sse", currentHost, currentPort);
     }
 
-    /**
-     * Updates the connection URL display.
-     */
-    private void updateConnectionUrl() {
-        String newUrl = buildConnectionUrl();
-        connectionUrlSetting.set(newUrl);
-        logger.debug("PreferencesBackedConfigManager: Updated connection URL to: " + newUrl);
-    }
 
     /**
      * Gets the configured MCP server host.

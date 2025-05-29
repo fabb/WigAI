@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.fabb"
-version = "0.1.0"
+version = "0.2.0"
 
 repositories {
     mavenCentral()
@@ -54,7 +54,7 @@ tasks.withType<Test> {
 // Configure the Shadow JAR (fat JAR with all dependencies)
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     archiveBaseName.set("wigai-all")
-    archiveClassifier.set("") // No classifier, so it's just wigai-all-0.1.0.jar
+    archiveClassifier.set("") // No classifier, so it's just wigai-all-0.2.0.jar
     mergeServiceFiles() // Merge META-INF/services for SPI
 }
 

@@ -162,6 +162,9 @@ public class McpServerManager implements ConfigChangeObserver {
             isRunning = true;
             logger.info(String.format("MCP Server started on http://%s:%d/mcp", configManager.getMcpHost(), configManager.getMcpPort()));
             logger.info(String.format("MCP SSE endpoint available at http://%s:%d/sse", configManager.getMcpHost(), configManager.getMcpPort()));
+
+            // Show popup notification with connection info
+            notifyServerStarted();
         } catch (Exception e) {
             isRunning = false;
             logger.error(String.format("Failed to start MCP Server on %s:%d", configManager.getMcpHost(), configManager.getMcpPort()), e);
@@ -194,6 +197,9 @@ public class McpServerManager implements ConfigChangeObserver {
         }
 
         logger.info("MCP Server stopped");
+
+        // Show popup notification
+        notifyServerStopped();
     }
 
     /**
@@ -254,8 +260,76 @@ public class McpServerManager implements ConfigChangeObserver {
 
             logger.info("McpServerManager: Restart completed successfully");
 
+            // Show restart notification with new connection info
+            notifyServerRestarted();
+
         } catch (Exception e) {
             logger.error("McpServerManager: Error during server restart", e);
+        }
+    }
+
+    /**
+     * Shows a popup notification when the MCP server starts successfully.
+     * Includes both status and connection information for user convenience.
+     */
+    private void notifyServerStarted() {
+        if (controllerHost == null) {
+            logger.debug("McpServerManager: Controller host not available, skipping startup notification");
+            return;
+        }
+
+        String connectionUrl = String.format("http://%s:%d/sse",
+            configManager.getMcpHost(), configManager.getMcpPort());
+        String message = String.format("WigAI MCP Server started. Connect AI agents to: %s",
+            connectionUrl);
+
+        try {
+            controllerHost.showPopupNotification(message);
+            logger.info("McpServerManager: Displayed startup notification: " + message);
+        } catch (Exception e) {
+            logger.error("McpServerManager: Error showing startup notification", e);
+        }
+    }
+
+    /**
+     * Shows a popup notification when the MCP server is restarted due to configuration changes.
+     * Combines restart status with new connection information.
+     */
+    private void notifyServerRestarted() {
+        if (controllerHost == null) {
+            logger.debug("McpServerManager: Controller host not available, skipping restart notification");
+            return;
+        }
+
+        String connectionUrl = String.format("http://%s:%d/sse",
+            configManager.getMcpHost(), configManager.getMcpPort());
+        String message = String.format("WigAI MCP Server restarted. Connect AI agents to: %s",
+            connectionUrl);
+
+        try {
+            controllerHost.showPopupNotification(message);
+            logger.info("McpServerManager: Displayed restart notification: " + message);
+        } catch (Exception e) {
+            logger.error("McpServerManager: Error showing restart notification", e);
+        }
+    }
+
+    /**
+     * Shows a popup notification when the MCP server stops.
+     */
+    private void notifyServerStopped() {
+        if (controllerHost == null) {
+            logger.debug("McpServerManager: Controller host not available, skipping stop notification");
+            return;
+        }
+
+        String message = "WigAI MCP Server stopped";
+
+        try {
+            controllerHost.showPopupNotification(message);
+            logger.info("McpServerManager: Displayed stop notification: " + message);
+        } catch (Exception e) {
+            logger.error("McpServerManager: Error showing stop notification", e);
         }
     }
 }
