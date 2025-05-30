@@ -1,6 +1,6 @@
 # Story {EpicNum}.{StoryNum}: {Short Title Copied from Epic File}
 
-## Status: { Draft | Approved | InProgress | Done }
+## Status: { Draft | Approved | InProgress | Review | Done }
 
 ## Story
 
@@ -28,6 +28,7 @@
 ### Agent Model Used: `<Agent Model Name/Version>`
 
 ### Completion Notes List
+
 {Any notes about implementation choices, difficulties, or follow-up needed}
 
 ### Change Log
