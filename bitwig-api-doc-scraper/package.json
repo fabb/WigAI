@@ -1,0 +1,18 @@
+{
+  "name": "bitwig-api-doc-scraper",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "scrape": "node --experimental-transform-types scrape.ts"
+  },
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "javadocs-scraper": "^1.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.27"
+  }
+}
