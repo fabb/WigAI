@@ -236,3 +236,48 @@ Errors will be communicated in the `status` field of the response, with addition
 ## External APIs Consumed
 
 WigAI does not consume any external APIs.
+
+## MCP Tool Development Guidelines
+
+These guidelines assist AI agents in effectively choosing and using MCP tools.
+
+### 1. Tool Design & Scope
+*   **Focus & Atomicity**: Tools should perform single, clear tasks. Avoid overly complex tools.
+*   **Meaningful Workflows**: Expose tools representing goal-oriented tasks, not just raw API endpoints.
+*   **Manageable Number**: Prefer a curated set. For larger sets, use:
+    *   **Logical Grouping/Namespacing**: e.g., `userManagement_createUser`.
+    *   **Abstraction Layers**: Offer high-level (common operations) and lower-level (fine-grained control) tools.
+    *   **Phased Exposure**: Start with critical tools and iterate.
+
+### 2. Naming Conventions
+*   **Clear & Descriptive**: Short names indicating function.
+*   **Consistent & Unique**: Use a standard convention (e.g., `snake_case`) and ensure uniqueness.
+*   **Unambiguous**: Differentiate similar tools clearly.
+
+### 3. Tool Descriptions
+*   **Detailed & Unambiguous**: Crucial for AI selection. Explain:
+    *   What the tool does.
+    *   When to use it.
+    *   Expected outcome.
+*   **Examples**: Provide sample inputs/outputs.
+*   **Markdown**: Use for readability.
+
+### 4. Parameter Handling
+*   **Clear Definitions**: For each parameter: name, description, data type, required/optional, constraints/formats.
+*   **JSON Schema**: Use for structured, machine-readable definitions.
+*   **"Think Like the Model"**: Descriptions should be obvious to a new developer.
+*   **Input Validation**: Define validation rules clearly.
+
+### 5. Output Handling
+*   **Document Structure**: Clearly describe output structure, including variability based on inputs.
+*   **Context for Interpretation**: Explain how to interpret outputs if needed.
+*   **Deterministic Behavior**: State if output can be random or change with identical inputs.
+*   **Error Reporting**: Describe how errors are communicated in the output.
+
+### 6. General Best Practices
+*   **Prioritize Safety**: Be cautious with data-modifying tools (PUT, DELETE). Prefer GET. Implement robust safety/consent mechanisms.
+*   **User Consent & Control**: Align with MCP principles for data access and operations.
+*   **Error Handling**: Implement proper error handling with clear messages (no sensitive internal details).
+*   **Rich Metadata**: Comprehensive and accurate tool metadata is key for discovery and use.
+*   **Test Thoroughly**: Observe AI interaction and iterate on definitions.
+*   **Consistent Documentation**: Standardize format and structure.
