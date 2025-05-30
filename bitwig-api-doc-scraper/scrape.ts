@@ -36,6 +36,14 @@ const convertClassToMarkdown = (classData: ClassData): string => {
         markdown += `${classData.description.text}\n\n`
     }
 
+    if (classData.extends) {
+        markdown += `**Extends:** ${classData.extends.qualifiedName}\n\n`
+    }
+
+    if (classData.implements.size > 0) {
+        markdown += `**Implements:** ${[...classData.implements.values()].map(impl => `\`${impl.qualifiedName}\``).join(', ')}\n\n`
+    }
+
     const methods = classData.methods
     markdown += convertMethodsToMarkdown(methods)
 
@@ -47,6 +55,10 @@ const convertInterfaceToMarkdown = ( interfaceData: InterfaceData): string => {
 
     if (interfaceData.description?.text) {
         markdown += `${interfaceData.description.text}\n\n`
+    }
+
+    if (interfaceData.extends.size > 0) {
+        markdown += `**Extends:** ${[...interfaceData.extends.map(extend => `\`${extend.qualifiedName}\``)].join(', ')}\n\n`
     }
 
     const methods = interfaceData.methods
@@ -160,9 +172,5 @@ for (const [packageName, pkg] of scrapedJavadocs.getPackages()) {
     });
 }
 
-console.log(markdownOutput)
-
 await writeFile('bitwig-api-documentation.md', markdownOutput, 'utf-8')
 console.log('Documentation written to bitwig-api-documentation.md')
-
-
