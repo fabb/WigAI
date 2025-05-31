@@ -173,7 +173,19 @@ Validating WigAI's functionality will involve several layers:
 -   Support for a wider range of Bitwig API functionalities (e.g., track creation, device insertion, note manipulation).
 -   More sophisticated MCP query capabilities (e.g., listing available tracks, scenes, devices, parameters).
 -   Direct handling of "creative" commands within WigAI with more built-in logic (e.g., "randomize parameters with X characteristic"), reducing reliance on external AI agent's interpretation for common creative gestures.
--   Support for asynchronous operations and notifications from WigAI to the MCP client (e.g., when a new track is added manually in Bitwig).
+-   **Streaming MCP Responses:**
+    *   **Real-time State Monitoring:**
+        *   Continuously stream playhead position (beat/time) for precise AI synchronization.
+        *   Stream VU meter data (track/master) for reactive AI behaviors based on loudness.
+        *   Stream live parameter changes as users adjust controls in Bitwig.
+        *   Stream live tempo updates, including tempo automation.
+    *   **Event Notifications:**
+        *   Provide immediate notifications for events like clip launch/stop, track/device selection changes, automation events, or cue marker triggers.
+    *   **Enabling Reactive AI:**
+        *   Allow AI agents to subscribe to specific event types or data streams (e.g., "notify when track 'X' starts clipping," "stream master bus RMS").
+        *   This would facilitate more dynamic AI interactions, such as live feedback, generative accompaniment, or automated tasks based on live Bitwig triggers.
+    *   **MCP Extension:** This would likely require a new type of MCP tool for event subscription and a mechanism for the server to push updates to the client.
+-   Support for asynchronous operations and notifications from WigAI to the MCP client (e.g., when a new track is added manually in Bitwig) - *This is closely related to Streaming MCP Responses but can also cover discrete events.*
 -   Built-in mapping capabilities for users to customize how AI commands map to Bitwig actions beyond the selected device.
 -   Exploration of simpler setup/discovery mechanisms for the MCP connection.
 
