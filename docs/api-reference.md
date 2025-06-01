@@ -11,14 +11,24 @@ Communication is message-based, typically using JSON-RPC or a similar structured
 ### Core Commands
 
 #### `status`
-*   **Description**: Get WigAI operational status and version information.
+*   **Description**: Get WigAI operational status, version information, current project name, audio engine status, and detailed transport information.
 *   **Parameters**: None
 *   **Returns**:
     ```json
     {
-      "status": "ok" | "error",
-      "version": "x.y.z",
-      "message": "Optional message, e.g., error details"
+      "wigai_version": "x.y.z",
+      "project_name": "Name of the project",
+      "audio_engine_active": true,
+      "transport": {
+        "playing": false,
+        "recording": false,
+        "repeat_active": false,
+        "metronome_active": true,
+        "current_tempo": 120.0,
+        "time_signature": "4/4",
+        "current_beat_str": "1.1.1:0",
+        "current_time_str": "1.1.1:0"
+      }
     }
     ```
 
