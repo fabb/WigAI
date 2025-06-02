@@ -63,9 +63,13 @@ jobs:
       - name: Generate release notes
         run: conventional-changelog -p angular -i CHANGELOG.md -s -r 0 > RELEASE_NOTES.md && cat RELEASE_NOTES.md
 
+      - name: Get project version
+        id: get_version
+        run: echo "PROJECT_VERSION=$(./gradlew properties -q -Pprop=version)" >> $GITHUB_ENV
+
       - name: Generate tag name
         id: generate_tag # id is not strictly needed here as we are using GITHUB_ENV but good practice
-        run: echo "TAG_NAME=release-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+        run: echo "TAG_NAME=release-${{ env.PROJECT_VERSION }}-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
