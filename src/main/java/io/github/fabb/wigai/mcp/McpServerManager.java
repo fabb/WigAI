@@ -280,8 +280,8 @@ public class McpServerManager implements ConfigChangeObserver {
 
         String connectionUrl = String.format("http://%s:%d/sse",
             configManager.getMcpHost(), configManager.getMcpPort());
-        String message = String.format("WigAI MCP Server started. Connect AI agents to: %s",
-            connectionUrl);
+        String message = String.format("WigAI MCP Server v%s started. Connect AI agents to: %s",
+            extensionDefinition.getVersion(), connectionUrl);
 
         try {
             controllerHost.showPopupNotification(message);
@@ -303,8 +303,8 @@ public class McpServerManager implements ConfigChangeObserver {
 
         String connectionUrl = String.format("http://%s:%d/sse",
             configManager.getMcpHost(), configManager.getMcpPort());
-        String message = String.format("WigAI MCP Server restarted. Connect AI agents to: %s",
-            connectionUrl);
+        String message = String.format("WigAI MCP Server v%s restarted. Connect AI agents to: %s",
+            extensionDefinition.getVersion(), connectionUrl);
 
         try {
             controllerHost.showPopupNotification(message);
@@ -323,7 +323,7 @@ public class McpServerManager implements ConfigChangeObserver {
             return;
         }
 
-        String message = "WigAI MCP Server stopped";
+        String message = String.format("WigAI MCP Server v%s stopped", extensionDefinition.getVersion());
 
         try {
             controllerHost.showPopupNotification(message);

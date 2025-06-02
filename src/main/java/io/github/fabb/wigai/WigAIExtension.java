@@ -2,6 +2,7 @@ package io.github.fabb.wigai;
 
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.ControllerHost;
+import io.github.fabb.wigai.common.AppConstants; // Added import
 import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.config.ConfigManager;
 import io.github.fabb.wigai.config.PreferencesBackedConfigManager;
@@ -32,6 +33,9 @@ public class WigAIExtension extends ControllerExtension {
      */
     @Override
     public void init() {
+        // Initialize AppConstants version FIRST
+        // AppConstants.initVersion(); // Removed call to initVersion
+
         final ControllerHost host = getHost();
 
         // Initialize the logger
