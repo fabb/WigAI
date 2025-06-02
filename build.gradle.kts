@@ -89,3 +89,15 @@ tasks.register<Jar>("bwextension") {
 tasks.named("build") {
     dependsOn("bwextension")
 }
+
+// Task to print just the version for CI/CD
+tasks.register("printVersion") {
+    group = "help"
+    description = "Prints the project version"
+    doLast {
+        // Use System.out.print to avoid extra newlines
+        print(project.version)
+    }
+    // Ensure this task doesn't show progress
+    logging.captureStandardOutput(LogLevel.QUIET)
+}

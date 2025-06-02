@@ -65,7 +65,7 @@ jobs:
 
       - name: Get project version
         id: get_version
-        run: echo "PROJECT_VERSION=$(./gradlew properties -q -Pprop=version)" >> $GITHUB_ENV
+        run: echo "PROJECT_VERSION=$(./gradlew -q printVersion)" >> $GITHUB_ENV
 
       - name: Generate tag name
         id: generate_tag # id is not strictly needed here as we are using GITHUB_ENV but good practice
