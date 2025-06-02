@@ -37,6 +37,8 @@ jobs:
       - name: Install semantic-release
         run: |
           npm install -g semantic-release
+          npm install -g @semantic-release/commit-analyzer
+          npm install -g @semantic-release/release-notes-generator
           npm install -g @semantic-release/changelog
           npm install -g @semantic-release/git
           npm install -g @semantic-release/github
@@ -54,22 +56,15 @@ jobs:
         if: env.SEMANTIC_RELEASE_NEW_RELEASE_PUBLISHED == 'true'
         run: ./gradlew bwextension
 
-      - name: Get release info for asset upload
-        if: env.SEMANTIC_RELEASE_NEW_RELEASE_PUBLISHED == 'true'
-        id: release_info
-        run: |
-          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ env.SEMANTIC_RELEASE_VERSION }}" \
-            | jq -r '.id')
-          echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
-
       - name: Upload extension to release
         if: env.SEMANTIC_RELEASE_NEW_RELEASE_PUBLISHED == 'true'
-        uses: actions/upload-release-asset@v1
+        run: |
+          # Wait a moment for the release to be fully created
+          sleep 5
+
+          # Upload the extension file to the latest release
+          gh release upload "v${{ env.SEMANTIC_RELEASE_VERSION }}" \
+            "build/extensions/WigAI.bwextension" \
+            --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.release_info.outputs.release_id }}/assets{?name,label}
-          asset_path: build/extensions/WigAI.bwextension
-          asset_name: WigAI.bwextension
-          asset_content_type: application/java-archive
