@@ -34,3 +34,8 @@ hs_err_pid*
 
 # Logs
 *.log
+
+# Nyx
+.nyx/
+
+CHANGELOG.md

@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.github.fabb"
-version = "0.2.0"
+// Version is managed by Nyx - it will be set automatically by the Nyx plugin
 
 repositories {
     mavenCentral()

@@ -43,6 +43,17 @@ Once the extension is activated in Bitwig Studio, the MCP server will be availab
 
 This project is developed using the [BMAD v2 method](https://github.com/bmadcode/BMAD-METHOD) with AI Agents. The files in folders `agents`, `ai` and `docs` used for this development method.
 
+## Releases
+
+This project uses [Nyx](https://github.com/mooltiverse/nyx) for semantic versioning and automated releases. The release process follows [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+- `feat:` - new features (minor version bump)
+- `fix:` - bug fixes (patch version bump)
+- `feat!:` or `BREAKING CHANGE:` - breaking changes (major version bump)
+- `chore:`, `docs:`, `style:`, `refactor:`, `test:` - no version bump
+
+Releases are automatically created on pushes to the `main` branch when commits follow the conventional commit format.
+
 ## License
 
 [MIT License](LICENSE)

@@ -1,21 +1,26 @@
 name: Release Extension
 
 on:
-  workflow_dispatch: # Allows manual triggering
-  pull_request: # Run on pull requests
-#   push:
-#     branches:
-#       - main # Triggers on pushes to the main branch
+  push:
+    branches: [main]  # Automatic releases on main branch
+  workflow_dispatch:  # Manual triggering
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
+  actions: write
+  packages: write
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for Nyx
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -26,53 +31,19 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build extension
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
+      - name: Build extension with updated version
         run: ./gradlew bwextension
 
-      - name: Upload extension artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: WigAI.bwextension
-          path: build/extensions/WigAI.bwextension
-
-  release:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'workflow_dispatch'
-    # || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history for changelog generation
-
-      - name: Download extension artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: WigAI.bwextension
-          path: . # Download directly into the current workspace directory
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-
-      - name: Install conventional-changelog-cli
-        run: npm install -g conventional-changelog-cli conventional-commits-parser
-
-      - name: Generate release notes
-        run: conventional-changelog -p angular -i CHANGELOG.md -s -r 0 > RELEASE_NOTES.md && cat RELEASE_NOTES.md
-
-      - name: Generate tag name
-        id: generate_tag # id is not strictly needed here as we are using GITHUB_ENV but good practice
-        run: echo "TAG_NAME=release-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ env.TAG_NAME }}
-          name: Release ${{ env.TAG_NAME }}
-          body_path: RELEASE_NOTES.md
-          files: WigAI.bwextension # Updated path
+      - name: Nyx publish release with assets
+        run: ./gradlew nyxPublish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
