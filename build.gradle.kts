@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.bundling.Zip
+import org.gradle.api.tasks.bundling.Jar
 
 plugins {
     // Apply the Java plugin to add support for Java
@@ -53,26 +54,35 @@ tasks.withType<Test> {
 
 // Configure the Shadow JAR (fat JAR with all dependencies)
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-    archiveBaseName.set("wigai-all")
-    archiveClassifier.set("") // No classifier, so it's just wigai-all-0.2.0.jar
+    archiveFileName.set("wigai-all-${project.version}.jar")
+    manifest.inheritFrom(tasks.named<org.gradle.api.tasks.bundling.Jar>("jar").get().manifest)
     mergeServiceFiles() // Merge META-INF/services for SPI
 }
 
 // Task to create the .bwextension file
-tasks.register<Zip>("bwextension") {
-    dependsOn("shadowJar")
+tasks.register<Jar>("bwextension") {
+    group = "build"
+    description = "Creates the .bwextension file, a JAR with a proper manifest and all dependencies."
+
+    dependsOn(tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar"))
+
     archiveFileName.set("WigAI.bwextension")
+
     destinationDirectory.set(layout.buildDirectory.dir("extensions"))
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // Avoid duplicate META-INF/services
 
-    // Include all classes and dependencies from the fat JAR
-    from(zipTree(tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar").get().archiveFile))
-
-    // Include the services directory at the root level
-    from("src/main/resources/META-INF") {
-        include("services/**")
-        into("META-INF")
+    manifest {
+        attributes(
+            "Implementation-Title" to project.name,
+            "Implementation-Version" to project.version.toString(),
+            "Implementation-Vendor" to project.group.toString(),
+            "Created-By" to "Gradle ${gradle.gradleVersion}",
+        )
     }
+
+    // Include all content from the shadowJar.
+    // This makes WigAI.bwextension effectively BE the shadow JAR,
+    // but with the desired name and the manifest defined directly above.
+    from(tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar").map { zipTree(it.archiveFile) })
 }
 
 // Make the build task also create the .bwextension file
