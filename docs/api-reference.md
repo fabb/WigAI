@@ -11,7 +11,7 @@ Communication is message-based, typically using JSON-RPC or a similar structured
 ### Core Commands
 
 #### `status`
-*   **Description**: Get WigAI operational status, version information, current project name, audio engine status, and detailed transport information.
+*   **Description**: Get WigAI operational status, version information, current project name, audio engine status, detailed transport information, project parameters, and selected track details.
 *   **Parameters**: None
 *   **Returns**:
     ```json
@@ -28,6 +28,24 @@ Communication is message-based, typically using JSON-RPC or a similar structured
         "time_signature": "4/4",
         "current_beat_str": "1.1.1:0",
         "current_time_str": "0:00.000"
+      },
+      "project_parameters": [
+        {
+          "index": 0,
+          "exists": true,
+          "name": "Project Parameter Name",
+          "value": 0.5,
+          "display_value": "50%"
+        }
+      ],
+      "selected_track": {
+        "index": 0,
+        "name": "Track Name",
+        "type": "audio",
+        "is_group": false,
+        "muted": false,
+        "soloed": false,
+        "armed": true
       }
     }
     ```
@@ -35,6 +53,10 @@ Communication is message-based, typically using JSON-RPC or a similar structured
 *   **Notes**:
     - `current_beat_str`: Bitwig-style beat position format (measures.beats.sixteenths:ticks), e.g., "1.1.1:0"
     - `current_time_str`: Time format with milliseconds (MM:SS.mmm or HH:MM:SS.mmm), e.g., "0:12.345" or "1:23:45.678"
+    - `project_parameters`: Array containing only parameters where `exists` is true (0-7 parameter indexes)
+    - `selected_track`: Object containing currently selected track details, or `null` if no track is selected
+    - `selected_track.type`: Track type (e.g., "audio", "instrument", "group", "hybrid", "effect", "master")
+    - `selected_track.index`: 0-based index in the current track bank, or -1 if not found in visible tracks
 
 #### `transport_start`
 *   **Description**: Start Bitwig's transport playback.

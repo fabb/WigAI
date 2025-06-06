@@ -52,6 +52,18 @@ public class BitwigApiFacadeTest {
     private Scene mockScene;
 
     @Mock
+    private Application mockApplication;
+
+    @Mock
+    private MasterTrack mockMasterTrack;
+
+    @Mock
+    private CursorRemoteControlsPage mockProjectParameterBank;
+
+    @Mock
+    private RemoteControl mockProjectRemoteControl;
+
+    @Mock
     private Logger mockLogger;
 
     private BitwigApiFacade bitwigApiFacade;
@@ -62,9 +74,14 @@ public class BitwigApiFacadeTest {
 
         // Setup basic mocks
         when(mockHost.createTransport()).thenReturn(mockTransport);
+        when(mockHost.createApplication()).thenReturn(mockApplication);
         when(mockHost.createCursorTrack(0, 0)).thenReturn(mockCursorTrack);
         when(mockCursorTrack.createCursorDevice()).thenReturn(mockCursorDevice);
         when(mockCursorDevice.createCursorRemoteControlsPage(8)).thenReturn(mockParameterBank);
+
+        // Setup new mocks for story 5.2
+        when(mockHost.createMasterTrack(0)).thenReturn(mockMasterTrack);
+        when(mockMasterTrack.createCursorRemoteControlsPage(8)).thenReturn(mockProjectParameterBank);
 
         // Setup TrackBank mocks (new for clip launching)
         when(mockHost.createTrackBank(8, 0, 8)).thenReturn(mockTrackBank);
@@ -78,6 +95,7 @@ public class BitwigApiFacadeTest {
 
         // Setup parameter mocks with lenient stubbing to avoid NPEs
         lenient().when(mockParameterBank.getParameter(anyInt())).thenReturn(mockRemoteControl);
+        lenient().when(mockProjectParameterBank.getParameter(anyInt())).thenReturn(mockProjectRemoteControl);
 
         // Use lenient mocking for the chain calls to avoid NPEs during construction
         lenient().when(mockCursorDevice.exists()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
@@ -85,6 +103,12 @@ public class BitwigApiFacadeTest {
         lenient().when(mockRemoteControl.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
         lenient().when(mockRemoteControl.value()).thenReturn(mock(com.bitwig.extension.controller.api.SettableRangedValue.class));
         lenient().when(mockRemoteControl.displayedValue()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+
+        // Setup project parameter mocks
+        lenient().when(mockProjectRemoteControl.exists()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockProjectRemoteControl.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+        lenient().when(mockProjectRemoteControl.value()).thenReturn(mock(com.bitwig.extension.controller.api.SettableRangedValue.class));
+        lenient().when(mockProjectRemoteControl.displayedValue()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
 
         // Setup TrackBank related mocks with lenient stubbing
         lenient().when(mockTrack.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
@@ -95,6 +119,27 @@ public class BitwigApiFacadeTest {
         // Setup SceneBank related mocks with lenient stubbing
         lenient().when(mockScene.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
         lenient().when(mockScene.exists()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+
+        // Setup Application mocks for story 5.2
+        lenient().when(mockApplication.projectName()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+        lenient().when(mockApplication.hasActiveEngine()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+
+        // Setup Transport mocks for story 5.2
+        lenient().when(mockTransport.isPlaying()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
+        lenient().when(mockTransport.isArrangerRecordEnabled()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
+        lenient().when(mockTransport.isArrangerLoopEnabled()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
+        lenient().when(mockTransport.isMetronomeEnabled()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
+        lenient().when(mockTransport.tempo()).thenReturn(mock(com.bitwig.extension.controller.api.Parameter.class));
+        lenient().when(mockTransport.timeSignature()).thenReturn(mock(com.bitwig.extension.controller.api.TimeSignatureValue.class));
+        lenient().when(mockTransport.getPosition()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBeatTimeValue.class));
+        lenient().when(mockTransport.playPositionInSeconds()).thenReturn(mock(com.bitwig.extension.controller.api.SettableDoubleValue.class));
+
+        // Setup CursorTrack mocks for story 5.2
+        lenient().when(mockCursorTrack.trackType()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+        lenient().when(mockCursorTrack.isGroup()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorTrack.mute()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
+        lenient().when(mockCursorTrack.solo()).thenReturn(mock(com.bitwig.extension.controller.api.SoloValue.class));
+        lenient().when(mockCursorTrack.arm()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
 
         bitwigApiFacade = new BitwigApiFacade(mockHost, mockLogger);
     }

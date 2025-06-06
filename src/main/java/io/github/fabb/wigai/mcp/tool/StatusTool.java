@@ -8,6 +8,7 @@ import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema;
 import com.bitwig.extension.controller.api.*;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,24 @@ public class StatusTool {
                 // Get transport information from BitwigApiFacade
                 Map<String, Object> transportMap = bitwigApiFacade.getTransportStatus();
                 responseMap.put("transport", transportMap);
+
+                // Get project parameters from BitwigApiFacade
+                List<io.github.fabb.wigai.common.data.ParameterInfo> projectParams = bitwigApiFacade.getProjectParameters();
+                List<Map<String, Object>> projectParametersArray = new ArrayList<>();
+                for (io.github.fabb.wigai.common.data.ParameterInfo param : projectParams) {
+                    Map<String, Object> paramMap = new LinkedHashMap<>();
+                    paramMap.put("index", param.index());
+                    paramMap.put("exists", true); // Only existing parameters are returned
+                    paramMap.put("name", param.name());
+                    paramMap.put("value", param.value());
+                    paramMap.put("display_value", param.display_value());
+                    projectParametersArray.add(paramMap);
+                }
+                responseMap.put("project_parameters", projectParametersArray);
+
+                // Get selected track information from BitwigApiFacade
+                Map<String, Object> selectedTrackInfo = bitwigApiFacade.getSelectedTrackInfo();
+                responseMap.put("selected_track", selectedTrackInfo);
 
                 // Convert response to JSON string for text content
                 ObjectMapper objectMapper = new ObjectMapper();

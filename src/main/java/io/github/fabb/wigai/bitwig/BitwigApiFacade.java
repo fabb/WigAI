@@ -5,7 +5,9 @@ import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.common.data.ParameterInfo;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Facade for Bitwig API interactions.
@@ -20,6 +22,8 @@ public class BitwigApiFacade {
     private final RemoteControlsPage deviceParameterBank;
     private final TrackBank trackBank;
     private final SceneBankFacade sceneBankFacade;
+    private final CursorTrack cursorTrack;
+    private final RemoteControlsPage projectParameterBank;
 
     /**
      * Creates a new BitwigApiFacade instance.
@@ -48,9 +52,13 @@ public class BitwigApiFacade {
         application.hasActiveEngine().markInterested();
 
         // Initialize device control - use CursorTrack.createCursorDevice() instead of deprecated host.createCursorDevice()
-        CursorTrack cursorTrack = host.createCursorTrack(0, 0);
+        this.cursorTrack = host.createCursorTrack(0, 0);
         this.cursorDevice = cursorTrack.createCursorDevice();
         this.deviceParameterBank = cursorDevice.createCursorRemoteControlsPage(8);
+
+        // Initialize project parameter access via MasterTrack (project parameters)
+        MasterTrack masterTrack = host.createMasterTrack(0);
+        this.projectParameterBank = masterTrack.createCursorRemoteControlsPage(8);
 
         // Initialize track bank for clip launching (8 tracks, 8 scenes for now, but needs to be increased later for full functionality)
         this.trackBank = host.createTrackBank(8, 0, 8);
@@ -60,13 +68,31 @@ public class BitwigApiFacade {
         cursorDevice.exists().markInterested();
         cursorDevice.name().markInterested();
 
-        // Mark interest in all parameter properties to enable value access
+        // Mark interest in all device parameter properties to enable value access
         for (int i = 0; i < 8; i++) {
             RemoteControl parameter = deviceParameterBank.getParameter(i);
             parameter.name().markInterested();
             parameter.value().markInterested();
             parameter.displayedValue().markInterested();
         }
+
+        // Mark interest in project parameters to enable value access
+        for (int i = 0; i < 8; i++) {
+            RemoteControl parameter = projectParameterBank.getParameter(i);
+            parameter.exists().markInterested();
+            parameter.name().markInterested();
+            parameter.value().markInterested();
+            parameter.displayedValue().markInterested();
+        }
+
+        // Mark interest in cursor track properties for selected track details
+        cursorTrack.exists().markInterested();
+        cursorTrack.name().markInterested();
+        cursorTrack.trackType().markInterested();
+        cursorTrack.isGroup().markInterested();
+        cursorTrack.mute().markInterested();
+        cursorTrack.solo().markInterested();
+        cursorTrack.arm().markInterested();
 
         // Mark interest in track properties for clip launching
         for (int trackIndex = 0; trackIndex < 8; trackIndex++) {
@@ -478,5 +504,81 @@ public class BitwigApiFacade {
             logger.warn("BitwigApiFacade: Error formatting beat position: " + e.getMessage());
             return "1.1.1:0";
         }
+    }
+
+    /**
+     * Gets the project parameters (0-7) from the project's remote controls page.
+     * Only returns parameters where exists() is true.
+     *
+     * @return A list of ParameterInfo objects representing the existing project parameters
+     */
+    public List<ParameterInfo> getProjectParameters() {
+        logger.info("BitwigApiFacade: Getting project parameters");
+        List<ParameterInfo> parameters = new ArrayList<>();
+
+        for (int i = 0; i < 8; i++) {
+            RemoteControl parameter = projectParameterBank.getParameter(i);
+            boolean exists = parameter.exists().get();
+
+            if (exists) {
+                String name = parameter.name().get();
+                double value = parameter.value().get();
+                String displayValue = parameter.displayedValue().get();
+
+                // Handle null or empty names
+                if (name != null && name.trim().isEmpty()) {
+                    name = null;
+                }
+
+                parameters.add(new ParameterInfo(i, name, value, displayValue));
+            }
+        }
+
+        logger.info("BitwigApiFacade: Retrieved " + parameters.size() + " existing project parameters");
+        return parameters;
+    }
+
+    /**
+     * Gets information about the currently selected track.
+     *
+     * @return A map containing selected track information, or null if no track is selected
+     */
+    public Map<String, Object> getSelectedTrackInfo() {
+        logger.info("BitwigApiFacade: Getting selected track information");
+
+        if (!cursorTrack.exists().get()) {
+            logger.info("BitwigApiFacade: No track selected");
+            return null;
+        }
+
+        Map<String, Object> trackInfo = new LinkedHashMap<>();
+
+        try {
+            // Get track index by finding it in the track bank
+            int trackIndex = -1;
+            String trackName = cursorTrack.name().get();
+            for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
+                Track track = trackBank.getItemAt(i);
+                if (track.exists().get() && trackName.equals(track.name().get())) {
+                    trackIndex = i;
+                    break;
+                }
+            }
+
+            trackInfo.put("index", trackIndex);
+            trackInfo.put("name", trackName);
+            trackInfo.put("type", cursorTrack.trackType().get().toLowerCase());
+            trackInfo.put("is_group", cursorTrack.isGroup().get());
+            trackInfo.put("muted", cursorTrack.mute().get());
+            trackInfo.put("soloed", cursorTrack.solo().get());
+            trackInfo.put("armed", cursorTrack.arm().get());
+
+            logger.info("BitwigApiFacade: Retrieved selected track info: " + trackName);
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Error getting selected track info: " + e.getMessage());
+            return null;
+        }
+
+        return trackInfo;
     }
 }
