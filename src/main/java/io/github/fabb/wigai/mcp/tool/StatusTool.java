@@ -74,6 +74,10 @@ public class StatusTool {
                 Map<String, Object> selectedTrackInfo = bitwigApiFacade.getSelectedTrackInfo();
                 responseMap.put("selected_track", selectedTrackInfo);
 
+                // Get selected device information from BitwigApiFacade
+                Map<String, Object> selectedDeviceInfo = bitwigApiFacade.getSelectedDeviceInfo();
+                responseMap.put("selected_device", selectedDeviceInfo);
+
                 // Convert response to JSON string for text content
                 ObjectMapper objectMapper = new ObjectMapper();
                 String jsonResponse = objectMapper.writeValueAsString(responseMap);

@@ -69,6 +69,31 @@ class StatusToolTest {
         expectedSelectedTrack.put("soloed", true);
         expectedSelectedTrack.put("armed", false);
 
+        // Create expected selected device info
+        Map<String, Object> expectedSelectedDevice = new LinkedHashMap<>();
+        expectedSelectedDevice.put("track_name", "Lead Synth");
+        expectedSelectedDevice.put("track_index", 1);
+        expectedSelectedDevice.put("index", 0);
+        expectedSelectedDevice.put("name", "Operator");
+        expectedSelectedDevice.put("bypassed", false);
+
+        List<Map<String, Object>> expectedDeviceParams = new ArrayList<>();
+        Map<String, Object> deviceParam1 = new LinkedHashMap<>();
+        deviceParam1.put("index", 0);
+        deviceParam1.put("name", "Cutoff");
+        deviceParam1.put("value", 0.7);
+        deviceParam1.put("display_value", "70%");
+        expectedDeviceParams.add(deviceParam1);
+
+        Map<String, Object> deviceParam2 = new LinkedHashMap<>();
+        deviceParam2.put("index", 2);
+        deviceParam2.put("name", "Resonance");
+        deviceParam2.put("value", 0.3);
+        deviceParam2.put("display_value", "30%");
+        expectedDeviceParams.add(deviceParam2);
+
+        expectedSelectedDevice.put("parameters", expectedDeviceParams);
+
         // Stub mock methods to return these expected values
         when(mockExtensionDefinition.getVersion()).thenReturn(expectedVersion);
         when(mockBitwigApiFacade.getProjectName()).thenReturn(expectedProjectName);
@@ -76,6 +101,7 @@ class StatusToolTest {
         when(mockBitwigApiFacade.getTransportStatus()).thenReturn(expectedTransportMap);
         when(mockBitwigApiFacade.getProjectParameters()).thenReturn(expectedProjectParams);
         when(mockBitwigApiFacade.getSelectedTrackInfo()).thenReturn(expectedSelectedTrack);
+        when(mockBitwigApiFacade.getSelectedDeviceInfo()).thenReturn(expectedSelectedDevice);
 
         // Get the StatusTool specification and handler
         McpServerFeatures.SyncToolSpecification spec = StatusTool.specification(mockExtensionDefinition, mockBitwigApiFacade, mockLogger);
@@ -121,6 +147,17 @@ class StatusToolTest {
         assertTrue(jsonResponse.contains("\"is_group\":false"));
         assertTrue(jsonResponse.contains("\"soloed\":true"));
 
+        // Test new selected device fields
+        assertTrue(jsonResponse.contains("\"selected_device\":{"));
+        assertTrue(jsonResponse.contains("\"track_name\":\"Lead Synth\""));
+        assertTrue(jsonResponse.contains("\"track_index\":1"));
+        assertTrue(jsonResponse.contains("\"index\":0"));
+        assertTrue(jsonResponse.contains("\"name\":\"Operator\""));
+        assertTrue(jsonResponse.contains("\"bypassed\":false"));
+        assertTrue(jsonResponse.contains("\"parameters\":["));
+        assertTrue(jsonResponse.contains("\"Cutoff\""));
+        assertTrue(jsonResponse.contains("\"Resonance\""));
+
         // Verify logger interactions
         verify(mockLogger, times(1)).info("Received 'status' tool call");
         verify(mockLogger, times(1)).info(startsWith("Responding with: {"));
@@ -131,6 +168,7 @@ class StatusToolTest {
         verify(mockBitwigApiFacade, times(1)).getTransportStatus();
         verify(mockBitwigApiFacade, times(1)).getProjectParameters();
         verify(mockBitwigApiFacade, times(1)).getSelectedTrackInfo();
+        verify(mockBitwigApiFacade, times(1)).getSelectedDeviceInfo();
     }
 
     @Test
@@ -161,6 +199,7 @@ class StatusToolTest {
         when(mockBitwigApiFacade.getTransportStatus()).thenReturn(expectedTransportMap);
         when(mockBitwigApiFacade.getProjectParameters()).thenReturn(emptyProjectParams);
         when(mockBitwigApiFacade.getSelectedTrackInfo()).thenReturn(null);
+        when(mockBitwigApiFacade.getSelectedDeviceInfo()).thenReturn(null);
 
         // Get the StatusTool specification and handler
         McpServerFeatures.SyncToolSpecification spec = StatusTool.specification(mockExtensionDefinition, mockBitwigApiFacade, mockLogger);
@@ -188,8 +227,12 @@ class StatusToolTest {
         // Test that selected_track is null
         assertTrue(jsonResponse.contains("\"selected_track\":null"));
 
+        // Test that selected_device is null
+        assertTrue(jsonResponse.contains("\"selected_device\":null"));
+
         // Verify BitwigApiFacade interactions
         verify(mockBitwigApiFacade, times(1)).getProjectParameters();
         verify(mockBitwigApiFacade, times(1)).getSelectedTrackInfo();
+        verify(mockBitwigApiFacade, times(1)).getSelectedDeviceInfo();
     }
 }

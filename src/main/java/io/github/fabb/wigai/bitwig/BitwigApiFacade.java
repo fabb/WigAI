@@ -67,6 +67,7 @@ public class BitwigApiFacade {
         // Mark interest in device properties to enable value access
         cursorDevice.exists().markInterested();
         cursorDevice.name().markInterested();
+        cursorDevice.isEnabled().markInterested();
 
         // Mark interest in all device parameter properties to enable value access
         for (int i = 0; i < 8; i++) {
@@ -580,5 +581,73 @@ public class BitwigApiFacade {
         }
 
         return trackInfo;
+    }
+
+    /**
+     * Gets information about the currently selected device including track context, device info, and parameters.
+     *
+     * @return A map containing selected device information, or null if no device is selected
+     */
+    public Map<String, Object> getSelectedDeviceInfo() {
+        logger.info("BitwigApiFacade: Getting selected device information");
+
+        if (!cursorDevice.exists().get()) {
+            logger.info("BitwigApiFacade: No device selected");
+            return null;
+        }
+
+        Map<String, Object> deviceInfo = new LinkedHashMap<>();
+
+        try {
+            // Get track information where the device is located
+            String trackName = cursorTrack.name().get();
+            int trackIndex = -1;
+
+            // Find track index in the track bank
+            for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
+                Track track = trackBank.getItemAt(i);
+                if (track.exists().get() && trackName.equals(track.name().get())) {
+                    trackIndex = i;
+                    break;
+                }
+            }
+
+            deviceInfo.put("track_name", trackName);
+            deviceInfo.put("track_index", trackIndex);
+
+            // Get device position/index in the device chain
+            // Note: Bitwig API doesn't directly expose device index in chain, so we use 0 as default
+            // This could be enhanced in the future with more complex logic to determine actual position
+            deviceInfo.put("index", 0);
+
+            // Get device name and bypass status
+            deviceInfo.put("name", cursorDevice.name().get());
+            deviceInfo.put("bypassed", !cursorDevice.isEnabled().get());
+
+            // Get device parameters
+            List<Map<String, Object>> parametersArray = new ArrayList<>();
+            for (int i = 0; i < 8; i++) {
+                RemoteControl parameter = deviceParameterBank.getParameter(i);
+                String name = parameter.name().get();
+
+                // Only include parameters that exist and have names
+                if (name != null && !name.trim().isEmpty()) {
+                    Map<String, Object> paramMap = new LinkedHashMap<>();
+                    paramMap.put("index", i);
+                    paramMap.put("name", name);
+                    paramMap.put("value", parameter.value().get());
+                    paramMap.put("display_value", parameter.displayedValue().get());
+                    parametersArray.add(paramMap);
+                }
+            }
+            deviceInfo.put("parameters", parametersArray);
+
+            logger.info("BitwigApiFacade: Retrieved selected device info: " + cursorDevice.name().get());
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Error getting selected device info: " + e.getMessage());
+            return null;
+        }
+
+        return deviceInfo;
     }
 }

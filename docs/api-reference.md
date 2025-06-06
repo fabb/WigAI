@@ -11,7 +11,7 @@ Communication is message-based, typically using JSON-RPC or a similar structured
 ### Core Commands
 
 #### `status`
-*   **Description**: Get WigAI operational status, version information, current project name, audio engine status, detailed transport information, project parameters, and selected track details.
+*   **Description**: Get WigAI operational status, version information, current project name, audio engine status, detailed transport information, project parameters, selected track details, and selected device information.
 *   **Parameters**: None
 *   **Returns**:
     ```json
@@ -46,6 +46,21 @@ Communication is message-based, typically using JSON-RPC or a similar structured
         "muted": false,
         "soloed": false,
         "armed": true
+      },
+      "selected_device": {
+        "track_name": "Track Name",
+        "track_index": 0,
+        "index": 0,
+        "name": "Device Name",
+        "bypassed": false,
+        "parameters": [
+          {
+            "index": 0,
+            "name": "Parameter Name",
+            "value": 0.5,
+            "display_value": "50%"
+          }
+        ]
       }
     }
     ```
@@ -57,6 +72,12 @@ Communication is message-based, typically using JSON-RPC or a similar structured
     - `selected_track`: Object containing currently selected track details, or `null` if no track is selected
     - `selected_track.type`: Track type (e.g., "audio", "instrument", "group", "hybrid", "effect", "master")
     - `selected_track.index`: 0-based index in the current track bank, or -1 if not found in visible tracks
+    - `selected_device`: Object containing currently selected device details, or `null` if no device is selected
+    - `selected_device.track_name`: Name of the track containing the selected device
+    - `selected_device.track_index`: 0-based index of the track containing the device, or -1 if not found in visible tracks
+    - `selected_device.index`: 0-based index of the device in the track's device chain
+    - `selected_device.bypassed`: Boolean indicating if the device is bypassed (disabled)
+    - `selected_device.parameters`: Array containing only accessible parameters with names (0-7 parameter indexes)
 
 #### `transport_start`
 *   **Description**: Start Bitwig's transport playback.
