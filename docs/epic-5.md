@@ -47,7 +47,7 @@ Modify the `StatusTool.java` to gather additional information from the Bitwig St
   "transport": {
     "playing": false,
     "recording": false,
-    "repeat_active": true,
+    "loop_active": true,
     "metronome_active": false,
     "current_tempo": 120.0, // From /tempo/raw
     "time_signature": "4/4", // From /time/signature
@@ -131,4 +131,3 @@ Modify the `StatusTool.java` to gather additional information from the Bitwig St
 *   Adding new MCP commands to modify these states (they are covered by other tools or future epics).
 *   Fetching exhaustive lists of all tracks, scenes, or devices (these would be separate, more specific tools).
 *   Real-time event streaming of state changes (this `status` command is a poll/request-response).
-

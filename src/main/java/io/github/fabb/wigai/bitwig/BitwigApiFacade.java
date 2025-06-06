@@ -14,6 +14,7 @@ import java.util.List;
 public class BitwigApiFacade {
     private final ControllerHost host;
     private final Transport transport;
+    private final Application application;
     private final Logger logger;
     private final CursorDevice cursorDevice;
     private final RemoteControlsPage deviceParameterBank;
@@ -29,16 +30,31 @@ public class BitwigApiFacade {
     public BitwigApiFacade(ControllerHost host, Logger logger) {
         this.host = host;
         this.transport = host.createTransport();
+        this.application = host.createApplication();
         this.logger = logger;
+
+        // Mark transport properties as interested for status queries
+        transport.isPlaying().markInterested();
+        transport.isArrangerRecordEnabled().markInterested();
+        transport.isArrangerLoopEnabled().markInterested();
+        transport.isMetronomeEnabled().markInterested();
+        transport.tempo().value().markInterested();
+        transport.timeSignature().markInterested();
+        transport.getPosition().markInterested();
+        transport.playPositionInSeconds().markInterested();
+
+        // Mark application properties as interested for status queries
+        application.projectName().markInterested();
+        application.hasActiveEngine().markInterested();
 
         // Initialize device control - use CursorTrack.createCursorDevice() instead of deprecated host.createCursorDevice()
         CursorTrack cursorTrack = host.createCursorTrack(0, 0);
         this.cursorDevice = cursorTrack.createCursorDevice();
         this.deviceParameterBank = cursorDevice.createCursorRemoteControlsPage(8);
 
-        // Initialize track bank for clip launching (8 tracks, 8 scenes should be sufficient for MVP)
+        // Initialize track bank for clip launching (8 tracks, 8 scenes for now, but needs to be increased later for full functionality)
         this.trackBank = host.createTrackBank(8, 0, 8);
-        this.sceneBankFacade = new SceneBankFacade(host, logger, 8); // 8 scenes for MVP
+        this.sceneBankFacade = new SceneBankFacade(host, logger, 8); // 8 scenes for MVP, but needs to be increased later for full functionality
 
         // Mark interest in device properties to enable value access
         cursorDevice.exists().markInterested();
@@ -317,5 +333,150 @@ public class BitwigApiFacade {
      */
     public int getSceneCount() {
         return sceneBankFacade.getSceneCount();
+    }
+
+    /**
+     * Gets the current project name.
+     *
+     * @return The project name or "Unknown Project" if not available
+     */
+    public String getProjectName() {
+        logger.info("BitwigApiFacade: Getting project name");
+        try {
+            String projectName = application.projectName().get();
+            return projectName != null && !projectName.trim().isEmpty() ? projectName : "Unknown Project";
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Unable to get project name: " + e.getMessage());
+            return "Unknown Project";
+        }
+    }
+
+    /**
+     * Checks if the audio engine is currently active.
+     *
+     * @return true if the audio engine is active, false otherwise
+     */
+    public boolean isAudioEngineActive() {
+        logger.info("BitwigApiFacade: Checking audio engine status");
+        try {
+            return application.hasActiveEngine().get();
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Unable to get audio engine status: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Formats seconds into a time string in the format MM:SS.mmm or HH:MM:SS.mmm
+     * @param seconds The time in seconds
+     * @return Formatted time string with milliseconds
+     */
+    private String formatTimeString(double seconds) {
+        try {
+            int totalSeconds = (int) Math.floor(seconds);
+            int hours = totalSeconds / 3600;
+            int minutes = (totalSeconds % 3600) / 60;
+            int secs = totalSeconds % 60;
+
+            // Calculate milliseconds from the fractional part
+            int milliseconds = (int) Math.round((seconds - Math.floor(seconds)) * 1000);
+
+            // Handle edge case where rounding gives us 1000ms
+            if (milliseconds >= 1000) {
+                milliseconds = 0;
+                secs += 1;
+                if (secs >= 60) {
+                    secs = 0;
+                    minutes += 1;
+                    if (minutes >= 60) {
+                        minutes = 0;
+                        hours += 1;
+                    }
+                }
+            }
+
+            if (hours > 0) {
+                return String.format("%d:%02d:%02d.%03d", hours, minutes, secs, milliseconds);
+            } else {
+                return String.format("%d:%02d.%03d", minutes, secs, milliseconds);
+            }
+        } catch (Exception e) {
+            return "0:00.000";
+        }
+    }
+
+    /**
+     * Gets the current transport status information.
+     *
+     * @return A map containing transport status data
+     */
+    public java.util.Map<String, Object> getTransportStatus() {
+        logger.info("BitwigApiFacade: Getting transport status");
+        java.util.Map<String, Object> transportMap = new java.util.LinkedHashMap<>();
+
+        try {
+            transportMap.put("playing", transport.isPlaying().get());
+            transportMap.put("recording", transport.isArrangerRecordEnabled().get());
+            transportMap.put("loop_active", transport.isArrangerLoopEnabled().get());
+            transportMap.put("metronome_active", transport.isMetronomeEnabled().get());
+            transportMap.put("current_tempo", transport.tempo().getRaw());
+            transportMap.put("time_signature", transport.timeSignature().get());
+
+            // Format position as Bitwig-style beat string
+            double positionInBeats = transport.getPosition().get();
+            String beatStr = formatBitwigBeatPosition(positionInBeats);
+            transportMap.put("current_beat_str", beatStr);
+
+            // Get time string using playPositionInSeconds
+            double positionInSeconds = transport.playPositionInSeconds().get();
+            String timeStr = formatTimeString(positionInSeconds);
+            transportMap.put("current_time_str", timeStr);
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Unable to get complete transport status: " + e.getMessage());
+            // Provide default values if API calls fail
+            transportMap.put("playing", false);
+            transportMap.put("recording", false);
+            transportMap.put("loop_active", false);
+            transportMap.put("metronome_active", false);
+            transportMap.put("current_tempo", 120.0);
+            transportMap.put("time_signature", "4/4");
+            transportMap.put("current_beat_str", "1.1.1:0");
+            transportMap.put("current_time_str", "0:00.000");
+        }
+
+        return transportMap;
+    }
+
+    /**
+     * Formats a position in beats to Bitwig-style format: measures.beats.sixteenths:ticks
+     * Example: 1.1.1:0 = measure 1, beat 1, sixteenth 1, tick 0
+     */
+    private String formatBitwigBeatPosition(double positionInBeats) {
+        try {
+            // Assume 4/4 time signature for calculation
+            int beatsPerMeasure = 4;
+            int sixteenthsPerBeat = 4;
+            int ticksPerSixteenth = 240; // Common MIDI resolution
+
+            // Convert beats to total ticks
+            int totalTicks = (int) Math.round(positionInBeats * sixteenthsPerBeat * ticksPerSixteenth);
+
+            // Calculate measures (1-based)
+            int measures = (totalTicks / (beatsPerMeasure * sixteenthsPerBeat * ticksPerSixteenth)) + 1;
+            int remainingTicks = totalTicks % (beatsPerMeasure * sixteenthsPerBeat * ticksPerSixteenth);
+
+            // Calculate beats within measure (1-based)
+            int beats = (remainingTicks / (sixteenthsPerBeat * ticksPerSixteenth)) + 1;
+            remainingTicks = remainingTicks % (sixteenthsPerBeat * ticksPerSixteenth);
+
+            // Calculate sixteenths within beat (1-based)
+            int sixteenths = (remainingTicks / ticksPerSixteenth) + 1;
+            int ticks = remainingTicks % ticksPerSixteenth;
+
+            return String.format("%d.%d.%d:%d", measures, beats, sixteenths, ticks);
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Error formatting beat position: " + e.getMessage());
+            return "1.1.1:0";
+        }
     }
 }

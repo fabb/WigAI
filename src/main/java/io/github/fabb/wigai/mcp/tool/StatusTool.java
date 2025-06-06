@@ -1,27 +1,27 @@
 package io.github.fabb.wigai.mcp.tool;
 
-import com.bitwig.extension.controller.api.Application;
-import com.bitwig.extension.controller.api.ControllerHost;
-import com.bitwig.extension.controller.api.Project;
-import com.bitwig.extension.controller.api.Transport;
+import io.github.fabb.wigai.WigAIExtensionDefinition;
+import io.github.fabb.wigai.bitwig.BitwigApiFacade;
 import io.github.fabb.wigai.common.Logger;
 import io.modelcontextprotocol.server.McpServerFeatures;
-import io.github.fabb.wigai.WigAIExtensionDefinition;
+import io.modelcontextprotocol.server.McpSyncServerExchange;
+import io.modelcontextprotocol.spec.McpSchema;
+import com.bitwig.extension.controller.api.*;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import io.modelcontextprotocol.spec.McpSchema;
-import io.modelcontextprotocol.server.McpSyncServerExchange;
 import java.util.function.BiFunction;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Custom MCP "status" tool for WigAI, returns version info.
+ * Custom MCP "status" tool for WigAI, returns version info and project status.
  */
 public class StatusTool {
     // Store the handler function so it can be accessed for testing
     private static BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> handlerFunction;
 
-    public static McpServerFeatures.SyncToolSpecification specification(WigAIExtensionDefinition extensionDefinition, Logger logger, ControllerHost host) {
+    public static McpServerFeatures.SyncToolSpecification specification(WigAIExtensionDefinition extensionDefinition, BitwigApiFacade bitwigApiFacade, Logger logger) {
         var schema = """
             {
               "type": "object",
@@ -29,40 +29,55 @@ public class StatusTool {
             }""";
         var tool = new McpSchema.Tool(
             "status",
-            "Get WigAI operational status and version information.",
+            "Get WigAI operational status, version information, current project name, audio engine status, and detailed transport information.",
             schema
         );
+
         // Create and store the handler function
         handlerFunction = (exchange, arguments) -> {
-            Project project = host.getProject();
-            Application application = host.getApplication();
-
-            String projectName = project.getName().get();
-            boolean audioEngineActive = application.isEngineActive().get();
-            String wigaiVersion = extensionDefinition.getVersion();
-
-            Map<String, Object> responseMap = new LinkedHashMap<>();
-            responseMap.put("wigai_version", wigaiVersion);
-            responseMap.put("project_name", projectName);
-            responseMap.put("audio_engine_active", audioEngineActive);
-
-            Transport transport = host.getTransport();
-            Map<String, Object> transportMap = new LinkedHashMap<>();
-            transportMap.put("playing", transport.isPlaying().get());
-            transportMap.put("recording", transport.isArrangerRecordEnabled().get());
-            transportMap.put("repeat_active", transport.isArrangerLoopEnabled().get());
-            transportMap.put("metronome_active", transport.isMetronomeEnabled().get());
-            transportMap.put("current_tempo", transport.tempo().value().get());
-            transportMap.put("time_signature", transport.timeSignature().get());
-            transportMap.put("current_beat_str", transport.getPosition().get());
-            transportMap.put("current_time_str", transport.getPosition().get());
-
-            responseMap.put("transport", transportMap);
-
             logger.info("Received 'status' tool call");
-            logger.info("Responding with: " + responseMap);
-            return new McpSchema.CallToolResult(responseMap, false);
+
+            try {
+                String wigaiVersion = extensionDefinition.getVersion();
+
+                // Create the response structure
+                Map<String, Object> responseMap = new LinkedHashMap<>();
+                responseMap.put("wigai_version", wigaiVersion);
+
+                // Get project information from BitwigApiFacade
+                String projectName = bitwigApiFacade.getProjectName();
+                boolean audioEngineActive = bitwigApiFacade.isAudioEngineActive();
+
+                responseMap.put("project_name", projectName);
+                responseMap.put("audio_engine_active", audioEngineActive);
+
+                // Get transport information from BitwigApiFacade
+                Map<String, Object> transportMap = bitwigApiFacade.getTransportStatus();
+                responseMap.put("transport", transportMap);
+
+                // Convert response to JSON string for text content
+                ObjectMapper objectMapper = new ObjectMapper();
+                String jsonResponse = objectMapper.writeValueAsString(responseMap);
+
+                logger.info("Responding with: " + jsonResponse);
+
+                // Create text content for the response
+                McpSchema.TextContent textContent = new McpSchema.TextContent(jsonResponse);
+
+                // Return successful result
+                return new McpSchema.CallToolResult(List.of(textContent), false);
+            } catch (Exception e) {
+                String errorMessage = "Error getting status: " + e.getMessage();
+                logger.error("StatusTool error: " + errorMessage, e);
+
+                // Create text content for the error response
+                McpSchema.TextContent errorContent = new McpSchema.TextContent(errorMessage);
+
+                // Return error result
+                return new McpSchema.CallToolResult(List.of(errorContent), true);
+            }
         };
+
         return new McpServerFeatures.SyncToolSpecification(tool, handlerFunction);
     }
 

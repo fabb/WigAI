@@ -134,7 +134,7 @@ public class McpServerManager implements ConfigChangeObserver {
                     .logging()
                     .build())
                 .tools(
-                    StatusTool.specification(this.extensionDefinition, logger),
+                    StatusTool.specification(this.extensionDefinition, bitwigApiFacade, logger),
                     TransportTool.transportStartSpecification(transportController, logger),
                     TransportTool.transportStopSpecification(transportController, logger),
                     DeviceParamTool.getSelectedDeviceParametersSpecification(deviceController, logger),

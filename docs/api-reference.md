@@ -22,15 +22,19 @@ Communication is message-based, typically using JSON-RPC or a similar structured
       "transport": {
         "playing": false,
         "recording": false,
-        "repeat_active": false,
+        "loop_active": false,
         "metronome_active": true,
         "current_tempo": 120.0,
         "time_signature": "4/4",
         "current_beat_str": "1.1.1:0",
-        "current_time_str": "1.1.1:0"
+        "current_time_str": "0:00.000"
       }
     }
     ```
+
+*   **Notes**:
+    - `current_beat_str`: Bitwig-style beat position format (measures.beats.sixteenths:ticks), e.g., "1.1.1:0"
+    - `current_time_str`: Time format with milliseconds (MM:SS.mmm or HH:MM:SS.mmm), e.g., "0:12.345" or "1:23:45.678"
 
 #### `transport_start`
 *   **Description**: Start Bitwig's transport playback.
