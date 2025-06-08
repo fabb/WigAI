@@ -3,6 +3,7 @@ package io.github.fabb.wigai.mcp;
 import io.github.fabb.wigai.WigAIExtensionDefinition;
 import io.github.fabb.wigai.bitwig.BitwigApiFacade;
 import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.common.logging.StructuredLogger;
 import io.github.fabb.wigai.config.ConfigChangeObserver;
 import io.github.fabb.wigai.config.ConfigManager;
 import io.github.fabb.wigai.features.TransportController;
@@ -127,6 +128,9 @@ public class McpServerManager implements ConfigChangeObserver {
                 logger.info("McpServerManager: Reusing existing Bitwig API controllers");
             }
 
+            // Create StructuredLogger for tools that have been migrated to unified error handling
+            StructuredLogger structuredLogger = new StructuredLogger(logger, "MCP-Tools");
+
             this.mcpServer = McpServer.sync(this.transportProvider)
                 .serverInfo("WigAI", extensionDefinition.getVersion())
                 .capabilities(McpSchema.ServerCapabilities.builder()
@@ -134,15 +138,15 @@ public class McpServerManager implements ConfigChangeObserver {
                     .logging()
                     .build())
                 .tools(
-                    StatusTool.specification(this.extensionDefinition, bitwigApiFacade, logger),
-                    TransportTool.transportStartSpecification(transportController, logger),
-                    TransportTool.transportStopSpecification(transportController, logger),
-                    DeviceParamTool.getSelectedDeviceParametersSpecification(deviceController, logger),
-                    DeviceParamTool.setSelectedDeviceParameterSpecification(deviceController, logger),
-                    DeviceParamTool.setMultipleDeviceParametersSpecification(deviceController, logger),
-                    ClipTool.launchClipSpecification(clipSceneController, logger),
-                    SceneTool.launchSceneByIndexSpecification(clipSceneController, logger),
-                    SceneByNameTool.launchSceneByNameSpecification(clipSceneController, logger)
+                    StatusTool.specification(this.extensionDefinition, bitwigApiFacade, structuredLogger),
+                    TransportTool.transportStartSpecification(transportController, structuredLogger),
+                    TransportTool.transportStopSpecification(transportController, structuredLogger),
+                    ClipTool.launchClipSpecification(clipSceneController, structuredLogger),
+                    SceneTool.launchSceneByIndexSpecification(clipSceneController, structuredLogger),
+                    SceneByNameTool.launchSceneByNameSpecification(clipSceneController, structuredLogger),
+                    DeviceParamTool.getSelectedDeviceParametersSpecification(deviceController, structuredLogger),
+                    DeviceParamTool.setSelectedDeviceParameterSpecification(deviceController, structuredLogger),
+                    DeviceParamTool.setMultipleDeviceParametersSpecification(deviceController, structuredLogger)
                 )
                 .build();
 

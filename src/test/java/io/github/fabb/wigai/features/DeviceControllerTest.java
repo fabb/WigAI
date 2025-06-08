@@ -5,6 +5,8 @@ import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.common.data.ParameterInfo;
 import io.github.fabb.wigai.common.data.ParameterSetting;
 import io.github.fabb.wigai.common.data.ParameterSettingResult;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -84,18 +86,18 @@ public class DeviceControllerTest {
     @Test
     void testGetSelectedDeviceParameters_ExceptionHandling() {
         // Arrange
-        when(mockBitwigApiFacade.getSelectedDeviceName()).thenThrow(new RuntimeException("Test exception"));
+        when(mockBitwigApiFacade.getSelectedDeviceName()).thenThrow(new BitwigApiException(ErrorCode.DEVICE_NOT_SELECTED, "getSelectedDeviceName", "No device selected"));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             deviceController.getSelectedDeviceParameters();
         });
 
-        assertEquals("Failed to get selected device parameters", exception.getMessage());
-        assertEquals("Test exception", exception.getCause().getMessage());
+        assertEquals(ErrorCode.DEVICE_NOT_SELECTED, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("No device selected"));
 
         // Verify error logging
-        verify(mockLogger).error("DeviceController: Error getting selected device parameters: Test exception");
+        verify(mockLogger).error(contains("DeviceController: Error getting selected device parameters"));
     }
 
     @Test
@@ -106,15 +108,15 @@ public class DeviceControllerTest {
         when(mockBitwigApiFacade.getSelectedDeviceParameters()).thenThrow(new RuntimeException("Parameter error"));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             deviceController.getSelectedDeviceParameters();
         });
 
-        assertEquals("Failed to get selected device parameters", exception.getMessage());
-        assertEquals("Parameter error", exception.getCause().getMessage());
+        assertEquals(ErrorCode.INTERNAL_ERROR, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("Parameter error"));
 
         // Verify error logging
-        verify(mockLogger).error("DeviceController: Error getting selected device parameters: Parameter error");
+        verify(mockLogger).error(contains("DeviceController: Unexpected error getting selected device parameters"));
     }
 
     @Test
@@ -138,19 +140,20 @@ public class DeviceControllerTest {
         int parameterIndex = 8; // Invalid index
         double value = 0.5;
 
-        doThrow(new IllegalArgumentException("Parameter index must be between 0-7, got: 8"))
+        doThrow(new BitwigApiException(ErrorCode.INVALID_PARAMETER_INDEX, "setSelectedDeviceParameter", "Parameter index must be between 0-7, got: 8"))
             .when(mockBitwigApiFacade).setSelectedDeviceParameter(parameterIndex, value);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             deviceController.setSelectedDeviceParameter(parameterIndex, value);
         });
 
-        assertEquals("Parameter index must be between 0-7, got: 8", exception.getMessage());
+        assertEquals(ErrorCode.INVALID_PARAMETER_INDEX, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("Parameter index must be between 0-7, got: 8"));
 
         // Verify logging
         verify(mockLogger).info("DeviceController: Setting parameter " + parameterIndex + " to " + value);
-        verify(mockLogger).error("DeviceController: Validation error setting parameter " + parameterIndex + ": Parameter index must be between 0-7, got: 8");
+        verify(mockLogger).error(contains("DeviceController: Error setting parameter " + parameterIndex));
     }
 
     @Test
@@ -159,19 +162,20 @@ public class DeviceControllerTest {
         int parameterIndex = 0;
         double value = 1.5; // Invalid value
 
-        doThrow(new IllegalArgumentException("Parameter value must be between 0.0-1.0, got: 1.5"))
+        doThrow(new BitwigApiException(ErrorCode.INVALID_PARAMETER, "setSelectedDeviceParameter", "Parameter value must be between 0.0-1.0, got: 1.5"))
             .when(mockBitwigApiFacade).setSelectedDeviceParameter(parameterIndex, value);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             deviceController.setSelectedDeviceParameter(parameterIndex, value);
         });
 
-        assertEquals("Parameter value must be between 0.0-1.0, got: 1.5", exception.getMessage());
+        assertEquals(ErrorCode.INVALID_PARAMETER, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("Parameter value must be between 0.0-1.0, got: 1.5"));
 
         // Verify logging
         verify(mockLogger).info("DeviceController: Setting parameter " + parameterIndex + " to " + value);
-        verify(mockLogger).error("DeviceController: Validation error setting parameter " + parameterIndex + ": Parameter value must be between 0.0-1.0, got: 1.5");
+        verify(mockLogger).error(contains("DeviceController: Error setting parameter " + parameterIndex));
     }
 
     @Test
@@ -180,20 +184,20 @@ public class DeviceControllerTest {
         int parameterIndex = 0;
         double value = 0.5;
 
-        doThrow(new RuntimeException("No device is currently selected"))
+        doThrow(new BitwigApiException(ErrorCode.DEVICE_NOT_SELECTED, "setSelectedDeviceParameter", "No device is currently selected"))
             .when(mockBitwigApiFacade).setSelectedDeviceParameter(parameterIndex, value);
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             deviceController.setSelectedDeviceParameter(parameterIndex, value);
         });
 
-        assertEquals("Failed to set device parameter", exception.getMessage());
-        assertEquals("No device is currently selected", exception.getCause().getMessage());
+        assertEquals(ErrorCode.DEVICE_NOT_SELECTED, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("No device is currently selected"));
 
         // Verify logging
         verify(mockLogger).info("DeviceController: Setting parameter " + parameterIndex + " to " + value);
-        verify(mockLogger).error("DeviceController: Error setting parameter " + parameterIndex + ": No device is currently selected");
+        verify(mockLogger).error(contains("DeviceController: Error setting parameter " + parameterIndex));
     }
 
     @Test
@@ -202,20 +206,20 @@ public class DeviceControllerTest {
         int parameterIndex = 0;
         double value = 0.5;
 
-        doThrow(new RuntimeException("Bitwig API internal error"))
+        doThrow(new BitwigApiException(ErrorCode.BITWIG_API_ERROR, "setSelectedDeviceParameter", "Bitwig API internal error"))
             .when(mockBitwigApiFacade).setSelectedDeviceParameter(parameterIndex, value);
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             deviceController.setSelectedDeviceParameter(parameterIndex, value);
         });
 
-        assertEquals("Failed to set device parameter", exception.getMessage());
-        assertEquals("Bitwig API internal error", exception.getCause().getMessage());
+        assertEquals(ErrorCode.BITWIG_API_ERROR, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("Bitwig API internal error"));
 
         // Verify logging
         verify(mockLogger).info("DeviceController: Setting parameter " + parameterIndex + " to " + value);
-        verify(mockLogger).error("DeviceController: Error setting parameter " + parameterIndex + ": Bitwig API internal error");
+        verify(mockLogger).error(contains("DeviceController: Error setting parameter " + parameterIndex));
     }
 
     @Test
@@ -285,14 +289,15 @@ public class DeviceControllerTest {
             new ParameterSetting(0, 0.25)
         );
 
-        when(mockBitwigApiFacade.getSelectedDeviceName()).thenThrow(new RuntimeException("No device selected"));
+        when(mockBitwigApiFacade.getSelectedDeviceName()).thenThrow(new BitwigApiException(ErrorCode.DEVICE_NOT_SELECTED, "getSelectedDeviceName", "No device selected"));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             deviceController.setMultipleSelectedDeviceParameters(parameters);
         });
 
-        assertEquals("No device is currently selected", exception.getMessage());
+        assertEquals(ErrorCode.DEVICE_NOT_SELECTED, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("No device selected"));
 
         // Verify no parameter setting was attempted
         verify(mockBitwigApiFacade, never()).setSelectedDeviceParameter(anyInt(), anyDouble());
@@ -319,9 +324,9 @@ public class DeviceControllerTest {
         doNothing().when(mockBitwigApiFacade).setSelectedDeviceParameter(3, 0.5);
 
         // Mock validation errors for invalid parameters
-        doThrow(new IllegalArgumentException("Parameter index must be between 0-7"))
+        doThrow(new BitwigApiException(ErrorCode.INVALID_PARAMETER_INDEX, "setSelectedDeviceParameter", "Parameter index must be between 0-7"))
             .when(mockBitwigApiFacade).setSelectedDeviceParameter(8, 0.75);
-        doThrow(new IllegalArgumentException("Parameter value must be between 0.0-1.0"))
+        doThrow(new BitwigApiException(ErrorCode.INVALID_PARAMETER, "setSelectedDeviceParameter", "Parameter value must be between 0.0-1.0"))
             .when(mockBitwigApiFacade).setSelectedDeviceParameter(2, 1.5);
 
         // Act
@@ -344,7 +349,7 @@ public class DeviceControllerTest {
         assertEquals("error", result1.status());
         assertNull(result1.new_value());
         assertEquals("INVALID_PARAMETER_INDEX", result1.error_code());
-        assertEquals("Parameter index must be between 0-7", result1.message());
+        assertTrue(result1.message().contains("Parameter index must be between 0-7"));
 
         // Check third parameter (invalid value)
         ParameterSettingResult result2 = results.get(2);
@@ -352,7 +357,7 @@ public class DeviceControllerTest {
         assertEquals("error", result2.status());
         assertNull(result2.new_value());
         assertEquals("INVALID_PARAMETER", result2.error_code());
-        assertEquals("Parameter value must be between 0.0-1.0", result2.message());
+        assertTrue(result2.message().contains("Parameter value must be between 0.0-1.0"));
 
         // Check fourth parameter (success)
         ParameterSettingResult result3 = results.get(3);
@@ -378,9 +383,9 @@ public class DeviceControllerTest {
         when(mockBitwigApiFacade.getSelectedDeviceName()).thenReturn("Test Device");
 
         // Mock validation errors
-        doThrow(new IllegalArgumentException("Parameter index must be between 0-7"))
+        doThrow(new BitwigApiException(ErrorCode.INVALID_PARAMETER_INDEX, "setSelectedDeviceParameter", "Parameter index must be between 0-7"))
             .when(mockBitwigApiFacade).setSelectedDeviceParameter(8, 0.25);
-        doThrow(new IllegalArgumentException("Parameter value must be between 0.0-1.0"))
+        doThrow(new BitwigApiException(ErrorCode.INVALID_PARAMETER, "setSelectedDeviceParameter", "Parameter value must be between 0.0-1.0"))
             .when(mockBitwigApiFacade).setSelectedDeviceParameter(1, 1.5);
 
         // Act
@@ -413,7 +418,7 @@ public class DeviceControllerTest {
 
         // Mock one success and one Bitwig error
         doNothing().when(mockBitwigApiFacade).setSelectedDeviceParameter(0, 0.25);
-        doThrow(new RuntimeException("Bitwig internal error"))
+        doThrow(new BitwigApiException(ErrorCode.BITWIG_API_ERROR, "setSelectedDeviceParameter", "Bitwig internal error"))
             .when(mockBitwigApiFacade).setSelectedDeviceParameter(1, 0.75);
 
         // Act
@@ -433,8 +438,8 @@ public class DeviceControllerTest {
         assertEquals(1, result1.parameter_index());
         assertEquals("error", result1.status());
         assertNull(result1.new_value());
-        assertEquals("BITWIG_ERROR", result1.error_code());
-        assertEquals("Error setting parameter: Bitwig internal error", result1.message());
+        assertEquals("BITWIG_API_ERROR", result1.error_code());
+        assertTrue(result1.message().contains("Bitwig internal error"));
 
         // Verify logging
         verify(mockLogger).info("DeviceController: Setting 2 parameters");

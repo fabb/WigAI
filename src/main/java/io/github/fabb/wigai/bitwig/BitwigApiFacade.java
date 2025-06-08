@@ -3,6 +3,10 @@ package io.github.fabb.wigai.bitwig;
 import com.bitwig.extension.controller.api.*;
 import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.common.data.ParameterInfo;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
+import io.github.fabb.wigai.common.error.WigAIErrorHandler;
+import io.github.fabb.wigai.common.validation.ParameterValidator;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -120,20 +124,38 @@ public class BitwigApiFacade {
     }
 
     /**
-     * Returns the name of the track at the given index, or null if not present.
+     * Returns the name of the track at the given index.
      *
      * @param index the track index
-     * @return the track name, or null if not present
+     * @return the track name
+     * @throws BitwigApiException if the index is invalid or track doesn't exist
      */
-    public String getTrackNameByIndex(int index) {
-        if (index < 0 || index >= trackBank.getSizeOfBank()) {
-            return null;
-        }
-        Track track = trackBank.getItemAt(index);
-        if (track.exists().get()) {
+    public String getTrackNameByIndex(int index) throws BitwigApiException {
+        final String operation = "getTrackNameByIndex";
+
+        return WigAIErrorHandler.executeWithErrorHandling(operation, () -> {
+            // Validate track index
+            if (index < 0 || index >= trackBank.getSizeOfBank()) {
+                throw new BitwigApiException(
+                    ErrorCode.INVALID_RANGE,
+                    operation,
+                    "Track index must be between 0 and " + (trackBank.getSizeOfBank() - 1) + ", got: " + index,
+                    Map.of("index", index, "max_index", trackBank.getSizeOfBank() - 1)
+                );
+            }
+
+            Track track = trackBank.getItemAt(index);
+            if (!track.exists().get()) {
+                throw new BitwigApiException(
+                    ErrorCode.TRACK_NOT_FOUND,
+                    operation,
+                    "Track at index " + index + " does not exist",
+                    Map.of("index", index)
+                );
+            }
+
             return track.name().get();
-        }
-        return null;
+        });
     }
 
     /**
@@ -174,14 +196,23 @@ public class BitwigApiFacade {
     /**
      * Gets the name of the currently selected device.
      *
-     * @return The device name or null if no device is selected
+     * @return The device name
+     * @throws BitwigApiException if no device is selected
      */
-    public String getSelectedDeviceName() {
+    public String getSelectedDeviceName() throws BitwigApiException {
+        final String operation = "getSelectedDeviceName";
         logger.info("BitwigApiFacade: Getting selected device name");
-        if (!isDeviceSelected()) {
-            return null;
-        }
-        return cursorDevice.name().get();
+
+        return WigAIErrorHandler.executeWithErrorHandling(operation, () -> {
+            if (!isDeviceSelected()) {
+                throw new BitwigApiException(
+                    ErrorCode.DEVICE_NOT_SELECTED,
+                    operation,
+                    "No device is currently selected"
+                );
+            }
+            return cursorDevice.name().get();
+        });
     }
 
     /**
@@ -221,66 +252,83 @@ public class BitwigApiFacade {
      *
      * @param parameterIndex The index of the parameter to set (0-7)
      * @param value          The value to set (0.0-1.0)
-     * @throws IllegalArgumentException if parameterIndex is out of range or value is out of range
-     * @throws RuntimeException        if no device is selected or Bitwig API error occurs
+     * @throws BitwigApiException if parameterIndex is out of range, value is out of range, no device is selected, or Bitwig API error occurs
      */
-    public void setSelectedDeviceParameter(int parameterIndex, double value) {
+    public void setSelectedDeviceParameter(int parameterIndex, double value) throws BitwigApiException {
+        final String operation = "setSelectedDeviceParameter";
         logger.info("BitwigApiFacade: Setting parameter " + parameterIndex + " to " + value);
 
-        // Validate parameter index
-        if (parameterIndex < 0 || parameterIndex > 7) {
-            String errorMsg = "Parameter index must be between 0-7, got: " + parameterIndex;
-            logger.error("BitwigApiFacade: " + errorMsg);
-            throw new IllegalArgumentException(errorMsg);
-        }
+        WigAIErrorHandler.executeWithErrorHandling(operation, () -> {
+            // Validate parameter index
+            ParameterValidator.validateParameterIndex(parameterIndex, operation);
 
-        // Validate value range
-        if (value < 0.0 || value > 1.0) {
-            String errorMsg = "Parameter value must be between 0.0-1.0, got: " + value;
-            logger.error("BitwigApiFacade: " + errorMsg);
-            throw new IllegalArgumentException(errorMsg);
-        }
+            // Validate value range
+            ParameterValidator.validateParameterValue(value, operation);
 
-        // Check if device is selected
-        if (!isDeviceSelected()) {
-            String errorMsg = "No device is currently selected";
-            logger.error("BitwigApiFacade: " + errorMsg);
-            throw new RuntimeException(errorMsg);
-        }
+            // Check if device is selected
+            if (!isDeviceSelected()) {
+                throw new BitwigApiException(
+                    ErrorCode.DEVICE_NOT_SELECTED,
+                    operation,
+                    "No device is currently selected"
+                );
+            }
 
-        try {
+            // Set the parameter value
             RemoteControl parameter = deviceParameterBank.getParameter(parameterIndex);
             parameter.value().set(value);
+
             logger.info("BitwigApiFacade: Successfully set parameter " + parameterIndex + " to " + value);
-        } catch (Exception e) {
-            String errorMsg = "Failed to set parameter " + parameterIndex + ": " + e.getMessage();
-            logger.error("BitwigApiFacade: " + errorMsg);
-            throw new RuntimeException(errorMsg, e);
-        }
+        });
     }
 
     /**
      * Finds a track by name using case-sensitive matching.
      *
      * @param trackName The name of the track to find
-     * @return true if the track is found, false otherwise
+     * @return The track index if found
+     * @throws BitwigApiException if the track is not found
      */
-    public boolean findTrackByName(String trackName) {
+    public int findTrackIndexByName(String trackName) throws BitwigApiException {
+        final String operation = "findTrackIndexByName";
         logger.info("BitwigApiFacade: Searching for track '" + trackName + "'");
 
-        for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
-            Track track = trackBank.getItemAt(i);
-            if (track.exists().get()) {
-                String currentTrackName = track.name().get();
-                if (trackName.equals(currentTrackName)) {
-                    logger.info("BitwigApiFacade: Found track '" + trackName + "' at index " + i);
-                    return true;
+        return WigAIErrorHandler.executeWithErrorHandling(operation, () -> {
+            ParameterValidator.validateNotEmpty(trackName, "trackName", operation);
+
+            for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
+                Track track = trackBank.getItemAt(i);
+                if (track.exists().get()) {
+                    String currentTrackName = track.name().get();
+                    if (trackName.equals(currentTrackName)) {
+                        logger.info("BitwigApiFacade: Found track '" + trackName + "' at index " + i);
+                        return i;
+                    }
                 }
             }
-        }
 
-        logger.info("BitwigApiFacade: Track '" + trackName + "' not found");
-        return false;
+            throw new BitwigApiException(
+                ErrorCode.TRACK_NOT_FOUND,
+                operation,
+                "Track '" + trackName + "' not found",
+                Map.of("trackName", trackName)
+            );
+        });
+    }
+
+    /**
+     * Checks if a track exists by name using case-sensitive matching.
+     *
+     * @param trackName The name of the track to check
+     * @return true if the track exists, false otherwise
+     */
+    public boolean trackExists(String trackName) {
+        try {
+            findTrackIndexByName(trackName);
+            return true;
+        } catch (BitwigApiException e) {
+            return false;
+        }
     }
 
     /**
@@ -309,35 +357,53 @@ public class BitwigApiFacade {
      *
      * @param trackName The name of the track containing the clip
      * @param clipIndex The zero-based index of the clip slot to launch
-     * @return true if the clip was launched successfully, false otherwise
+     * @throws BitwigApiException if track is not found, clip index is invalid, or launch fails
      */
-    public boolean launchClip(String trackName, int clipIndex) {
+    public void launchClip(String trackName, int clipIndex) throws BitwigApiException {
+        final String operation = "launchClip";
         logger.info("BitwigApiFacade: Launching clip at " + trackName + "[" + clipIndex + "]");
 
-        for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
-            Track track = trackBank.getItemAt(i);
-            if (track.exists().get() && trackName.equals(track.name().get())) {
-                try {
-                    ClipLauncherSlotBank slotBank = track.clipLauncherSlotBank();
+        WigAIErrorHandler.executeWithErrorHandling(operation, () -> {
+            // Validate parameters
+            ParameterValidator.validateNotEmpty(trackName, "trackName", operation);
+            ParameterValidator.validateClipIndex(clipIndex, operation);
 
-                    if (clipIndex >= 0 && clipIndex < slotBank.getSizeOfBank()) {
-                        ClipLauncherSlot slot = slotBank.getItemAt(clipIndex);
-                        slot.launch();
-                        logger.info("BitwigApiFacade: Successfully launched clip at " + trackName + "[" + clipIndex + "]");
-                        return true;
-                    } else {
-                        logger.error("BitwigApiFacade: Clip index " + clipIndex + " out of bounds for track '" + trackName + "'");
-                        return false;
-                    }
-                } catch (Exception e) {
-                    logger.error("BitwigApiFacade: Error launching clip at " + trackName + "[" + clipIndex + "]: " + e.getMessage());
-                    return false;
+            // Find the track
+            Track targetTrack = null;
+            for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
+                Track track = trackBank.getItemAt(i);
+                if (track.exists().get() && trackName.equals(track.name().get())) {
+                    targetTrack = track;
+                    break;
                 }
             }
-        }
 
-        logger.error("BitwigApiFacade: Track '" + trackName + "' not found for clip launch");
-        return false;
+            if (targetTrack == null) {
+                throw new BitwigApiException(
+                    ErrorCode.TRACK_NOT_FOUND,
+                    operation,
+                    "Track '" + trackName + "' not found",
+                    Map.of("trackName", trackName)
+                );
+            }
+
+            // Validate clip index within track bounds
+            ClipLauncherSlotBank slotBank = targetTrack.clipLauncherSlotBank();
+            if (clipIndex >= slotBank.getSizeOfBank()) {
+                throw new BitwigApiException(
+                    ErrorCode.INVALID_RANGE,
+                    operation,
+                    "Clip index " + clipIndex + " out of bounds for track '" + trackName + "' (max: " + (slotBank.getSizeOfBank() - 1) + ")",
+                    Map.of("trackName", trackName, "clipIndex", clipIndex, "maxIndex", slotBank.getSizeOfBank() - 1)
+                );
+            }
+
+            // Launch the clip
+            ClipLauncherSlot slot = slotBank.getItemAt(clipIndex);
+            slot.launch();
+
+            logger.info("BitwigApiFacade: Successfully launched clip at " + trackName + "[" + clipIndex + "]");
+        });
     }
 
     /**

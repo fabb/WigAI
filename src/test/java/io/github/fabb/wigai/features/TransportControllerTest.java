@@ -2,6 +2,8 @@ package io.github.fabb.wigai.features;
 
 import io.github.fabb.wigai.bitwig.BitwigApiFacade;
 import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -50,11 +52,13 @@ public class TransportControllerTest {
         doThrow(new RuntimeException("Test exception")).when(mockBitwigApiFacade).startTransport();
 
         // Execute and verify exception is thrown
-        Exception exception = assertThrows(RuntimeException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             transportController.startTransport();
         });
 
-        // Verify exception message
+        // Verify exception properties
+        assertEquals(ErrorCode.TRANSPORT_ERROR, exception.getErrorCode());
+        assertEquals("startTransport", exception.getOperation());
         assertTrue(exception.getMessage().contains("Failed to start transport playback"));
 
         // Verify logging
@@ -83,11 +87,13 @@ public class TransportControllerTest {
         doThrow(new RuntimeException("Test exception")).when(mockBitwigApiFacade).stopTransport();
 
         // Execute and verify exception is thrown
-        Exception exception = assertThrows(RuntimeException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             transportController.stopTransport();
         });
 
-        // Verify exception message
+        // Verify exception properties
+        assertEquals(ErrorCode.TRANSPORT_ERROR, exception.getErrorCode());
+        assertEquals("stopTransport", exception.getOperation());
         assertTrue(exception.getMessage().contains("Failed to stop transport playback"));
 
         // Verify logging

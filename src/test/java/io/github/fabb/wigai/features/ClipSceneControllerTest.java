@@ -2,6 +2,8 @@ package io.github.fabb.wigai.features;
 
 import io.github.fabb.wigai.bitwig.BitwigApiFacade;
 import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
 import io.github.fabb.wigai.features.ClipSceneController.ClipLaunchResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,9 +38,9 @@ class ClipSceneControllerTest {
         String trackName = "Drums";
         int clipIndex = 0;
 
-        when(bitwigApiFacade.findTrackByName(trackName)).thenReturn(true);
+        when(bitwigApiFacade.findTrackIndexByName(trackName)).thenReturn(0);
         when(bitwigApiFacade.getTrackClipCount(trackName)).thenReturn(8);
-        when(bitwigApiFacade.launchClip(trackName, clipIndex)).thenReturn(true);
+        doNothing().when(bitwigApiFacade).launchClip(trackName, clipIndex);
 
         // Act
         ClipLaunchResult result = controller.launchClip(trackName, clipIndex);
@@ -48,7 +50,7 @@ class ClipSceneControllerTest {
         assertEquals("Clip at Drums[0] launched.", result.getMessage());
         assertNull(result.getErrorCode());
 
-        verify(bitwigApiFacade).findTrackByName(trackName);
+        verify(bitwigApiFacade).findTrackIndexByName(trackName);
         verify(bitwigApiFacade).getTrackClipCount(trackName);
         verify(bitwigApiFacade).launchClip(trackName, clipIndex);
     }
@@ -59,7 +61,8 @@ class ClipSceneControllerTest {
         String trackName = "NonExistentTrack";
         int clipIndex = 0;
 
-        when(bitwigApiFacade.findTrackByName(trackName)).thenReturn(false);
+        when(bitwigApiFacade.findTrackIndexByName(trackName))
+            .thenThrow(new BitwigApiException(ErrorCode.TRACK_NOT_FOUND, "findTrackIndexByName", "Track '" + trackName + "' not found"));
 
         // Act
         ClipLaunchResult result = controller.launchClip(trackName, clipIndex);
@@ -69,7 +72,7 @@ class ClipSceneControllerTest {
         assertEquals("TRACK_NOT_FOUND", result.getErrorCode());
         assertEquals("Track 'NonExistentTrack' not found", result.getMessage());
 
-        verify(bitwigApiFacade).findTrackByName(trackName);
+        verify(bitwigApiFacade).findTrackIndexByName(trackName);
         verify(bitwigApiFacade, never()).getTrackClipCount(anyString());
         verify(bitwigApiFacade, never()).launchClip(anyString(), anyInt());
     }
@@ -80,7 +83,7 @@ class ClipSceneControllerTest {
         String trackName = "Drums";
         int clipIndex = 10;
 
-        when(bitwigApiFacade.findTrackByName(trackName)).thenReturn(true);
+        when(bitwigApiFacade.findTrackIndexByName(trackName)).thenReturn(0);
         when(bitwigApiFacade.getTrackClipCount(trackName)).thenReturn(8);
 
         // Act
@@ -91,7 +94,7 @@ class ClipSceneControllerTest {
         assertEquals("CLIP_INDEX_OUT_OF_BOUNDS", result.getErrorCode());
         assertEquals("Clip index 10 is out of bounds for track 'Drums'", result.getMessage());
 
-        verify(bitwigApiFacade).findTrackByName(trackName);
+        verify(bitwigApiFacade).findTrackIndexByName(trackName);
         verify(bitwigApiFacade).getTrackClipCount(trackName);
         verify(bitwigApiFacade, never()).launchClip(anyString(), anyInt());
     }
@@ -102,9 +105,10 @@ class ClipSceneControllerTest {
         String trackName = "Drums";
         int clipIndex = 0;
 
-        when(bitwigApiFacade.findTrackByName(trackName)).thenReturn(true);
+        when(bitwigApiFacade.findTrackIndexByName(trackName)).thenReturn(0);
         when(bitwigApiFacade.getTrackClipCount(trackName)).thenReturn(8);
-        when(bitwigApiFacade.launchClip(trackName, clipIndex)).thenReturn(false);
+        doThrow(new BitwigApiException(ErrorCode.BITWIG_API_ERROR, "launchClip", "Failed to launch clip"))
+            .when(bitwigApiFacade).launchClip(trackName, clipIndex);
 
         // Act
         ClipLaunchResult result = controller.launchClip(trackName, clipIndex);
@@ -112,9 +116,9 @@ class ClipSceneControllerTest {
         // Assert
         assertFalse(result.isSuccess());
         assertEquals("BITWIG_ERROR", result.getErrorCode());
-        assertEquals("Failed to launch clip", result.getMessage());
+        assertTrue(result.getMessage().contains("Failed to launch clip"));
 
-        verify(bitwigApiFacade).findTrackByName(trackName);
+        verify(bitwigApiFacade).findTrackIndexByName(trackName);
         verify(bitwigApiFacade).getTrackClipCount(trackName);
         verify(bitwigApiFacade).launchClip(trackName, clipIndex);
     }
@@ -126,7 +130,7 @@ class ClipSceneControllerTest {
         int clipIndex = 0;
         RuntimeException exception = new RuntimeException("Bitwig API error");
 
-        when(bitwigApiFacade.findTrackByName(trackName)).thenThrow(exception);
+        when(bitwigApiFacade.findTrackIndexByName(trackName)).thenThrow(exception);
 
         // Act
         ClipLaunchResult result = controller.launchClip(trackName, clipIndex);
@@ -136,7 +140,7 @@ class ClipSceneControllerTest {
         assertEquals("BITWIG_ERROR", result.getErrorCode());
         assertTrue(result.getMessage().contains("Internal error occurred while launching clip"));
 
-        verify(bitwigApiFacade).findTrackByName(trackName);
+        verify(bitwigApiFacade).findTrackIndexByName(trackName);
     }
 
     @Test
@@ -145,15 +149,16 @@ class ClipSceneControllerTest {
         String trackName = "";
         int clipIndex = 0;
 
-        when(bitwigApiFacade.findTrackByName(trackName)).thenReturn(false);
+        when(bitwigApiFacade.findTrackIndexByName(trackName))
+            .thenThrow(new BitwigApiException(ErrorCode.EMPTY_PARAMETER, "findTrackIndexByName", "trackName cannot be empty"));
 
         // Act
         ClipLaunchResult result = controller.launchClip(trackName, clipIndex);
 
         // Assert
         assertFalse(result.isSuccess());
-        assertEquals("TRACK_NOT_FOUND", result.getErrorCode());
-        assertEquals("Track '' not found", result.getMessage());
+        assertEquals("BITWIG_ERROR", result.getErrorCode());
+        assertTrue(result.getMessage().contains("trackName cannot be empty"));
     }
 
     @Test
@@ -163,7 +168,7 @@ class ClipSceneControllerTest {
         String trackName = "Drums";
         int clipIndex = -1;
 
-        when(bitwigApiFacade.findTrackByName(trackName)).thenReturn(true);
+        when(bitwigApiFacade.findTrackIndexByName(trackName)).thenReturn(0);
         when(bitwigApiFacade.getTrackClipCount(trackName)).thenReturn(8);
 
         // Act
@@ -181,9 +186,9 @@ class ClipSceneControllerTest {
         String trackName = "Drums";
         int clipIndex = 7; // Last slot in an 8-slot bank
 
-        when(bitwigApiFacade.findTrackByName(trackName)).thenReturn(true);
+        when(bitwigApiFacade.findTrackIndexByName(trackName)).thenReturn(0);
         when(bitwigApiFacade.getTrackClipCount(trackName)).thenReturn(8);
-        when(bitwigApiFacade.launchClip(trackName, clipIndex)).thenReturn(true);
+        doNothing().when(bitwigApiFacade).launchClip(trackName, clipIndex);
 
         // Act
         ClipLaunchResult result = controller.launchClip(trackName, clipIndex);

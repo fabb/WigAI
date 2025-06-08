@@ -130,7 +130,138 @@ WigAI does not consume any external APIs.
 
 ## 11. Error Handling Strategy
 
-(Details will be provided in a dedicated Error Handling Strategy document, or integrated with `docs/coding-standards.md` or `docs/operational-guidelines.md`.)
+WigAI implements a **three-tier error handling architecture** to ensure consistent, reliable error management across all system layers.
+
+### 11.1 Architecture Overview
+
+```mermaid
+graph TD
+    subgraph "MCP Tool Layer"
+        A[MCP Tools] --> B[Unified Error Handler]
+        B --> C[Standardized JSON Response]
+    end
+    
+    subgraph "Business Logic Layer"
+        D[Feature Controllers] --> E[Error Classification]
+        E --> F[Structured Exceptions]
+    end
+    
+    subgraph "Bitwig API Layer"
+        G[BitwigApiFacade] --> H[API Exception Handling]
+        H --> I[Consistent Error Propagation]
+    end
+    
+    A --> D
+    D --> G
+    I --> F
+    F --> B
+    
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style E fill:#ccf,stroke:#333,stroke-width:2px
+    style H fill:#fcf,stroke:#333,stroke-width:2px
+```
+
+### 11.2 Error Classification System
+
+All errors are classified using a consistent taxonomy. The core error categories include:
+
+```java
+public enum ErrorCode {
+    // Input validation errors
+    INVALID_PARAMETER,
+    INVALID_PARAMETER_INDEX,
+    MISSING_REQUIRED_PARAMETER,
+    INVALID_PARAMETER_TYPE,
+    INVALID_RANGE,
+    EMPTY_PARAMETER,
+    
+    // State validation errors
+    DEVICE_NOT_SELECTED,
+    TRACK_NOT_FOUND,
+    SCENE_NOT_FOUND,
+    CLIP_NOT_FOUND,
+    PROJECT_NOT_LOADED,
+    ENGINE_NOT_ACTIVE,
+    
+    // Bitwig API errors
+    BITWIG_API_ERROR,
+    BITWIG_CONNECTION_ERROR,
+    BITWIG_TIMEOUT,
+    DEVICE_UNAVAILABLE,
+    TRANSPORT_ERROR,
+    
+    // System errors
+    INTERNAL_ERROR,
+    CONFIGURATION_ERROR,
+    RESOURCE_UNAVAILABLE,
+    OPERATION_FAILED,
+    SERIALIZATION_ERROR,
+    
+    // MCP Protocol errors
+    MCP_PROTOCOL_ERROR,
+    MCP_PARSING_ERROR,
+    MCP_RESPONSE_ERROR,
+    
+    // Unknown/Fallback
+    UNKNOWN_ERROR
+}
+```
+
+**Note**: Additional error codes may be introduced as needed to provide more specific error classification and improve debugging capabilities.
+
+### 11.3 Standardized Response Format
+
+All MCP tools return consistent JSON responses:
+
+```json
+{
+  "status": "success|error",
+  "data": { /* operation-specific success data */ },
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "human-readable description",
+    "operation": "method_name",
+    "timestamp": "ISO-8601"
+  }
+}
+```
+
+### 11.4 Layer-Specific Error Handling
+
+#### **BitwigApiFacade Layer**
+- All methods throw structured `BitwigApiException` with error codes
+- No silent failures or default return values
+- Comprehensive input validation with clear error messages
+- Proper exception chaining to preserve root causes
+
+#### **Feature Controller Layer**
+- Catches `BitwigApiException` and maps to appropriate error codes
+- Implements domain-specific validation rules
+- Provides meaningful error context for business operations
+
+#### **MCP Tool Layer**
+- Uses unified `McpErrorHandler` for consistent response formatting
+- Implements comprehensive logging with operation correlation
+- Provides client-friendly error messages while preserving technical details
+
+### 11.5 Resilience Patterns
+
+- **Partial Success Handling**: Continues gathering available data when some API calls fail, allowing operations to complete successfully even when individual components encounter errors
+
+### 11.6 Logging Strategy
+
+Structured logging with:
+- Operation correlation IDs for request tracing
+- Standardized log levels based on error severity
+- Machine-readable error metadata
+- Integration with Bitwig's native logging system
+
+### 11.7 Implementation Components
+
+- `WigAIErrorHandler`: Centralized error handling utilities
+- `BitwigApiException`: Structured exceptions for API layer
+- `ParameterValidator`: Reusable input validation framework
+- `StructuredLogger`: Enhanced logging with correlation and context
 
 ## 12. Coding Standards
 
@@ -154,4 +285,5 @@ WigAI does not consume any external APIs.
 | ------------- | ---------- | ------- | ------------------------------------------------ | ------------------- |
 | Initial draft | 2025-05-16 | 0.1     | Initial draft of architecture document sections. | 3-architect BMAD v2 |
 | Update        | 2025-05-18 | 0.2     | Updated component descriptions to align with MCP Java SDK 0.9.0+ integration. Revised MCP components to reflect the SDK's tool-based approach. | Architect Agent    |
+| Error handling alignment | 2025-06-08 | 0.3 | Updated error handling strategy to reflect actual implementation. Expanded error code taxonomy, simplified resilience patterns, and removed monitoring requirements. | Architect Agent |
 

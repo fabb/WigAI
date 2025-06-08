@@ -2,6 +2,8 @@ package io.github.fabb.wigai.features;
 
 import io.github.fabb.wigai.bitwig.BitwigApiFacade;
 import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
 
 /**
  * Controller for clip and scene launching operations in Bitwig Studio.
@@ -45,16 +47,17 @@ public class ClipSceneController {
             boolean anyTrack = false;
 
             for (int trackIdx = 0; trackIdx < trackCount; trackIdx++) {
-                String trackName = bitwigApiFacade.getTrackNameByIndex(trackIdx);
-                if (trackName != null) {
+                try {
+                    String trackName = bitwigApiFacade.getTrackNameByIndex(trackIdx);
                     anyTrack = true;
                     int clipCount = bitwigApiFacade.getTrackClipCount(trackName);
                     if (sceneIndex < clipCount) {
-                        boolean launched = bitwigApiFacade.launchClip(trackName, sceneIndex);
-                        if (launched) {
-                            launchedCount++;
-                        }
+                        bitwigApiFacade.launchClip(trackName, sceneIndex);
+                        launchedCount++;
                     }
+                } catch (BitwigApiException e) {
+                    // Track doesn't exist or clip launch failed, continue with next track
+                    logger.warn("Failed to launch clip on track " + trackIdx + ": " + e.getMessage());
                 }
             }
 
@@ -122,29 +125,31 @@ public class ClipSceneController {
         try {
             logger.info("Attempting to launch clip - Track: '" + trackName + "', Index: " + clipIndex);
 
-            // Find the track by name (case-sensitive)
-            boolean trackFound = bitwigApiFacade.findTrackByName(trackName);
-            if (!trackFound) {
-                logger.warn("Track not found: '" + trackName + "'");
-                return ClipLaunchResult.error("TRACK_NOT_FOUND", "Track '" + trackName + "' not found");
-            }
+            // Find the track by name (case-sensitive) and launch the clip
+            try {
+                bitwigApiFacade.findTrackIndexByName(trackName); // This will throw BitwigApiException if track not found
 
-            // Check if clip index is within bounds
-            int trackClipCount = bitwigApiFacade.getTrackClipCount(trackName);
-            if (clipIndex < 0 || clipIndex >= trackClipCount) {
-                logger.warn("Clip index " + clipIndex + " out of bounds for track '" + trackName + "' (valid range: 0-" + (trackClipCount - 1) + ")");
-                return ClipLaunchResult.error("CLIP_INDEX_OUT_OF_BOUNDS",
-                    "Clip index " + clipIndex + " is out of bounds for track '" + trackName + "'");
-            }
+                // Check if clip index is within bounds
+                int trackClipCount = bitwigApiFacade.getTrackClipCount(trackName);
+                if (clipIndex < 0 || clipIndex >= trackClipCount) {
+                    logger.warn("Clip index " + clipIndex + " out of bounds for track '" + trackName + "' (valid range: 0-" + (trackClipCount - 1) + ")");
+                    return ClipLaunchResult.error("CLIP_INDEX_OUT_OF_BOUNDS",
+                        "Clip index " + clipIndex + " is out of bounds for track '" + trackName + "'");
+                }
 
-            // Launch the clip
-            boolean launched = bitwigApiFacade.launchClip(trackName, clipIndex);
-            if (launched) {
+                // Launch the clip
+                bitwigApiFacade.launchClip(trackName, clipIndex);
                 logger.info("Successfully launched clip at " + trackName + "[" + clipIndex + "]");
                 return ClipLaunchResult.success("Clip at " + trackName + "[" + clipIndex + "] launched.");
-            } else {
-                logger.error("Failed to launch clip at " + trackName + "[" + clipIndex + "]");
-                return ClipLaunchResult.error("BITWIG_ERROR", "Failed to launch clip");
+
+            } catch (BitwigApiException e) {
+                if (e.getErrorCode() == ErrorCode.TRACK_NOT_FOUND) {
+                    logger.warn("Track not found: '" + trackName + "'");
+                    return ClipLaunchResult.error("TRACK_NOT_FOUND", "Track '" + trackName + "' not found");
+                } else {
+                    logger.error("Failed to launch clip at " + trackName + "[" + clipIndex + "]: " + e.getMessage());
+                    return ClipLaunchResult.error("BITWIG_ERROR", "Failed to launch clip: " + e.getMessage());
+                }
             }
 
         } catch (Exception e) {

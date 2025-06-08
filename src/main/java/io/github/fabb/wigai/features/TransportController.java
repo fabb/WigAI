@@ -2,6 +2,8 @@ package io.github.fabb.wigai.features;
 
 import io.github.fabb.wigai.bitwig.BitwigApiFacade;
 import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
 
 /**
  * Controller class for transport control features.
@@ -34,7 +36,7 @@ public class TransportController {
             return "Transport playback started.";
         } catch (Exception e) {
             logger.info("TransportController: Error starting transport playback: " + e.getMessage());
-            throw new RuntimeException("Failed to start transport playback", e);
+            throw new BitwigApiException(ErrorCode.TRANSPORT_ERROR, "startTransport", "Failed to start transport playback", e);
         }
     }
 
@@ -50,7 +52,7 @@ public class TransportController {
             return "Transport playback stopped.";
         } catch (Exception e) {
             logger.info("TransportController: Error stopping transport playback: " + e.getMessage());
-            throw new RuntimeException("Failed to stop transport playback", e);
+            throw new BitwigApiException(ErrorCode.TRANSPORT_ERROR, "stopTransport", "Failed to stop transport playback", e);
         }
     }
 }

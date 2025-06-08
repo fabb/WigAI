@@ -1,7 +1,11 @@
 package io.github.fabb.wigai.mcp.tool;
 
-import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
+import io.github.fabb.wigai.common.logging.StructuredLogger;
+import io.github.fabb.wigai.common.validation.ParameterValidator;
 import io.github.fabb.wigai.features.ClipSceneController;
+import io.github.fabb.wigai.mcp.McpErrorHandler;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -11,8 +15,8 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 /**
- * MCP tool for launching scenes by index.
- * Implements the launch_scene_by_index MCP command as specified in the API reference.
+ * MCP tool for launching scenes by index using unified error handling architecture.
+ * Implements the session_launchSceneByIndex MCP command as specified in the API reference.
  */
 public class SceneTool {
 
@@ -22,10 +26,10 @@ public class SceneTool {
      * Creates the MCP tool specification for scene launching.
      *
      * @param clipSceneController The controller for clip/scene operations
-     * @param logger The logger service for operation logging
+     * @param logger The structured logger for operation logging
      * @return MCP tool specification
      */
-    public static McpServerFeatures.SyncToolSpecification launchSceneByIndexSpecification(ClipSceneController clipSceneController, Logger logger) {
+    public static McpServerFeatures.SyncToolSpecification launchSceneByIndexSpecification(ClipSceneController clipSceneController, StructuredLogger logger) {
         var schema = """
             {
               "type": "object",
@@ -45,82 +49,48 @@ public class SceneTool {
             schema
         );
 
-        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> handler = (exchange, arguments) ->
-            handleLaunchSceneByIndex(arguments, clipSceneController, logger);
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> handler =
+            (exchange, arguments) -> McpErrorHandler.executeWithErrorHandling(
+                TOOL_NAME,
+                logger,
+                new McpErrorHandler.ToolOperation() {
+                    @Override
+                    public Object execute() throws Exception {
+                        // Parse and validate arguments
+                        LaunchSceneArguments args = parseArguments(arguments);
+
+                        // Perform scene launch operation
+                        var result = clipSceneController.launchSceneByIndex(args.sceneIndex());
+
+                        if (result.isSuccess()) {
+                            return McpErrorHandler.SuccessResponseBuilder.create()
+                                .withAction("scene_launched")
+                                .withMessage(result.getMessage())
+                                .withData("scene_index", args.sceneIndex())
+                                .build();
+                        } else {
+                            throw new BitwigApiException(ErrorCode.OPERATION_FAILED, TOOL_NAME, result.getMessage());
+                        }
+                    }
+                }
+            );
 
         return new McpServerFeatures.SyncToolSpecification(tool, handler);
     }
 
     /**
-     * Handles the launch_scene_by_index MCP tool request.
+     * Parses the MCP tool arguments into a structured format.
      *
-     * @param arguments The tool arguments containing scene_index
-     * @param clipSceneController The controller for clip/scene operations
-     * @param logger The logger service for operation logging
-     * @return Tool result with success response or error details
+     * @param arguments Raw arguments map from MCP request
+     * @return Parsed and validated LaunchSceneArguments
+     * @throws IllegalArgumentException if arguments are invalid
      */
-    private static McpSchema.CallToolResult handleLaunchSceneByIndex(Map<String, Object> arguments, ClipSceneController clipSceneController, Logger logger) {
-        try {
-            LaunchSceneArguments args = parseArguments(arguments);
-
-            logger.info("Received session_launchSceneByIndex command - Scene Index: " + args.sceneIndex());
-
-            if (args.sceneIndex() < 0) {
-                logger.warn("Invalid scene_index: negative value " + args.sceneIndex());
-                return errorResponse("SCENE_NOT_FOUND", "scene_index must be non-negative");
-            }
-
-            var result = clipSceneController.launchSceneByIndex(args.sceneIndex());
-
-            if (result.isSuccess()) {
-                logger.info("Scene launch successful: " + result.getMessage());
-                return successResponse(args.sceneIndex(), result.getMessage());
-            } else {
-                logger.error("Scene launch failed: " + result.getMessage());
-                String code = "SCENE_NOT_FOUND".equals(result.getErrorCode()) ? "SCENE_NOT_FOUND" : "BITWIG_ERROR";
-                return errorResponse(code, result.getMessage());
-            }
-
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid arguments for launch_scene_by_index: " + e.getMessage());
-            return errorResponse("SCENE_NOT_FOUND", e.getMessage());
-        } catch (Exception e) {
-            logger.error("Unexpected error in launch_scene_by_index: " + e.getMessage(), e);
-            return errorResponse("BITWIG_ERROR", "Internal error occurred while launching scene");
-        }
-    }
-
     private static LaunchSceneArguments parseArguments(Map<String, Object> arguments) {
-        Object sceneIndexObj = arguments.get("scene_index");
-
-        if (sceneIndexObj == null) {
-            throw new IllegalArgumentException("Missing required parameter: scene_index");
-        }
-
-        int sceneIndex;
-        if (sceneIndexObj instanceof Number) {
-            sceneIndex = ((Number) sceneIndexObj).intValue();
-        } else {
-            throw new IllegalArgumentException("scene_index must be an integer");
-        }
+        // Validate required parameters
+        int sceneIndex = ParameterValidator.validateRequiredInteger(arguments, "scene_index", TOOL_NAME);
+        sceneIndex = ParameterValidator.validateSceneIndex(sceneIndex, TOOL_NAME);
 
         return new LaunchSceneArguments(sceneIndex);
-    }
-
-    private static McpSchema.CallToolResult successResponse(int sceneIndex, String message) {
-        String json = String.format(
-            "{\"status\":\"success\",\"data\":{\"action\":\"scene_launched\",\"scene_index\":%d,\"message\":\"%s\"}}",
-            sceneIndex, message.replace("\"", "\\\"")
-        );
-        return new McpSchema.CallToolResult(json, false);
-    }
-
-    private static McpSchema.CallToolResult errorResponse(String code, String message) {
-        String json = String.format(
-            "{\"isError\":true,\"errorCode\":\"%s\",\"message\":\"%s\"}",
-            code, message.replace("\"", "\\\"")
-        );
-        return new McpSchema.CallToolResult(json, true);
     }
 
     /**

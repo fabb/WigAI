@@ -2,6 +2,8 @@ package io.github.fabb.wigai.bitwig;
 
 import com.bitwig.extension.controller.api.*;
 import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -204,39 +206,39 @@ public class BitwigApiFacadeTest {
     @Test
     void testSetSelectedDeviceParameter_InvalidParameterIndex() {
         // Test invalid parameter index (too high)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             bitwigApiFacade.setSelectedDeviceParameter(8, 0.5);
         });
 
-        assertEquals("Parameter index must be between 0-7, got: 8", exception.getMessage());
-        verify(mockLogger).error("BitwigApiFacade: Parameter index must be between 0-7, got: 8");
+        assertEquals(ErrorCode.INVALID_RANGE, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("parameter_index must be between 0 and 7, got: 8"));
 
         // Test invalid parameter index (negative)
-        IllegalArgumentException exception2 = assertThrows(IllegalArgumentException.class, () -> {
+        BitwigApiException exception2 = assertThrows(BitwigApiException.class, () -> {
             bitwigApiFacade.setSelectedDeviceParameter(-1, 0.5);
         });
 
-        assertEquals("Parameter index must be between 0-7, got: -1", exception2.getMessage());
-        verify(mockLogger).error("BitwigApiFacade: Parameter index must be between 0-7, got: -1");
+        assertEquals(ErrorCode.INVALID_RANGE, exception2.getErrorCode());
+        assertTrue(exception2.getMessage().contains("parameter_index must be between 0 and 7, got: -1"));
     }
 
     @Test
     void testSetSelectedDeviceParameter_InvalidValue() {
         // Test value too high
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             bitwigApiFacade.setSelectedDeviceParameter(0, 1.5);
         });
 
-        assertEquals("Parameter value must be between 0.0-1.0, got: 1.5", exception.getMessage());
-        verify(mockLogger).error("BitwigApiFacade: Parameter value must be between 0.0-1.0, got: 1.5");
+        assertEquals(ErrorCode.INVALID_RANGE, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("value must be between 0.0 and 1.0, got: 1.5"));
 
         // Test negative value
-        IllegalArgumentException exception2 = assertThrows(IllegalArgumentException.class, () -> {
+        BitwigApiException exception2 = assertThrows(BitwigApiException.class, () -> {
             bitwigApiFacade.setSelectedDeviceParameter(0, -0.1);
         });
 
-        assertEquals("Parameter value must be between 0.0-1.0, got: -0.1", exception2.getMessage());
-        verify(mockLogger).error("BitwigApiFacade: Parameter value must be between 0.0-1.0, got: -0.1");
+        assertEquals(ErrorCode.INVALID_RANGE, exception2.getErrorCode());
+        assertTrue(exception2.getMessage().contains("value must be between 0.0 and 1.0, got: -0.1"));
     }
 
     @Test
@@ -247,12 +249,12 @@ public class BitwigApiFacadeTest {
         when(mockCursorDevice.exists()).thenReturn(mockExists);
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             bitwigApiFacade.setSelectedDeviceParameter(0, 0.5);
         });
 
-        assertEquals("No device is currently selected", exception.getMessage());
-        verify(mockLogger).error("BitwigApiFacade: No device is currently selected");
+        assertEquals(ErrorCode.DEVICE_NOT_SELECTED, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("No device is currently selected"));
     }
 
     @Test
@@ -270,13 +272,14 @@ public class BitwigApiFacadeTest {
         when(mockParameterBank.getParameter(parameterIndex)).thenThrow(new RuntimeException("Bitwig API error"));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             bitwigApiFacade.setSelectedDeviceParameter(parameterIndex, value);
         });
 
-        assertEquals("Failed to set parameter " + parameterIndex + ": Bitwig API error", exception.getMessage());
+        // Current implementation returns OPERATION_FAILED for all RuntimeException
+        assertEquals(ErrorCode.OPERATION_FAILED, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("Bitwig API error"));
         assertEquals("Bitwig API error", exception.getCause().getMessage());
-        verify(mockLogger).error("BitwigApiFacade: Failed to set parameter " + parameterIndex + ": Bitwig API error");
     }
 
     @Test

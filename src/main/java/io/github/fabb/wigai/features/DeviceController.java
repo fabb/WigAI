@@ -5,6 +5,8 @@ import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.common.data.ParameterInfo;
 import io.github.fabb.wigai.common.data.ParameterSetting;
 import io.github.fabb.wigai.common.data.ParameterSettingResult;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -32,11 +34,12 @@ public class DeviceController {
      * Gets the parameters of the currently selected device.
      *
      * @return A DeviceParametersResult containing the device name and parameters
+     * @throws BitwigApiException if no device is selected or operation fails
      */
-    public DeviceParametersResult getSelectedDeviceParameters() {
-        try {
-            logger.info("DeviceController: Getting selected device parameters");
+    public DeviceParametersResult getSelectedDeviceParameters() throws BitwigApiException {
+        logger.info("DeviceController: Getting selected device parameters");
 
+        try {
             String deviceName = bitwigApiFacade.getSelectedDeviceName();
             List<ParameterInfo> parameters = bitwigApiFacade.getSelectedDeviceParameters();
 
@@ -44,9 +47,12 @@ public class DeviceController {
 
             return new DeviceParametersResult(deviceName, parameters);
 
-        } catch (Exception e) {
+        } catch (BitwigApiException e) {
             logger.error("DeviceController: Error getting selected device parameters: " + e.getMessage());
-            throw new RuntimeException("Failed to get selected device parameters", e);
+            throw e; // Re-throw BitwigApiException as-is
+        } catch (Exception e) {
+            logger.error("DeviceController: Unexpected error getting selected device parameters: " + e.getMessage());
+            throw new BitwigApiException(ErrorCode.INTERNAL_ERROR, "getSelectedDeviceParameters", e.getMessage(), e);
         }
     }
 
@@ -55,25 +61,24 @@ public class DeviceController {
      *
      * @param parameterIndex The index of the parameter to set (0-7)
      * @param value          The value to set (0.0-1.0)
-     * @throws IllegalArgumentException if parameterIndex is out of range or value is out of range
-     * @throws RuntimeException        if no device is selected or Bitwig API error occurs
+     * @throws BitwigApiException if parameterIndex is out of range, value is out of range, no device is selected, or Bitwig API error occurs
      */
-    public void setSelectedDeviceParameter(int parameterIndex, double value) {
-        try {
-            logger.info("DeviceController: Setting parameter " + parameterIndex + " to " + value);
+    public void setSelectedDeviceParameter(int parameterIndex, double value) throws BitwigApiException {
+        logger.info("DeviceController: Setting parameter " + parameterIndex + " to " + value);
 
+        try {
             // Use BitwigApiFacade to perform the actual parameter setting
             // This will handle all validation (parameter index, value range, device selection)
             bitwigApiFacade.setSelectedDeviceParameter(parameterIndex, value);
 
             logger.info("DeviceController: Successfully set parameter " + parameterIndex + " to " + value);
 
-        } catch (IllegalArgumentException e) {
-            logger.error("DeviceController: Validation error setting parameter " + parameterIndex + ": " + e.getMessage());
-            throw e; // Re-throw validation errors as-is
-        } catch (Exception e) {
+        } catch (BitwigApiException e) {
             logger.error("DeviceController: Error setting parameter " + parameterIndex + ": " + e.getMessage());
-            throw new RuntimeException("Failed to set device parameter", e);
+            throw e; // Re-throw BitwigApiException as-is
+        } catch (Exception e) {
+            logger.error("DeviceController: Unexpected error setting parameter " + parameterIndex + ": " + e.getMessage());
+            throw new BitwigApiException(ErrorCode.INTERNAL_ERROR, "setSelectedDeviceParameter", e.getMessage(), e);
         }
     }
 
@@ -91,10 +96,13 @@ public class DeviceController {
 
         // First, validate device selection (top-level validation)
         try {
-            bitwigApiFacade.getSelectedDeviceName(); // This will throw if no device selected
-        } catch (Exception e) {
+            bitwigApiFacade.getSelectedDeviceName(); // This will throw BitwigApiException if no device selected
+        } catch (BitwigApiException e) {
             logger.error("DeviceController: No device selected for batch parameter setting");
-            throw new RuntimeException("No device is currently selected", e);
+            throw e; // Re-throw as-is
+        } catch (Exception e) {
+            logger.error("DeviceController: Unexpected error checking device selection for batch parameter setting");
+            throw new BitwigApiException(ErrorCode.INTERNAL_ERROR, "setMultipleSelectedDeviceParameters", e.getMessage(), e);
         }
 
         List<ParameterSettingResult> results = new ArrayList<>();
@@ -118,40 +126,31 @@ public class DeviceController {
 
                 logger.info("DeviceController: Successfully set parameter " + param.parameter_index() + " to " + param.value());
 
-            } catch (IllegalArgumentException e) {
-                // Parameter validation failed
-                String errorCode;
-                if (e.getMessage().contains("Parameter index must be between 0-7")) {
-                    errorCode = "INVALID_PARAMETER_INDEX";
-                } else if (e.getMessage().contains("Parameter value must be between 0.0-1.0")) {
-                    errorCode = "INVALID_PARAMETER";
-                } else {
-                    errorCode = "INVALID_PARAMETER";
-                }
-
+            } catch (BitwigApiException e) {
+                // Structured error handling
                 ParameterSettingResult result = new ParameterSettingResult(
                     param.parameter_index(),
                     "error",
                     null,
-                    errorCode,
+                    e.getErrorCode().getCode(),
                     e.getMessage()
                 );
                 results.add(result);
 
-                logger.error("DeviceController: Validation error for parameter " + param.parameter_index() + ": " + e.getMessage());
+                logger.error("DeviceController: BitwigApi error for parameter " + param.parameter_index() + ": " + e.getMessage());
 
             } catch (Exception e) {
-                // Other errors (likely Bitwig API errors)
+                // Other unexpected errors
                 ParameterSettingResult result = new ParameterSettingResult(
                     param.parameter_index(),
                     "error",
                     null,
-                    "BITWIG_ERROR",
-                    "Error setting parameter: " + e.getMessage()
+                    "INTERNAL_ERROR",
+                    "Unexpected error setting parameter: " + e.getMessage()
                 );
                 results.add(result);
 
-                logger.error("DeviceController: Error setting parameter " + param.parameter_index() + ": " + e.getMessage());
+                logger.error("DeviceController: Unexpected error setting parameter " + param.parameter_index() + ": " + e.getMessage());
             }
         }
 

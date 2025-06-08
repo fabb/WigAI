@@ -1,37 +1,36 @@
 package io.github.fabb.wigai.mcp.tool;
 
-import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
+import io.github.fabb.wigai.common.logging.StructuredLogger;
+import io.github.fabb.wigai.common.validation.ParameterValidator;
 import io.github.fabb.wigai.features.ClipSceneController;
 import io.github.fabb.wigai.features.ClipSceneController.ClipLaunchResult;
+import io.github.fabb.wigai.mcp.McpErrorHandler;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.server.McpSyncServerExchange;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
 /**
- * MCP tool for launching clips by track name and clip index.
+ * MCP tool for launching clips by track name and clip index using unified error handling architecture.
  * Implements the launch_clip MCP command as specified in the API reference.
  */
 public class ClipTool {
 
     private static final String TOOL_NAME = "launch_clip";
 
-    // Store the handler function so it can be accessed for testing
-    private static BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> handlerFunction;
-
     /**
      * Creates the MCP tool specification for clip launching.
      *
      * @param clipSceneController The controller for clip/scene operations
-     * @param logger The logger service for operation logging
+     * @param logger The structured logger for operation logging
      * @return MCP tool specification
      */
-    public static McpServerFeatures.SyncToolSpecification launchClipSpecification(ClipSceneController clipSceneController, Logger logger) {
+    public static McpServerFeatures.SyncToolSpecification launchClipSpecification(ClipSceneController clipSceneController, StructuredLogger logger) {
         var schema = """
             {
               "type": "object",
@@ -55,56 +54,31 @@ public class ClipTool {
             schema
         );
 
-        // Create and store the handler function
-        handlerFunction = (exchange, arguments) -> handleLaunchClip(arguments, clipSceneController, logger);
+        BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> handler =
+            (exchange, arguments) -> McpErrorHandler.executeWithErrorHandling(
+                TOOL_NAME,
+                logger,
+                () -> {
+                    // Parse and validate arguments
+                    LaunchClipArguments args = parseArguments(arguments);
 
-        return new McpServerFeatures.SyncToolSpecification(tool, handlerFunction);
-    }
+                    // Perform clip launch operation
+                    ClipLaunchResult result = clipSceneController.launchClip(args.trackName(), args.clipIndex());
 
-    /**
-     * Handles the launch_clip MCP tool request.
-     *
-     * @param arguments The tool arguments containing track_name and clip_index
-     * @param clipSceneController The controller for clip/scene operations
-     * @param logger The logger service for operation logging
-     * @return Tool result with success response or error details
-     */
-    private static McpSchema.CallToolResult handleLaunchClip(Map<String, Object> arguments, ClipSceneController clipSceneController, Logger logger) {
-        try {
-            // Parse and validate arguments
-            LaunchClipArguments args = parseArguments(arguments);
+                    if (result.isSuccess()) {
+                        return McpErrorHandler.SuccessResponseBuilder.create()
+                            .withAction("clip_launched")
+                            .withMessage(result.getMessage())
+                            .withData("track_name", args.trackName())
+                            .withData("clip_index", args.clipIndex())
+                            .build();
+                    } else {
+                        throw new BitwigApiException(ErrorCode.OPERATION_FAILED, TOOL_NAME, result.getMessage());
+                    }
+                }
+            );
 
-            logger.info("Received launch_clip command - Track: '" + args.trackName() + "', Index: " + args.clipIndex());
-
-            // Validate input parameters
-            if (args.trackName().trim().isEmpty()) {
-                logger.warn("Invalid track_name: empty string provided");
-                return new McpSchema.CallToolResult("Error: track_name cannot be empty", true);
-            }
-
-            if (args.clipIndex() < 0) {
-                logger.warn("Invalid clip_index: negative value " + args.clipIndex());
-                return new McpSchema.CallToolResult("Error: clip_index must be non-negative", true);
-            }
-
-            // Perform clip launch operation
-            ClipLaunchResult result = clipSceneController.launchClip(args.trackName(), args.clipIndex());
-
-            if (result.isSuccess()) {
-                logger.info("Clip launch successful: " + result.getMessage());
-                return new McpSchema.CallToolResult(result.getMessage(), false);
-            } else {
-                logger.error("Clip launch failed: " + result.getMessage());
-                return new McpSchema.CallToolResult("Error: " + result.getMessage(), true);
-            }
-
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid arguments for launch_clip: " + e.getMessage());
-            return new McpSchema.CallToolResult("Error: " + e.getMessage(), true);
-        } catch (Exception e) {
-            logger.error("Unexpected error in launch_clip: " + e.getMessage(), e);
-            return new McpSchema.CallToolResult("Error: Internal error occurred while launching clip", true);
-        }
+        return new McpServerFeatures.SyncToolSpecification(tool, handler);
     }
 
     /**
@@ -115,36 +89,14 @@ public class ClipTool {
      * @throws IllegalArgumentException if arguments are invalid
      */
     private static LaunchClipArguments parseArguments(Map<String, Object> arguments) {
-        Object trackNameObj = arguments.get("track_name");
-        Object clipIndexObj = arguments.get("clip_index");
+        // Validate required parameters
+        String trackName = ParameterValidator.validateRequiredString(arguments, "track_name", TOOL_NAME);
+        trackName = ParameterValidator.validateNotEmpty(trackName, "track_name", TOOL_NAME);
 
-        if (trackNameObj == null) {
-            throw new IllegalArgumentException("Missing required parameter: track_name");
-        }
-
-        if (clipIndexObj == null) {
-            throw new IllegalArgumentException("Missing required parameter: clip_index");
-        }
-
-        if (!(trackNameObj instanceof String)) {
-            throw new IllegalArgumentException("track_name must be a string");
-        }
-
-        String trackName = (String) trackNameObj;
-
-        int clipIndex;
-        if (clipIndexObj instanceof Number) {
-            clipIndex = ((Number) clipIndexObj).intValue();
-        } else {
-            throw new IllegalArgumentException("clip_index must be an integer");
-        }
+        int clipIndex = ParameterValidator.validateRequiredInteger(arguments, "clip_index", TOOL_NAME);
+        clipIndex = ParameterValidator.validateClipIndex(clipIndex, TOOL_NAME);
 
         return new LaunchClipArguments(trackName, clipIndex);
-    }
-
-    // Accessor for testing
-    public static BiFunction<McpSyncServerExchange, Map<String, Object>, McpSchema.CallToolResult> getHandler() {
-        return handlerFunction;
     }
 
     /**
