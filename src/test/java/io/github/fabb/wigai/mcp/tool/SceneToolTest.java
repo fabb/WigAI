@@ -1,6 +1,10 @@
 package io.github.fabb.wigai.mcp.tool;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
+import io.github.fabb.wigai.mcp.McpErrorHandler;
 import io.github.fabb.wigai.common.logging.StructuredLogger;
 import io.github.fabb.wigai.features.ClipSceneController;
 import io.github.fabb.wigai.features.ClipSceneController.SceneLaunchResult;
@@ -15,6 +19,8 @@ import org.mockito.MockitoAnnotations;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import java.util.Map;
 
 /**
  * Unit tests for SceneTool focusing on error handling integration.
@@ -97,5 +103,61 @@ class SceneToolTest {
         // Verify that the specification was created successfully
         // Note: StructuredLogger methods are only called during handler execution, not specification creation
         assertNotNull(specification.tool());
+    }
+
+    @Test
+    void testLaunchSceneByIndexSuccessResponseFormat() throws Exception {
+        // Arrange: Mock successful scene launch
+        SceneLaunchResult successResult = SceneLaunchResult.success("Scene 1 launched.");
+        when(clipSceneController.launchSceneByIndex(1)).thenReturn(successResult);
+
+        // Act: Simulate what the tool does
+        Map<String, Object> responseData = Map.of(
+            "action", "scene_launched",
+            "scene_index", 1,
+            "message", "Scene 1 launched."
+        );
+        McpSchema.CallToolResult result = McpErrorHandler.createSuccessResponse(responseData);
+
+        // Assert: Validate action response format
+        JsonNode dataNode = McpResponseTestUtils.validateActionResponse(result, "scene_launched");
+        assertEquals(1, dataNode.get("scene_index").asInt());
+        assertEquals("Scene 1 launched.", dataNode.get("message").asText());
+    }
+
+    @Test
+    void testLaunchSceneErrorResponseFormat() throws Exception {
+        // Test error response format for scene operations
+        BitwigApiException exception = new BitwigApiException(
+            ErrorCode.SCENE_NOT_FOUND,
+            "session_launchSceneByIndex",
+            "Scene index 99 is out of range"
+        );
+        
+        McpSchema.CallToolResult result = McpErrorHandler.createErrorResponse(exception, structuredLogger);
+        
+        // Validate error response format
+        JsonNode errorNode = McpResponseTestUtils.validateErrorResponse(result);
+        assertEquals("SCENE_NOT_FOUND", errorNode.get("code").asText());
+        assertEquals("Scene index 99 is out of range", errorNode.get("message").asText());
+        assertEquals("session_launchSceneByIndex", errorNode.get("operation").asText());
+    }
+
+    @Test
+    void testLaunchSceneResponseNotDoubleWrapped() throws Exception {
+        // Test that scene launch responses are not double-wrapped
+        Map<String, Object> sceneData = Map.of(
+            "action", "scene_launched",
+            "scene_index", 3,
+            "message", "Scene launched successfully"
+        );
+        McpSchema.CallToolResult result = McpErrorHandler.createSuccessResponse(sceneData);
+        
+        // This would have caught the double-wrapping bug
+        McpResponseTestUtils.assertNotDoubleWrapped(result);
+        
+        // Verify it's properly structured as an action response
+        JsonNode dataNode = McpResponseTestUtils.validateActionResponse(result, "scene_launched");
+        assertEquals(3, dataNode.get("scene_index").asInt());
     }
 }

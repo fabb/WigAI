@@ -66,12 +66,12 @@ public class ClipTool {
                     ClipLaunchResult result = clipSceneController.launchClip(args.trackName(), args.clipIndex());
 
                     if (result.isSuccess()) {
-                        return McpErrorHandler.SuccessResponseBuilder.create()
-                            .withAction("clip_launched")
-                            .withMessage(result.getMessage())
-                            .withData("track_name", args.trackName())
-                            .withData("clip_index", args.clipIndex())
-                            .build();
+                        return Map.of(
+                            "action", "clip_launched",
+                            "track_name", args.trackName(),
+                            "clip_index", args.clipIndex(),
+                            "message", result.getMessage()
+                        );
                     } else {
                         throw new BitwigApiException(ErrorCode.OPERATION_FAILED, TOOL_NAME, result.getMessage());
                     }

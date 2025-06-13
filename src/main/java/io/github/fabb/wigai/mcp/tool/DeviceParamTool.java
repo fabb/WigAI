@@ -43,7 +43,7 @@ public class DeviceParamTool {
             }""";
         var tool = new McpSchema.Tool(
             GET_PARAMETERS_TOOL,
-            "Get the names and values of the eight addressable parameters of the user-selected device in Bitwig.",
+            "Get the names and values of all addressable parameters of the user-selected device in Bitwig.",
             schema
         );
 
@@ -71,11 +71,7 @@ public class DeviceParamTool {
                         }
                         responseData.put("parameters", parametersArray);
 
-                        return McpErrorHandler.SuccessResponseBuilder.create()
-                            .withAction("parameters_retrieved")
-                            .withMessage("Device parameters retrieved successfully for: " + result.deviceName())
-                            .withData(responseData)
-                            .build();
+                        return responseData;
                     }
                 }
             );
@@ -99,8 +95,7 @@ public class DeviceParamTool {
                 "parameter_index": {
                   "type": "integer",
                   "minimum": 0,
-                  "maximum": 7,
-                  "description": "The index of the parameter to set (0-7)"
+                  "description": "The index of the parameter to set (0-based)"
                 },
                 "value": {
                   "type": "number",
@@ -113,7 +108,7 @@ public class DeviceParamTool {
             }""";
         var tool = new McpSchema.Tool(
             SET_PARAMETER_TOOL,
-            "Set a specific value for a single parameter (by its index 0-7) of the user-selected device in Bitwig.",
+            "Set a specific value for a single parameter (by its index) of the user-selected device in Bitwig.",
             schema
         );
 
@@ -130,12 +125,12 @@ public class DeviceParamTool {
                         // Perform the parameter setting
                         deviceController.setSelectedDeviceParameter(args.parameterIndex(), args.value());
 
-                        return McpErrorHandler.SuccessResponseBuilder.create()
-                            .withAction("parameter_set")
-                            .withMessage("Parameter " + args.parameterIndex() + " set to " + args.value() + ".")
-                            .withData("parameter_index", args.parameterIndex())
-                            .withData("new_value", args.value())
-                            .build();
+                        return Map.of(
+                            "action", "parameter_set",
+                            "parameter_index", args.parameterIndex(),
+                            "new_value", args.value(),
+                            "message", "Parameter " + args.parameterIndex() + " set to " + args.value() + "."
+                        );
                     }
                 }
             );
@@ -165,8 +160,7 @@ public class DeviceParamTool {
                       "parameter_index": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 7,
-                        "description": "The index of the parameter to set (0-7)"
+                        "description": "The index of the parameter to set (0-based)"
                       },
                       "value": {
                         "type": "number",
@@ -184,7 +178,7 @@ public class DeviceParamTool {
             }""";
         var tool = new McpSchema.Tool(
             SET_MULTIPLE_PARAMETERS_TOOL,
-            "Set multiple parameter values (by index 0-7) of the user-selected device in Bitwig simultaneously.",
+            "Set multiple parameter values (by index) of the user-selected device in Bitwig simultaneously.",
             schema
         );
 
@@ -221,11 +215,11 @@ public class DeviceParamTool {
                         long successCount = results.stream().filter(r -> "success".equals(r.status())).count();
                         long errorCount = results.size() - successCount;
 
-                        return McpErrorHandler.SuccessResponseBuilder.create()
-                            .withAction("multiple_parameters_set")
-                            .withMessage("Batch operation completed: " + successCount + " succeeded, " + errorCount + " failed")
-                            .withData("results", resultsArray)
-                            .build();
+                        return Map.of(
+                            "action", "multiple_parameters_set",
+                            "results", resultsArray,
+                            "message", "Batch operation completed: " + successCount + " succeeded, " + errorCount + " failed"
+                        );
                     }
                 }
             );
@@ -238,7 +232,6 @@ public class DeviceParamTool {
      */
     private static SetParameterArguments parseSetParameterArguments(Map<String, Object> arguments) {
         int parameterIndex = ParameterValidator.validateRequiredInteger(arguments, "parameter_index", SET_PARAMETER_TOOL);
-        parameterIndex = ParameterValidator.validateParameterIndex(parameterIndex, SET_PARAMETER_TOOL);
 
         double value = ParameterValidator.validateRequiredDouble(arguments, "value", SET_PARAMETER_TOOL);
         value = ParameterValidator.validateParameterValue(value, SET_PARAMETER_TOOL);
@@ -271,7 +264,6 @@ public class DeviceParamTool {
             Map<String, Object> paramMap = (Map<String, Object>) paramObj;
 
             int parameterIndex = ParameterValidator.validateRequiredInteger(paramMap, "parameter_index", SET_MULTIPLE_PARAMETERS_TOOL);
-            parameterIndex = ParameterValidator.validateParameterIndex(parameterIndex, SET_MULTIPLE_PARAMETERS_TOOL);
 
             double value = ParameterValidator.validateRequiredDouble(paramMap, "value", SET_MULTIPLE_PARAMETERS_TOOL);
             value = ParameterValidator.validateParameterValue(value, SET_MULTIPLE_PARAMETERS_TOOL);

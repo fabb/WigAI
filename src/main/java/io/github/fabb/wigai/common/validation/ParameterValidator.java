@@ -186,12 +186,13 @@ public class ParameterValidator {
      * Validates that a parameter index is within the valid range for device parameters.
      *
      * @param parameterIndex The parameter index to validate
+     * @param parameterCount The total number of parameters available
      * @param operation The operation context
      * @return The validated parameter index
-     * @throws BitwigApiException if the index is outside the valid range (0-7)
+     * @throws BitwigApiException if the index is outside the valid range (0 to parameterCount-1)
      */
-    public static int validateParameterIndex(int parameterIndex, String operation) {
-        return validateRange(parameterIndex, 0, 7, "parameter_index", operation);
+    public static int validateParameterIndex(int parameterIndex, int parameterCount, String operation) {
+        return validateRange(parameterIndex, 0, parameterCount - 1, "parameter_index", operation);
     }
 
     /**

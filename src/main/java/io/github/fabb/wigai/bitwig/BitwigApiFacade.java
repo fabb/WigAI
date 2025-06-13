@@ -1,5 +1,6 @@
 package io.github.fabb.wigai.bitwig;
 
+import com.bitwig.extension.api.Color;
 import com.bitwig.extension.controller.api.*;
 import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.common.data.ParameterInfo;
@@ -28,6 +29,7 @@ public class BitwigApiFacade {
     private final SceneBankFacade sceneBankFacade;
     private final CursorTrack cursorTrack;
     private final RemoteControlsPage projectParameterBank;
+    private final List<DeviceBank> trackDeviceBanks;
 
     /**
      * Creates a new BitwigApiFacade instance.
@@ -58,15 +60,23 @@ public class BitwigApiFacade {
         // Initialize device control - use CursorTrack.createCursorDevice() instead of deprecated host.createCursorDevice()
         this.cursorTrack = host.createCursorTrack(0, 0);
         this.cursorDevice = cursorTrack.createCursorDevice();
-        this.deviceParameterBank = cursorDevice.createCursorRemoteControlsPage(8);
+        this.deviceParameterBank = cursorDevice.createCursorRemoteControlsPage(128);
 
         // Initialize project parameter access via MasterTrack (project parameters)
         MasterTrack masterTrack = host.createMasterTrack(0);
-        this.projectParameterBank = masterTrack.createCursorRemoteControlsPage(8);
+        this.projectParameterBank = masterTrack.createCursorRemoteControlsPage(128);
 
-        // Initialize track bank for clip launching (8 tracks, 8 scenes for now, but needs to be increased later for full functionality)
-        this.trackBank = host.createTrackBank(8, 0, 8);
-        this.sceneBankFacade = new SceneBankFacade(host, logger, 8); // 8 scenes for MVP, but needs to be increased later for full functionality
+        // Initialize track bank for clip launching (support up to 128 tracks and 128 scenes for full functionality)
+        this.trackBank = host.createTrackBank(128, 0, 128);
+        this.sceneBankFacade = new SceneBankFacade(host, logger, 128); // Support up to 128 scenes for full functionality
+
+        // Initialize device banks for each track to enable device enumeration
+        this.trackDeviceBanks = new ArrayList<>();
+        for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
+            Track track = trackBank.getItemAt(i);
+            DeviceBank deviceBank = track.createDeviceBank(128);
+            trackDeviceBanks.add(deviceBank);
+        }
 
         // Mark interest in device properties to enable value access
         cursorDevice.exists().markInterested();
@@ -74,7 +84,7 @@ public class BitwigApiFacade {
         cursorDevice.isEnabled().markInterested();
 
         // Mark interest in all device parameter properties to enable value access
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < deviceParameterBank.getParameterCount(); i++) {
             RemoteControl parameter = deviceParameterBank.getParameter(i);
             parameter.name().markInterested();
             parameter.value().markInterested();
@@ -82,7 +92,7 @@ public class BitwigApiFacade {
         }
 
         // Mark interest in project parameters to enable value access
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < projectParameterBank.getParameterCount(); i++) {
             RemoteControl parameter = projectParameterBank.getParameter(i);
             parameter.exists().markInterested();
             parameter.name().markInterested();
@@ -99,14 +109,28 @@ public class BitwigApiFacade {
         cursorTrack.solo().markInterested();
         cursorTrack.arm().markInterested();
 
-        // Mark interest in track properties for clip launching
-        for (int trackIndex = 0; trackIndex < 8; trackIndex++) {
+        // Mark interest in track properties for clip launching and track listing
+        for (int trackIndex = 0; trackIndex < trackBank.getSizeOfBank(); trackIndex++) {
             Track track = trackBank.getItemAt(trackIndex);
             track.name().markInterested();
             track.exists().markInterested();
+            track.trackType().markInterested();
+            track.isGroup().markInterested();
+            track.isActivated().markInterested();
+            track.color().markInterested();
+
+            // Mark interest in device properties for this track
+            DeviceBank deviceBank = trackDeviceBanks.get(trackIndex);
+            for (int deviceIndex = 0; deviceIndex < deviceBank.getSizeOfBank(); deviceIndex++) {
+                Device device = deviceBank.getItemAt(deviceIndex);
+                device.exists().markInterested();
+                device.name().markInterested();
+                device.isEnabled().markInterested();
+                device.deviceType().markInterested();
+            }
 
             ClipLauncherSlotBank trackSlots = track.clipLauncherSlotBank();
-            for (int slotIndex = 0; slotIndex < 8; slotIndex++) {
+            for (int slotIndex = 0; slotIndex < trackSlots.getSizeOfBank(); slotIndex++) {
                 ClipLauncherSlot slot = trackSlots.getItemAt(slotIndex);
                 slot.hasContent().markInterested();
                 slot.isPlaying().markInterested();
@@ -218,7 +242,7 @@ public class BitwigApiFacade {
     /**
      * Gets the parameters of the currently selected device.
      *
-     * @return A list of ParameterInfo objects representing the 8 addressable parameters
+     * @return A list of ParameterInfo objects representing all addressable parameters
      */
     public List<ParameterInfo> getSelectedDeviceParameters() {
         logger.info("BitwigApiFacade: Getting selected device parameters");
@@ -229,7 +253,7 @@ public class BitwigApiFacade {
             return parameters;
         }
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < deviceParameterBank.getParameterCount(); i++) {
             RemoteControl parameter = deviceParameterBank.getParameter(i);
             String name = parameter.name().get();
             double value = parameter.value().get();
@@ -250,7 +274,7 @@ public class BitwigApiFacade {
     /**
      * Sets the value of a specific parameter for the currently selected device.
      *
-     * @param parameterIndex The index of the parameter to set (0-7)
+     * @param parameterIndex The index of the parameter to set (0 to parameterCount-1)
      * @param value          The value to set (0.0-1.0)
      * @throws BitwigApiException if parameterIndex is out of range, value is out of range, no device is selected, or Bitwig API error occurs
      */
@@ -259,12 +283,6 @@ public class BitwigApiFacade {
         logger.info("BitwigApiFacade: Setting parameter " + parameterIndex + " to " + value);
 
         WigAIErrorHandler.executeWithErrorHandling(operation, () -> {
-            // Validate parameter index
-            ParameterValidator.validateParameterIndex(parameterIndex, operation);
-
-            // Validate value range
-            ParameterValidator.validateParameterValue(value, operation);
-
             // Check if device is selected
             if (!isDeviceSelected()) {
                 throw new BitwigApiException(
@@ -273,6 +291,13 @@ public class BitwigApiFacade {
                     "No device is currently selected"
                 );
             }
+
+            // Validate parameter index against actual parameter count
+            int parameterCount = deviceParameterBank.getParameterCount();
+            ParameterValidator.validateParameterIndex(parameterIndex, parameterCount, operation);
+
+            // Validate value range
+            ParameterValidator.validateParameterValue(value, operation);
 
             // Set the parameter value
             RemoteControl parameter = deviceParameterBank.getParameter(parameterIndex);
@@ -343,7 +368,7 @@ public class BitwigApiFacade {
         for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
             Track track = trackBank.getItemAt(i);
             if (track.exists().get() && trackName.equals(track.name().get())) {
-                // Return the number of available clip launcher slots (8 for MVP)
+                // Return the number of available clip launcher slots
                 return track.clipLauncherSlotBank().getSizeOfBank();
             }
         }
@@ -574,7 +599,7 @@ public class BitwigApiFacade {
     }
 
     /**
-     * Gets the project parameters (0-7) from the project's remote controls page.
+     * Gets the project parameters from the project's remote controls page.
      * Only returns parameters where exists() is true.
      *
      * @return A list of ParameterInfo objects representing the existing project parameters
@@ -583,7 +608,7 @@ public class BitwigApiFacade {
         logger.info("BitwigApiFacade: Getting project parameters");
         List<ParameterInfo> parameters = new ArrayList<>();
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < projectParameterBank.getParameterCount(); i++) {
             RemoteControl parameter = projectParameterBank.getParameter(i);
             boolean exists = parameter.exists().get();
 
@@ -692,7 +717,7 @@ public class BitwigApiFacade {
 
             // Get device parameters
             List<Map<String, Object>> parametersArray = new ArrayList<>();
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < deviceParameterBank.getParameterCount(); i++) {
                 RemoteControl parameter = deviceParameterBank.getParameter(i);
                 String name = parameter.name().get();
 
@@ -715,5 +740,200 @@ public class BitwigApiFacade {
         }
 
         return deviceInfo;
+    }
+
+    /**
+     * Gets a list of all tracks in the project with summary information.
+     *
+     * @param typeFilter Optional filter by track type (e.g., "audio", "instrument", "group", "effect", "master")
+     * @return A list of track information maps
+     */
+    public List<Map<String, Object>> getAllTracksInfo(String typeFilter) {
+        logger.info("BitwigApiFacade: Getting all tracks info" + (typeFilter != null ? " filtered by type: " + typeFilter : ""));
+        List<Map<String, Object>> tracksInfo = new ArrayList<>();
+
+        try {
+            // Get selected track name for comparison
+            String selectedTrackName = null;
+            if (cursorTrack.exists().get()) {
+                selectedTrackName = cursorTrack.name().get();
+            }
+
+            // Create parent track mapping to determine parent group indices
+            Map<String, Integer> parentGroupMapping = buildParentGroupMapping();
+
+            for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
+                Track track = trackBank.getItemAt(i);
+                if (!track.exists().get()) {
+                    continue; // Skip non-existent tracks
+                }
+
+                Map<String, Object> trackInfo = new LinkedHashMap<>();
+
+                // Basic track properties
+                trackInfo.put("index", i);
+                String trackName = track.name().get();
+                trackInfo.put("name", trackName);
+
+                String trackType = track.trackType().get().toLowerCase();
+                trackInfo.put("type", trackType);
+
+                // Apply type filter if specified
+                if (typeFilter != null && !typeFilter.toLowerCase().equals(trackType)) {
+                    continue;
+                }
+
+                trackInfo.put("is_group", track.isGroup().get());
+
+                // Get parent group index from mapping
+                trackInfo.put("parent_group_index", parentGroupMapping.get(trackName));
+
+                // Get track activation status
+                trackInfo.put("activated", track.isActivated().get());
+
+                // Get track color and convert to RGB format
+                trackInfo.put("color", formatTrackColor(track.color().get()));
+
+                // Check if this track is selected
+                boolean isSelected = selectedTrackName != null && selectedTrackName.equals(trackName);
+                trackInfo.put("is_selected", isSelected);
+
+                // Get devices on this track using the pre-existing device bank
+                List<Map<String, Object>> devices = getTrackDevices(i);
+                trackInfo.put("devices", devices);
+
+                tracksInfo.add(trackInfo);
+            }
+
+            logger.info("BitwigApiFacade: Retrieved " + tracksInfo.size() + " tracks");
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Error getting tracks info: " + e.getMessage());
+        }
+
+        return tracksInfo;
+    }
+
+    /**
+     * Gets device information for a specific track by index.
+     *
+     * @param trackIndex The index of the track to get devices from
+     * @return A list of device information maps
+     */
+    private List<Map<String, Object>> getTrackDevices(int trackIndex) {
+        List<Map<String, Object>> devices = new ArrayList<>();
+
+        try {
+            // Use the pre-existing device bank for this track that was created in the constructor
+            // and already has its properties marked as interested
+            if (trackIndex < 0 || trackIndex >= trackDeviceBanks.size()) {
+                logger.warn("BitwigApiFacade: Invalid track index for devices: " + trackIndex);
+                return devices;
+            }
+
+            DeviceBank deviceBank = trackDeviceBanks.get(trackIndex);
+            Track track = trackBank.getItemAt(trackIndex);
+
+            // Create device info for each existing device
+            for (int i = 0; i < deviceBank.getSizeOfBank(); i++) {
+                Device device = deviceBank.getItemAt(i);
+
+                // Check if device exists - this should work since markInterested() was called in constructor
+                if (!device.exists().get()) {
+                    continue;
+                }
+
+                Map<String, Object> deviceInfo = new LinkedHashMap<>();
+                deviceInfo.put("index", i);
+
+                // Get device name
+                String deviceName = device.name().get();
+                deviceInfo.put("name", deviceName);
+
+                // Get device type
+                String deviceType = device.deviceType().get();
+                deviceInfo.put("type", deviceType);
+
+                // Get device enabled status (bypassed = !enabled)
+                boolean isEnabled = device.isEnabled().get();
+                deviceInfo.put("bypassed", !isEnabled);
+
+                devices.add(deviceInfo);
+            }
+
+            logger.info("BitwigApiFacade: Found " + devices.size() + " devices on track: " + track.name().get());
+
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Error getting devices for track index " + trackIndex + ": " + e.getMessage());
+        }
+
+        return devices;
+    }
+
+    /**
+     * Builds a mapping of track names to their parent group track indices.
+     * This creates parent track objects for each track to determine hierarchy.
+     *
+     * @return A map where keys are track names and values are parent group indices (null if no parent)
+     */
+    private Map<String, Integer> buildParentGroupMapping() {
+        Map<String, Integer> parentMapping = new LinkedHashMap<>();
+
+        try {
+            for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
+                Track track = trackBank.getItemAt(i);
+                if (!track.exists().get()) {
+                    continue;
+                }
+
+                String trackName = track.name().get();
+                Integer parentGroupIndex = null;
+
+                try {
+                    // Create parent track object to check for parent group
+                    Track parentTrack = track.createParentTrack(0, 0);
+                    if (parentTrack != null && parentTrack.exists().get()) {
+                        String parentName = parentTrack.name().get();
+
+                        // Find the index of the parent track in our track bank
+                        for (int j = 0; j < trackBank.getSizeOfBank(); j++) {
+                            Track candidateParent = trackBank.getItemAt(j);
+                            if (candidateParent.exists().get() &&
+                                candidateParent.isGroup().get() &&
+                                parentName.equals(candidateParent.name().get())) {
+                                parentGroupIndex = j;
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.warn("BitwigApiFacade: Error determining parent for track " + trackName + ": " + e.getMessage());
+                }
+
+                parentMapping.put(trackName, parentGroupIndex);
+            }
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Error building parent group mapping: " + e.getMessage());
+        }
+
+        return parentMapping;
+    }
+
+    /**
+     * Formats a ColorValue object into an RGB string format.
+     *
+     * @param colorValue The Bitwig ColorValue to format
+     * @return RGB string in format "rgb(r,g,b)" where r,g,b are 0-255
+     */
+    private String formatTrackColor(Color colorValue) {
+        try {
+            return String.format("rgb(%d,%d,%d)",
+                (int) (colorValue.getRed() * 255),
+                (int) (colorValue.getGreen() * 255),
+                (int) (colorValue.getBlue() * 255));
+
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Error formatting track color: " + e.getMessage());
+            return "rgb(128,128,128)"; // Default gray fallback
+        }
     }
 }

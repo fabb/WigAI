@@ -116,11 +116,8 @@ public class StatusTool {
                             responseData.put("status_note", "Status retrieved with " + partialFailures.size() + " partial failures");
                         }
 
-                        return McpErrorHandler.SuccessResponseBuilder.create()
-                            .withAction("status_retrieved")
-                            .withMessage("WigAI status retrieved successfully")
-                            .withData(responseData)
-                            .build();
+                        // Return the responseData directly - executeWithErrorHandling will wrap it properly
+                        return responseData;
                     }
                 }
             );

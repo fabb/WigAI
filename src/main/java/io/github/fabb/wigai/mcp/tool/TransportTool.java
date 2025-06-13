@@ -42,10 +42,10 @@ public class TransportTool {
                 logger,
                 () -> {
                     String resultMessage = transportController.startTransport();
-                    return McpErrorHandler.SuccessResponseBuilder.create()
-                        .withAction("transport_started")
-                        .withMessage(resultMessage)
-                        .build();
+                    return Map.of(
+                        "action", "transport_started",
+                        "message", resultMessage
+                    );
                 }
             );
 
@@ -79,10 +79,10 @@ public class TransportTool {
                 logger,
                 () -> {
                     String resultMessage = transportController.stopTransport();
-                    return McpErrorHandler.SuccessResponseBuilder.create()
-                        .withAction("transport_stopped")
-                        .withMessage(resultMessage)
-                        .build();
+                    return Map.of(
+                        "action", "transport_stopped",
+                        "message", resultMessage
+                    );
                 }
             );
 

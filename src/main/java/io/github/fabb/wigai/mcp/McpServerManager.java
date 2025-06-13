@@ -21,6 +21,7 @@ import io.github.fabb.wigai.mcp.tool.TransportTool;
 import io.github.fabb.wigai.mcp.tool.DeviceParamTool;
 import io.github.fabb.wigai.mcp.tool.ClipTool;
 import io.github.fabb.wigai.mcp.tool.SceneTool;
+import io.github.fabb.wigai.mcp.tool.ListTracksTool;
 import io.modelcontextprotocol.spec.McpSchema;
 import com.bitwig.extension.controller.api.ControllerHost;
 import io.github.fabb.wigai.mcp.tool.SceneByNameTool;
@@ -146,7 +147,8 @@ public class McpServerManager implements ConfigChangeObserver {
                     SceneByNameTool.launchSceneByNameSpecification(clipSceneController, structuredLogger),
                     DeviceParamTool.getSelectedDeviceParametersSpecification(deviceController, structuredLogger),
                     DeviceParamTool.setSelectedDeviceParameterSpecification(deviceController, structuredLogger),
-                    DeviceParamTool.setMultipleDeviceParametersSpecification(deviceController, structuredLogger)
+                    DeviceParamTool.setMultipleDeviceParametersSpecification(deviceController, structuredLogger),
+                    ListTracksTool.specification(bitwigApiFacade, structuredLogger)
                 )
                 .build();
 

@@ -64,12 +64,12 @@ public class SceneByNameTool {
                             // Get the launched scene index for the response
                             int launchedIndex = clipSceneController.getBitwigApiFacade().findSceneByName(args.sceneName());
 
-                            return McpErrorHandler.SuccessResponseBuilder.create()
-                                .withAction("scene_launched")
-                                .withMessage(result.getMessage())
-                                .withData("scene_name", args.sceneName())
-                                .withData("launched_scene_index", launchedIndex)
-                                .build();
+                            return Map.of(
+                                "action", "scene_launched",
+                                "scene_name", args.sceneName(),
+                                "launched_scene_index", launchedIndex,
+                                "message", result.getMessage()
+                            );
                         } else {
                             throw new RuntimeException(result.getMessage());
                         }

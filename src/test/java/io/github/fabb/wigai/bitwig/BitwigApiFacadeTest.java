@@ -68,6 +68,12 @@ public class BitwigApiFacadeTest {
     @Mock
     private Logger mockLogger;
 
+    @Mock
+    private DeviceBank mockDeviceBank;
+
+    @Mock
+    private Device mockDevice;
+
     private BitwigApiFacade bitwigApiFacade;
 
     @BeforeEach
@@ -79,24 +85,24 @@ public class BitwigApiFacadeTest {
         when(mockHost.createApplication()).thenReturn(mockApplication);
         when(mockHost.createCursorTrack(0, 0)).thenReturn(mockCursorTrack);
         when(mockCursorTrack.createCursorDevice()).thenReturn(mockCursorDevice);
-        when(mockCursorDevice.createCursorRemoteControlsPage(8)).thenReturn(mockParameterBank);
+        when(mockCursorDevice.createCursorRemoteControlsPage(128)).thenReturn(mockParameterBank);
 
         // Setup new mocks for story 5.2
         when(mockHost.createMasterTrack(0)).thenReturn(mockMasterTrack);
-        when(mockMasterTrack.createCursorRemoteControlsPage(8)).thenReturn(mockProjectParameterBank);
+        when(mockMasterTrack.createCursorRemoteControlsPage(128)).thenReturn(mockProjectParameterBank);
 
-        // Setup TrackBank mocks (new for clip launching)
-        when(mockHost.createTrackBank(8, 0, 8)).thenReturn(mockTrackBank);
-        when(mockTrackBank.getSizeOfBank()).thenReturn(8);
+        // Setup TrackBank mocks (new for clip launching) - use smaller sizes for testing
+        when(mockHost.createTrackBank(128, 0, 128)).thenReturn(mockTrackBank);
+        when(mockTrackBank.getSizeOfBank()).thenReturn(8); // Reduced from 128 to 8 for testing
         when(mockTrackBank.getItemAt(anyInt())).thenReturn(mockTrack);
         when(mockTrack.clipLauncherSlotBank()).thenReturn(mockClipLauncherSlotBank);
-        when(mockClipLauncherSlotBank.getSizeOfBank()).thenReturn(8);
+        when(mockClipLauncherSlotBank.getSizeOfBank()).thenReturn(8); // Reduced from 128 to 8 for testing
         when(mockClipLauncherSlotBank.getItemAt(anyInt())).thenReturn(mockClipLauncherSlot);
 
-        // Setup SceneBank mocks (new for scene launching)
-        when(mockHost.createSceneBank(8)).thenReturn(mockSceneBank);
+        // Setup SceneBank mocks (new for scene launching) - use smaller sizes for testing
+        when(mockHost.createSceneBank(128)).thenReturn(mockSceneBank);
         when(mockSceneBank.getItemAt(anyInt())).thenReturn(mockScene);
-        when(mockSceneBank.getSizeOfBank()).thenReturn(8);
+        when(mockSceneBank.getSizeOfBank()).thenReturn(8); // Reduced from 128 to 8 for testing
 
         // Setup parameter mocks with lenient stubbing to avoid NPEs
         lenient().when(mockParameterBank.getParameter(anyInt())).thenReturn(mockRemoteControl);
@@ -119,6 +125,20 @@ public class BitwigApiFacadeTest {
         // Setup TrackBank related mocks with lenient stubbing
         lenient().when(mockTrack.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
         lenient().when(mockTrack.exists()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockTrack.trackType()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+        lenient().when(mockTrack.isGroup()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockTrack.isActivated()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
+        lenient().when(mockTrack.color()).thenReturn(mock(com.bitwig.extension.controller.api.SettableColorValue.class));
+
+        // Setup device bank mocks for tracks - use smaller sizes for testing
+        lenient().when(mockTrack.createDeviceBank(128)).thenReturn(mockDeviceBank);
+        lenient().when(mockDeviceBank.getSizeOfBank()).thenReturn(8);
+        lenient().when(mockDeviceBank.getItemAt(anyInt())).thenReturn(mockDevice);
+        lenient().when(mockDevice.exists()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockDevice.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+        lenient().when(mockDevice.isEnabled()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
+        lenient().when(mockDevice.deviceType()).thenReturn(mock(com.bitwig.extension.controller.api.EnumValue.class));
+
         lenient().when(mockClipLauncherSlot.hasContent()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
         lenient().when(mockClipLauncherSlot.isPlaying()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
 
@@ -150,6 +170,10 @@ public class BitwigApiFacadeTest {
         lenient().when(mockCursorTrack.mute()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
         lenient().when(mockCursorTrack.solo()).thenReturn(mock(com.bitwig.extension.controller.api.SoloValue.class));
         lenient().when(mockCursorTrack.arm()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
+
+        // Setup parameter count mocks
+        when(mockParameterBank.getParameterCount()).thenReturn(8);  // Default to 8 for device parameters
+        when(mockProjectParameterBank.getParameterCount()).thenReturn(8);  // Default to 8 for project parameters
 
         bitwigApiFacade = new BitwigApiFacade(mockHost, mockLogger);
     }
@@ -205,6 +229,11 @@ public class BitwigApiFacadeTest {
 
     @Test
     void testSetSelectedDeviceParameter_InvalidParameterIndex() {
+        // Mock device exists for this test
+        com.bitwig.extension.controller.api.BooleanValue mockExists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(mockExists.get()).thenReturn(true);
+        when(mockCursorDevice.exists()).thenReturn(mockExists);
+
         // Test invalid parameter index (too high)
         BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             bitwigApiFacade.setSelectedDeviceParameter(8, 0.5);
@@ -224,6 +253,11 @@ public class BitwigApiFacadeTest {
 
     @Test
     void testSetSelectedDeviceParameter_InvalidValue() {
+        // Mock device exists for this test
+        com.bitwig.extension.controller.api.BooleanValue mockExists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(mockExists.get()).thenReturn(true);
+        when(mockCursorDevice.exists()).thenReturn(mockExists);
+
         // Test value too high
         BitwigApiException exception = assertThrows(BitwigApiException.class, () -> {
             bitwigApiFacade.setSelectedDeviceParameter(0, 1.5);
@@ -471,5 +505,117 @@ public class BitwigApiFacadeTest {
         @SuppressWarnings("unchecked")
         java.util.List<java.util.Map<String, Object>> parameters = (java.util.List<java.util.Map<String, Object>>) result.get("parameters");
         assertEquals(0, parameters.size());  // No parameters with non-empty names
+    }
+
+    @Test
+    void testGetAllTracksInfo_WithFilterAndActivation() {
+        // Arrange - setup tracks with proper activation status
+        when(mockTrackBank.getSizeOfBank()).thenReturn(3);
+
+        // Mock cursor track for selection detection
+        com.bitwig.extension.controller.api.BooleanValue mockCursorExists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(mockCursorExists.get()).thenReturn(true);
+        when(mockCursorTrack.exists()).thenReturn(mockCursorExists);
+
+        com.bitwig.extension.controller.api.SettableStringValue mockCursorName = mock(com.bitwig.extension.controller.api.SettableStringValue.class);
+        when(mockCursorName.get()).thenReturn("Track 2");
+        when(mockCursorTrack.name()).thenReturn(mockCursorName);
+
+        // Setup 3 different tracks
+        Track[] tracks = new Track[3];
+        for (int i = 0; i < 3; i++) {
+            tracks[i] = mock(Track.class);
+
+            // Track exists
+            com.bitwig.extension.controller.api.BooleanValue mockExists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+            when(mockExists.get()).thenReturn(true);
+            when(tracks[i].exists()).thenReturn(mockExists);
+
+            // Track name
+            com.bitwig.extension.controller.api.SettableStringValue mockName = mock(com.bitwig.extension.controller.api.SettableStringValue.class);
+            when(mockName.get()).thenReturn("Track " + (i + 1));
+            when(tracks[i].name()).thenReturn(mockName);
+
+            // Track type
+            com.bitwig.extension.controller.api.SettableStringValue mockType = mock(com.bitwig.extension.controller.api.SettableStringValue.class);
+            String trackType = (i == 0) ? "AUDIO" : (i == 1) ? "INSTRUMENT" : "GROUP";
+            when(mockType.get()).thenReturn(trackType);
+            when(tracks[i].trackType()).thenReturn(mockType);
+
+            // Track group status
+            com.bitwig.extension.controller.api.BooleanValue mockIsGroup = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+            when(mockIsGroup.get()).thenReturn(i == 2); // Only track 3 is a group
+            when(tracks[i].isGroup()).thenReturn(mockIsGroup);
+
+            // Track activation status - test the new functionality
+            com.bitwig.extension.controller.api.SettableBooleanValue mockActivated = mock(com.bitwig.extension.controller.api.SettableBooleanValue.class);
+            when(mockActivated.get()).thenReturn(i != 1); // Track 2 is deactivated
+            when(tracks[i].isActivated()).thenReturn(mockActivated);
+
+            // Track color
+            com.bitwig.extension.controller.api.SettableColorValue mockColor = mock(com.bitwig.extension.controller.api.SettableColorValue.class);
+            when(tracks[i].color()).thenReturn(mockColor);
+
+            // No parent track for this test
+            when(tracks[i].createParentTrack(0, 0)).thenReturn(null);
+
+            // Mock device bank for each track
+            DeviceBank mockDeviceBank = mock(DeviceBank.class);
+            when(tracks[i].createDeviceBank(8)).thenReturn(mockDeviceBank);
+            when(mockDeviceBank.getSizeOfBank()).thenReturn(0); // No devices for simplicity
+
+            when(mockTrackBank.getItemAt(i)).thenReturn(tracks[i]);
+        }
+
+        // Act - get all tracks without filter
+        java.util.List<java.util.Map<String, Object>> allTracks = bitwigApiFacade.getAllTracksInfo(null);
+
+        // Act - get tracks with audio filter
+        java.util.List<java.util.Map<String, Object>> audioTracks = bitwigApiFacade.getAllTracksInfo("audio");
+
+        // Assert - all tracks
+        assertEquals(3, allTracks.size());
+
+        // Verify Track 1 (Audio, activated)
+        java.util.Map<String, Object> track1 = allTracks.get(0);
+        assertEquals(0, track1.get("index"));
+        assertEquals("Track 1", track1.get("name"));
+        assertEquals("audio", track1.get("type"));
+        assertEquals(false, track1.get("is_group"));
+        assertEquals(null, track1.get("parent_group_index"));
+        assertEquals(true, track1.get("activated")); // Activated
+        assertEquals("rgb(128,128,128)", track1.get("color"));
+        assertEquals(false, track1.get("is_selected"));
+
+        // Verify Track 2 (Instrument, deactivated, selected)
+        java.util.Map<String, Object> track2 = allTracks.get(1);
+        assertEquals(1, track2.get("index"));
+        assertEquals("Track 2", track2.get("name"));
+        assertEquals("instrument", track2.get("type"));
+        assertEquals(false, track2.get("is_group"));
+        assertEquals(null, track2.get("parent_group_index"));
+        assertEquals(false, track2.get("activated")); // Deactivated
+        assertEquals("rgb(128,128,128)", track2.get("color"));
+        assertEquals(true, track2.get("is_selected")); // Selected
+
+        // Verify Track 3 (Group, activated)
+        java.util.Map<String, Object> track3 = allTracks.get(2);
+        assertEquals(2, track3.get("index"));
+        assertEquals("Track 3", track3.get("name"));
+        assertEquals("group", track3.get("type"));
+        assertEquals(true, track3.get("is_group"));
+        assertEquals(null, track3.get("parent_group_index"));
+        assertEquals(true, track3.get("activated")); // Activated
+        assertEquals("rgb(128,128,128)", track3.get("color"));
+        assertEquals(false, track3.get("is_selected"));
+
+        // Assert - filtered tracks (only audio)
+        assertEquals(1, audioTracks.size());
+        java.util.Map<String, Object> filteredTrack = audioTracks.get(0);
+        assertEquals("Track 1", filteredTrack.get("name"));
+        assertEquals("audio", filteredTrack.get("type"));
+
+        // Verify logging
+        verify(mockLogger, times(2)).info(contains("Getting all tracks info"));
     }
 }

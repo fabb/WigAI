@@ -22,7 +22,12 @@ public class McpErrorHandler {
      * @return A McpSchema.CallToolResult with success response
      */
     public static McpSchema.CallToolResult createSuccessResponse(Object data) {
-        Map<String, Object> response = WigAIErrorHandler.createSuccessResponse(data);
+        // For MCP tools, return the data directly as per API specification
+        // The response format should match the API reference exactly
+        Map<String, Object> response = Map.of(
+            "status", "success",
+            "data", data
+        );
         String jsonResponse = WigAIErrorHandler.toJsonString(response);
         McpSchema.TextContent textContent = new McpSchema.TextContent(jsonResponse);
         return new McpSchema.CallToolResult(List.of(textContent), false);
@@ -36,7 +41,15 @@ public class McpErrorHandler {
      * @return A McpSchema.CallToolResult with error response
      */
     public static McpSchema.CallToolResult createErrorResponse(BitwigApiException exception, StructuredLogger logger) {
-        Map<String, Object> response = WigAIErrorHandler.handleBitwigApiException(exception, logger.getBaseLogger());
+        // For MCP tools, return the error in the API format directly
+        Map<String, Object> response = Map.of(
+            "status", "error",
+            "error", Map.of(
+                "code", exception.getErrorCode().getCode(),
+                "message", exception.getMessage(),
+                "operation", exception.getOperation()
+            )
+        );
         String jsonResponse = WigAIErrorHandler.toJsonString(response);
         McpSchema.TextContent textContent = new McpSchema.TextContent(jsonResponse);
         return new McpSchema.CallToolResult(List.of(textContent), true);
@@ -64,7 +77,14 @@ public class McpErrorHandler {
      * @return A McpSchema.CallToolResult with error response
      */
     public static McpSchema.CallToolResult createErrorResponse(ErrorCode errorCode, String message, String operation) {
-        Map<String, Object> response = WigAIErrorHandler.createErrorResponse(errorCode, message, operation);
+        Map<String, Object> response = Map.of(
+            "status", "error",
+            "error", Map.of(
+                "code", errorCode.getCode(),
+                "message", message,
+                "operation", operation
+            )
+        );
         String jsonResponse = WigAIErrorHandler.toJsonString(response);
         McpSchema.TextContent textContent = new McpSchema.TextContent(jsonResponse);
         return new McpSchema.CallToolResult(List.of(textContent), true);
@@ -136,21 +156,6 @@ public class McpErrorHandler {
     }
 
     /**
-     * Creates a legacy compatibility response for tools that need to maintain backward compatibility.
-     * This method should be used sparingly and only during transition periods.
-     *
-     * @param success Whether the operation was successful
-     * @param message The response message
-     * @param isError Whether this is an error response
-     * @return A McpSchema.CallToolResult in legacy format
-     */
-    @Deprecated
-    public static McpSchema.CallToolResult createLegacyResponse(boolean success, String message, boolean isError) {
-        McpSchema.TextContent textContent = new McpSchema.TextContent(message);
-        return new McpSchema.CallToolResult(List.of(textContent), isError);
-    }
-
-    /**
      * Converts a legacy error response to the new standardized format.
      *
      * @param errorMessage The legacy error message
@@ -200,40 +205,5 @@ public class McpErrorHandler {
     @FunctionalInterface
     public interface ParameterValidator<T> {
         T validate(Map<String, Object> arguments, String operation) throws BitwigApiException;
-    }
-
-    /**
-     * Helper class for building complex success responses.
-     */
-    public static class SuccessResponseBuilder {
-        private final Map<String, Object> data = new java.util.HashMap<>();
-
-        public static SuccessResponseBuilder create() {
-            return new SuccessResponseBuilder();
-        }
-
-        public SuccessResponseBuilder withAction(String action) {
-            data.put("action", action);
-            return this;
-        }
-
-        public SuccessResponseBuilder withMessage(String message) {
-            data.put("message", message);
-            return this;
-        }
-
-        public SuccessResponseBuilder withData(String key, Object value) {
-            data.put(key, value);
-            return this;
-        }
-
-        public SuccessResponseBuilder withData(Map<String, Object> additionalData) {
-            data.putAll(additionalData);
-            return this;
-        }
-
-        public McpSchema.CallToolResult build() {
-            return createSuccessResponse(data);
-        }
     }
 }

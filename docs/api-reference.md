@@ -284,6 +284,79 @@ Communication is message-based, typically using JSON-RPC or a similar structured
     *   `SCENE_NOT_FOUND`
     *   `BITWIG_ERROR`
 
+### Track Information Commands
+
+#### `list_tracks`
+*   **Description**: List all tracks in the current project with summary information including name, type, selection state, parent group, and basic device list.
+*   **Parameters**:
+    ```json
+    {
+      "type": "audio" // Optional filter by track type (e.g., "audio", "instrument", "group", "effect", "master", "hybrid")
+    }
+    ```
+*   **Returns**:
+    ```json
+    {
+      "status": "success",
+      "data": [
+        {
+          "index": 0,
+          "name": "Drums",
+          "type": "audio",
+          "is_group": false,
+          "parent_group_index": null,
+          "activated": true,
+          "color": "rgb(255,128,0)",
+          "is_selected": true,
+          "devices": [
+            {
+              "index": 0,
+              "name": "EQ Eight",
+              "type": "AudioFX"
+            },
+            {
+              "index": 1,
+              "name": "Compressor",
+              "type": "AudioFX"
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Bass",
+          "type": "instrument",
+          "is_group": false,
+          "parent_group_index": null,
+          "activated": true,
+          "color": "rgb(0,255,128)",
+          "is_selected": false,
+          "devices": [
+            {
+              "index": 0,
+              "name": "Wavetable",
+              "type": "Instrument"
+            }
+          ]
+        }
+      ]
+    }
+    ```
+*   **Notes**:
+    - `index`: 0-based position in the project's main track list
+    - `type`: Track type (e.g., "audio", "instrument", "hybrid", "group", "effect", "master")
+    - `is_group`: True if the track is a group track
+    - `parent_group_index`: 0-based index of the parent group track if this track is inside a group, `null` otherwise
+    - `activated`: Is the track activated
+    - `color`: Color of the track in RGB format (e.g., "rgb(255,128,0)")
+    - `is_selected`: True if this is the currently selected track
+    - `devices`: Array of devices on this track with summary information
+    - `devices[].index`: 0-based position in this track's device chain
+    - `devices[].name`: Name of the device
+    - `devices[].type`: Type of the device ("Instrument", "AudioFX", "NoteFX")
+*   **Errors**:
+    *   `INVALID_PARAMETER`: Invalid track type filter
+    *   `BITWIG_ERROR`: Internal error occurred while retrieving tracks
+
 *(Further commands related to track manipulation, clip launching, device control, etc., will be detailed here as they are defined and implemented.)*
 
 ### Error Handling

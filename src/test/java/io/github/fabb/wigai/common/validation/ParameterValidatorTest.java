@@ -236,21 +236,21 @@ class ParameterValidatorTest {
 
     @Test
     void testValidateParameterIndex_Success() {
-        int result = ParameterValidator.validateParameterIndex(3, "testOp");
+        int result = ParameterValidator.validateParameterIndex(3, 8, "testOp");
 
         assertEquals(3, result);
     }
 
     @Test
     void testValidateParameterIndex_EdgeCases() {
-        assertEquals(0, ParameterValidator.validateParameterIndex(0, "testOp"));
-        assertEquals(7, ParameterValidator.validateParameterIndex(7, "testOp"));
+        assertEquals(0, ParameterValidator.validateParameterIndex(0, 8, "testOp"));
+        assertEquals(7, ParameterValidator.validateParameterIndex(7, 8, "testOp"));
     }
 
     @Test
     void testValidateParameterIndex_OutOfRange() {
         BitwigApiException exception = assertThrows(BitwigApiException.class, () ->
-            ParameterValidator.validateParameterIndex(8, "testOp")
+            ParameterValidator.validateParameterIndex(8, 8, "testOp")
         );
 
         assertEquals(ErrorCode.INVALID_RANGE, exception.getErrorCode());

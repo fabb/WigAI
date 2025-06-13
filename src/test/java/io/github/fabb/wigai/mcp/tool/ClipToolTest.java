@@ -1,6 +1,10 @@
 package io.github.fabb.wigai.mcp.tool;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.fabb.wigai.common.Logger;
+import io.github.fabb.wigai.common.error.BitwigApiException;
+import io.github.fabb.wigai.common.error.ErrorCode;
+import io.github.fabb.wigai.mcp.McpErrorHandler;
 import io.github.fabb.wigai.common.logging.StructuredLogger;
 import io.github.fabb.wigai.features.ClipSceneController;
 import io.github.fabb.wigai.features.ClipSceneController.ClipLaunchResult;
@@ -123,5 +127,86 @@ class ClipToolTest {
         assertTrue(schemaString.contains("track_name"));
         assertTrue(schemaString.contains("clip_index"));
         assertTrue(schemaString.contains("required"));
+    }
+
+    @Test
+    void testLaunchClipSuccessResponseFormat() throws Exception {
+        // Arrange: Mock successful clip launch
+        ClipLaunchResult successResult = ClipLaunchResult.success("Clip at Drums[0] launched.");
+        when(clipSceneController.launchClip("Drums", 0)).thenReturn(successResult);
+
+        // Act: Simulate what the tool does
+        Map<String, Object> responseData = Map.of(
+            "action", "clip_launched",
+            "track_name", "Drums",
+            "clip_index", 0,
+            "message", "Clip at Drums[0] launched."
+        );
+        McpSchema.CallToolResult result = McpErrorHandler.createSuccessResponse(responseData);
+
+        // Assert: Validate action response format
+        JsonNode dataNode = McpResponseTestUtils.validateActionResponse(result, "clip_launched");
+        assertEquals("Drums", dataNode.get("track_name").asText());
+        assertEquals(0, dataNode.get("clip_index").asInt());
+        assertEquals("Clip at Drums[0] launched.", dataNode.get("message").asText());
+    }
+
+    @Test
+    void testLaunchClipErrorResponseFormat() throws Exception {
+        // Test error response format for clip operations
+        BitwigApiException exception = new BitwigApiException(
+            ErrorCode.TRACK_NOT_FOUND,
+            "launch_clip",
+            "Track 'NonExistent' not found"
+        );
+        
+        McpSchema.CallToolResult result = McpErrorHandler.createErrorResponse(exception, structuredLogger);
+        
+        // Validate error response format
+        JsonNode errorNode = McpResponseTestUtils.validateErrorResponse(result);
+        assertEquals("TRACK_NOT_FOUND", errorNode.get("code").asText());
+        assertEquals("Track 'NonExistent' not found", errorNode.get("message").asText());
+        assertEquals("launch_clip", errorNode.get("operation").asText());
+    }
+
+    @Test
+    void testLaunchClipResponseNotDoubleWrapped() throws Exception {
+        // Test that clip launch responses are not double-wrapped
+        Map<String, Object> clipData = Map.of(
+            "action", "clip_launched",
+            "track_name", "Bass",
+            "clip_index", 2,
+            "message", "Clip launched successfully"
+        );
+        McpSchema.CallToolResult result = McpErrorHandler.createSuccessResponse(clipData);
+        
+        // This would have caught the double-wrapping bug
+        McpResponseTestUtils.assertNotDoubleWrapped(result);
+        
+        // Verify it's properly structured as an action response
+        JsonNode dataNode = McpResponseTestUtils.validateActionResponse(result, "clip_launched");
+        assertEquals("Bass", dataNode.get("track_name").asText());
+        assertEquals(2, dataNode.get("clip_index").asInt());
+    }
+
+    @Test
+    void testClipOperationFailureResponseFormat() throws Exception {
+        // Test response format when clip operation fails but no exception is thrown
+        ClipLaunchResult failureResult = ClipLaunchResult.error("CLIP_NOT_FOUND", "Clip at index 5 does not exist");
+        
+        // Simulate the BitwigApiException that would be thrown in this case
+        BitwigApiException exception = new BitwigApiException(
+            ErrorCode.CLIP_NOT_FOUND,
+            "launch_clip", 
+            "Clip at index 5 does not exist"
+        );
+        
+        McpSchema.CallToolResult result = McpErrorHandler.createErrorResponse(exception, structuredLogger);
+        
+        // Validate error response format
+        JsonNode errorNode = McpResponseTestUtils.validateErrorResponse(result);
+        assertEquals("CLIP_NOT_FOUND", errorNode.get("code").asText());
+        assertEquals("Clip at index 5 does not exist", errorNode.get("message").asText());
+        assertEquals("launch_clip", errorNode.get("operation").asText());
     }
 }

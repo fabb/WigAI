@@ -63,11 +63,11 @@ public class SceneTool {
                         var result = clipSceneController.launchSceneByIndex(args.sceneIndex());
 
                         if (result.isSuccess()) {
-                            return McpErrorHandler.SuccessResponseBuilder.create()
-                                .withAction("scene_launched")
-                                .withMessage(result.getMessage())
-                                .withData("scene_index", args.sceneIndex())
-                                .build();
+                            return Map.of(
+                                "action", "scene_launched",
+                                "scene_index", args.sceneIndex(),
+                                "message", result.getMessage()
+                            );
                         } else {
                             throw new BitwigApiException(ErrorCode.OPERATION_FAILED, TOOL_NAME, result.getMessage());
                         }
