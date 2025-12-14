@@ -100,17 +100,30 @@ Modify the `StatusTool.java` to gather additional information from the Bitwig St
         "raw_value": null,
         "display_value": null
       }
-      // ... up to 8 device remote controls, mirroring structure of Epic 8's get_device_details.remote_controls
+      // ... up to 8 device remote controls
       // Only 'name', 'value', 'raw_value', 'display_value' are null if 'exists' is false.
     ]
   }
 }
 ```
 
+### Remote-Control Schema (Status Command Internal Definition)
+
+This epic defines the single source of truth for how selected-device controls are exposed via the `status` payload:
+
+- **parameters**: always an 8-element array ordered by remote-control slot (0–7) on the currently selected page.
+  - `index` *(integer)* – slot index.
+  - `exists` *(boolean)* – `true` if Bitwig reports an assigned parameter for that slot.
+  - `name` *(string, nullable)* – parameter label when available.
+  - `value` *(float, nullable)* – normalized value in range `0.0–1.0`.
+  - `raw_value` *(float, nullable)* – native value from Bitwig when exposed, otherwise `null`.
+  - `display_value` *(string, nullable)* – text Bitwig shows for the control.
+- Slots with `exists=false` must still be included so downstream agents can rely on fixed ordering.
+
 ## 5. Technical Considerations
 
 *   The `StatusTool.java` will need to interface with various parts of the Bitwig Studio Java API (Application, Project, Transport, Track, Device, ClipLauncherSlotBank, etc.) to retrieve the required information.
-*   For `selected_device.parameters`, the structure should mirror the `remote_controls` array from Epic 8's `get_device_details` tool, providing an 8-element array where each element has an `exists` flag. This reflects the 8 remote controls of the currently selected page of the selected device. This includes adding `raw_value`.
+*   For `selected_device.parameters`, use the primary `RemoteControlBank` on the selected device and apply the schema defined above. No other artifact governs that shape.
 *   Care must be taken to handle cases where information might be unavailable (e.g., no device selected, no clip slot selected, project parameters not configured). In such cases, relevant fields should be `null` or an empty array `[]` for lists.
 *   The `value` for parameters should be normalized (0.0-1.0) where applicable, consistent with `get_selected_device_parameters`. `display_value` will provide the formatted string. `raw_value` provides the native, unnormalized value.
 *   Indices (`track_index`, `slot_index`, `scene_index`, `device.index`) should be 0-based.
@@ -120,7 +133,7 @@ Modify the `StatusTool.java` to gather additional information from the Bitwig St
 
 *   The `status` MCP command returns a JSON object matching the structure defined above.
 *   All fields in the JSON response accurately reflect the current state of Bitwig Studio.
-*   The `selected_device.parameters` array in the response correctly represents the 8 remote controls of the selected device's current page, including `exists`, `name`, `value`, `raw_value`, and `display_value` for each, aligning with the structure in Epic 8.
+*   The `selected_device.parameters` array in the response correctly represents the 8 remote controls of the selected device's current page, using the schema defined in this epic (index, exists, name, value, raw_value, display_value).
 *   The `StatusTool.java` correctly queries the Bitwig API for all required data points.
 *   The `api-reference.md` is updated with the new response format for the `status` command.
 *   The changes are thoroughly tested for various Bitwig project states (e.g., empty project, project with content, different selections).
