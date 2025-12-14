@@ -6,53 +6,27 @@
 
 ## Story List
 
-### Story 4.1: Replace ConfigManager with Bitwig Preferences UI Integration
+### Story 4.1: Extract Config Interfaces
 
-**User Story:** As a WigAI user, I want to configure MCP server settings (host and port) through Bitwig Studio's Controller Preferences panel, so that I can easily adjust network settings and see the connection URL without editing code.
+Refactors the configuration layer so every component depends on a shared `ConfigManager`/`ConfigChangeObserver` interface.  
+**Full specification:** `docs/stories/4.1.story.md`
 
-**Detailed Requirements:**
+### Story 4.2: Implement Preferences-Backed Configuration
 
-**Phase 1: Interface Extraction & Migration Preparation**
-* Extract `ConfigManager` interface from the current `ConfigManager` class to enable polymorphic implementation
-* Interface must include methods: `getMcpHost()`, `getMcpPort()`, `setMcpHost(String)`, `setMcpPort(int)`, and `addObserver(ConfigChangeObserver)`
-* Remove current `ConfigManager` class (replaced by new preferences-backed implementation)
-* Ensure clean migration to new configuration system
+Introduces `PreferencesBackedConfigManager` with Bitwig Controller Preferences UI for MCP host/port editing and connection URL display.  
+**Full specification:** `docs/stories/4.2.story.md`
 
-**Phase 2: Bitwig Preferences Integration**
-* Implement `PreferencesBackedConfigManager` that implements `ConfigManager`
-* Create Bitwig preferences settings in "Network Settings" category:
-  - **MCP Host**: String setting (max 50 chars, default "localhost")  
-  - **MCP Port**: Number setting (range 1024-65535, default 61169)
-  - **Connection URL**: Read-only info display showing dynamic URL (e.g., "http://localhost:61169/sse")
-* Settings must appear in Bitwig Studio → Preferences → Controllers → WigAI
-* Include brief instructional text: "Configure MCP server connection. Use the Connection URL below to connect external AI agents to WigAI."
+### Story 4.3: Observer Wiring and MCP Server Restart
 
-**Phase 3: Observer Pattern Implementation**
-* Create `ConfigChangeObserver` interface with methods: `onHostChanged(String oldHost, String newHost)` and `onPortChanged(int oldPort, int newPort)`
-* Implement observer registration/notification system in `PreferencesBackedConfigManager`
-* Modify `McpServerManager` to implement `ConfigChangeObserver` interface
-* Add graceful MCP server restart logic when host or port changes via preferences
-* Implement real-time connection URL updates when host/port settings change
+Adds observer notifications and MCP server restart logic whenever settings change, with robust logging and rollback handling.  
+**Full specification:** `docs/stories/4.3.story.md`
 
-**Phase 4: WigAIExtension Integration**
-* Modify `WigAIExtension.init()` to instantiate `PreferencesBackedConfigManager` instead of legacy `ConfigManager`
-* Add observer registration: `configManager.addObserver(mcpServerManager)`
-* Ensure constructor signature change: `new PreferencesBackedConfigManager(logger, host)`
-* Maintain all existing functionality and method calls unchanged
+### Story 4.4: WigAI Extension Integration & Help Surfacing
 
-**Phase 5: Connection Info Display Enhancement**
-* Dynamic connection URL must update immediately when host or port changes
-* URL format: `http://{host}:{port}/sse` (matching mcp.json structure)
-* Display as read-only field in preferences UI
-* Include helpful text explaining how to use this URL with MCP clients
+Wires the new configuration system into `WigAIExtension`, keeps the connection URL in sync across logs/UI, and ensures Bitwig’s Help button points at the README.  
+**Full specification:** `docs/stories/4.4.story.md`
 
-**Phase 6: Help Documentation Integration**
-* Update `WigAIExtensionDefinition.getHelpFilePath()` to return GitHub README URL
-* Bitwig Studio will automatically provide "Help" button in Controller Preferences panel
-* Help button will open the project's GitHub README.md in user's default browser
-* Ensures users always access the most up-to-date documentation and project information
-
-**Technical Implementation Details:**
+**Technical Implementation Details (Stories 4.1–4.4):**
 
 **ConfigChangeObserver Interface:**
 ```java
@@ -136,89 +110,10 @@ public String getHelpFilePath() {
 
 ---
 
-### Story 4.2: Replace Static String Settings with Bitwig Notification System
+### Story 4.5: Replace Static String Settings with Bitwig Notification System
 
-**User Story:** As a WigAI user, I want to receive dynamic popup notifications about MCP server status and connection information instead of static text fields in preferences, so that I get real-time visual feedback about the extension's state without cluttering the preferences UI.
-
-**Detailed Requirements:**
-
-**Phase 1: Remove Static String Settings**
-* Remove the static `"Connection URL"` string setting from `PreferencesBackedConfigManager`
-* Remove the static `"Instructions"` string setting from preferences UI
-* Clean up related code for maintaining these static display fields
-* Ensure preferences UI becomes more streamlined with only the interactive host/port settings
-
-**Phase 2: Implement Direct Popup Notifications**
-* Add direct popup notification calls to `McpServerManager` lifecycle methods
-* Use `host.showPopupNotification(String)` method directly for immediate feedback
-* Create notification messages for:
-  - **MCP Server Started**: "WigAI MCP Server started. Connect AI agents to: http://{host}:{port}/sse"
-  - **MCP Server Stopped**: "WigAI MCP Server stopped"
-  - **Configuration Changed**: "WigAI MCP Server restarted. Connect AI agents to: http://{host}:{port}/sse"
-
-**Phase 3: Notification Trigger Implementation**
-* Modify `McpServerManager` to trigger notifications on server lifecycle events
-* Add notification calls to `ConfigChangeObserver` methods (`onHostChanged`, `onPortChanged`)
-* Implement startup notification when MCP server initializes successfully
-* Add shutdown notification when extension is disabled or server stops
-* Ensure notifications appear at appropriate times without being overly verbose
-
-**Phase 4: Notification Content & Timing**
-* **Startup Notification**: Show comprehensive message with connection info when MCP server starts successfully
-* **Settings Change Notification**: Combined restart + connection info notification when host/port changes and server restarts
-* **Shutdown Notification**: Simple message when server stops
-* **Error Notifications**: When server fails to start or restart
-
-**Technical Implementation Details:**
-
-**Direct Popup Notification Implementation:**
-```java
-// In McpServerManager - single comprehensive notification approach
-private void notifyServerStarted() {
-    String connectionUrl = String.format("http://%s:%d/sse", 
-        configManager.getMcpHost(), configManager.getMcpPort());
-    String message = String.format("WigAI MCP Server started. Connect AI agents to: %s", 
-        connectionUrl);
-    host.showPopupNotification(message);
-}
-
-private void notifyServerRestarted() {
-    String connectionUrl = String.format("http://%s:%d/sse", 
-        configManager.getMcpHost(), configManager.getMcpPort());
-    String message = String.format("WigAI MCP Server restarted. Connect AI agents to: %s", 
-        connectionUrl);
-    host.showPopupNotification(message);
-}
-
-private void notifyServerStopped() {
-    host.showPopupNotification("WigAI MCP Server stopped");
-}
-```
-
-**Acceptance Criteria:**
-
-* **AC1**: Static "Connection URL" and "Instructions" string settings are removed from Bitwig preferences UI
-* **AC2**: Preferences panel shows only interactive MCP Host and MCP Port fields (cleaner UI)
-* **AC3**: Dynamic popup notification appears when MCP server starts, showing current connection info
-* **AC4**: Brief notification appears when MCP server restarts due to host/port changes
-* **AC5**: Notifications include properly formatted connection URL (e.g., "http://localhost:61169/sse")
-* **AC6**: Notifications do not interfere with normal Bitwig Studio operation
-* **AC7**: Notification content is concise and informative without being verbose
-* **AC8**: Notifications appear immediately when triggered without dependency on notification settings
-* **AC9**: Server startup/shutdown events trigger appropriate notifications
-* **AC10**: All existing functionality continues to work unchanged (host/port settings, server restart logic)
-
-**Technical Components Modified:**
-- `io.github.fabb.wigai.config.PreferencesBackedConfigManager` (remove static settings)
-- `io.github.fabb.wigai.mcp.McpServerManager` (add direct popup notification calls)
-- `io.github.fabb.wigai.WigAIExtension` (pass host reference to McpServerManager for notifications)
-
-**Testing Requirements:**
-- Unit tests for popup notification triggers in server lifecycle methods
-- Integration tests for notification timing and content accuracy
-- Manual testing of popup notification behavior and timing
-- Validation that existing preferences and server restart functionality remains unchanged
-- Test direct popup notifications work reliably across different scenarios
+Removes redundant string settings from the preferences UI and surfaces connection information via Bitwig popup notifications whenever the MCP server starts, stops, or restarts.  
+**Full specification:** `docs/stories/4.5.story.md`
 
 ---
 
