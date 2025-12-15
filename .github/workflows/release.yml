@@ -49,6 +49,6 @@ jobs:
           test -f build/extensions/WigAI.bwextension && echo "Extension file exists" || echo "Extension file missing!"
 
       - name: Nyx publish release with assets
-        run: ./gradlew nyxPublish --warning-mode=none
+        run: ./gradlew nyxPublish --warning-mode=none --stacktrace
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
