@@ -1,5 +1,6 @@
 package io.github.fabb.wigai.bitwig;
 
+import com.bitwig.extension.api.Color;
 import com.bitwig.extension.controller.api.*;
 import io.github.fabb.wigai.common.Logger;
 import io.github.fabb.wigai.common.error.BitwigApiException;
@@ -37,6 +38,10 @@ public class BitwigApiFacadeTest {
 
     @Mock
     private TrackBank mockTrackBank;
+    @Mock
+    private com.bitwig.extension.controller.api.BooleanValue mockTrackBankCanScrollForwards;
+    @Mock
+    private com.bitwig.extension.controller.api.BooleanValue mockTrackBankCanScrollBackwards;
 
     @Mock
     private Track mockTrack;
@@ -217,6 +222,10 @@ public class BitwigApiFacadeTest {
         SettableEnumValue mockMonitorMode = mock(SettableEnumValue.class);
         lenient().when(mockMonitorMode.get()).thenReturn("AUTO");
         lenient().when(mockTrack.monitorMode()).thenReturn(mockMonitorMode);
+        when(mockTrackBank.canScrollForwards()).thenReturn(mockTrackBankCanScrollForwards);
+        when(mockTrackBank.canScrollBackwards()).thenReturn(mockTrackBankCanScrollBackwards);
+        lenient().when(mockTrackBankCanScrollForwards.get()).thenReturn(false);
+        lenient().when(mockTrackBankCanScrollBackwards.get()).thenReturn(false);
         com.bitwig.extension.controller.api.IntegerValue mockTrackPosition = mock(com.bitwig.extension.controller.api.IntegerValue.class);
         lenient().when(mockTrackPosition.get()).thenReturn(0);
         lenient().when(mockTrack.position()).thenReturn(mockTrackPosition);
@@ -800,6 +809,60 @@ public class BitwigApiFacadeTest {
         assertEquals(1, second.get("index"));
         assertTrue((Boolean) second.get("is_selected"));
         assertEquals(0, second.get("parent_group_index"));
+    }
+
+    @Test
+    void testGetAllTracksInfo_PaginatesBeyondVisibleWindow() {
+        java.util.concurrent.atomic.AtomicInteger page = new java.util.concurrent.atomic.AtomicInteger(0);
+
+        when(mockTrackBank.getSizeOfBank()).thenReturn(1);
+
+        com.bitwig.extension.controller.api.BooleanValue slotExists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(slotExists.get()).thenReturn(true);
+        when(mockTrack.exists()).thenReturn(slotExists);
+
+        SettableStringValue slotName = mock(SettableStringValue.class);
+        when(mockTrack.name()).thenReturn(slotName);
+        when(slotName.get()).thenAnswer(inv -> page.get() == 0 ? "Track 1" : "Track 2");
+
+        SettableStringValue slotType = mock(SettableStringValue.class);
+        when(mockTrack.trackType()).thenReturn(slotType);
+        when(slotType.get()).thenReturn("AUDIO");
+
+        com.bitwig.extension.controller.api.BooleanValue slotIsGroup = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(slotIsGroup.get()).thenReturn(false);
+        when(mockTrack.isGroup()).thenReturn(slotIsGroup);
+
+        SettableBooleanValue slotActivated = mock(SettableBooleanValue.class);
+        when(slotActivated.get()).thenReturn(true);
+        when(mockTrack.isActivated()).thenReturn(slotActivated);
+
+        SettableColorValue slotColor = mock(SettableColorValue.class);
+        Color mockColor = mock(Color.class);
+        when(mockColor.getRed()).thenReturn(0.2);
+        when(mockColor.getGreen()).thenReturn(0.2);
+        when(mockColor.getBlue()).thenReturn(0.2);
+        when(slotColor.get()).thenReturn(mockColor);
+        when(mockTrack.color()).thenReturn(slotColor);
+
+        com.bitwig.extension.controller.api.IntegerValue slotPosition = mock(com.bitwig.extension.controller.api.IntegerValue.class);
+        when(slotPosition.get()).thenAnswer(inv -> page.get());
+        when(mockTrack.position()).thenReturn(slotPosition);
+
+        when(mockTrack.createParentTrack(anyInt(), anyInt())).thenReturn(null);
+
+        when(mockTrackBankCanScrollForwards.get()).thenAnswer(inv -> page.get() == 0);
+        when(mockTrackBankCanScrollBackwards.get()).thenAnswer(inv -> page.get() > 0);
+
+        doAnswer(inv -> { page.incrementAndGet(); return null; }).when(mockTrackBank).scrollPageForwards();
+        doAnswer(inv -> { page.decrementAndGet(); return null; }).when(mockTrackBank).scrollPageBackwards();
+
+        bitwigApiFacade = new BitwigApiFacade(mockHost, mockLogger);
+
+        java.util.List<java.util.Map<String, Object>> tracks = bitwigApiFacade.getAllTracksInfo(null);
+        assertEquals(2, tracks.size());
+        assertEquals(0, tracks.get(0).get("index"));
+        assertEquals(1, tracks.get(1).get("index"));
     }
 
     @Test
