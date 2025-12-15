@@ -10,14 +10,33 @@ This document provides instructions for testing and verifying the MCP server end
 
 ## Testing MCP Endpoints
 
+### 0. Initialize (Streamable HTTP handshake)
+
+When using the Streamable HTTP transport, call `initialize` once per session and capture the `mcp-session-id` header for subsequent requests:
+
+```bash
+MCP_SESSION_ID=$(
+  curl -s -D - -o /dev/null http://localhost:61169/mcp \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: application/json, text/event-stream' \
+    --data-binary '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"curl-test","version":"1.0"}}}' |
+    awk 'BEGIN{IGNORECASE=1}/^mcp-session-id:/ {print $2; exit}'
+)
+echo "Session ID: $MCP_SESSION_ID"
+```
+
+Include `-H "mcp-session-id: $MCP_SESSION_ID"` on every `tools/list` or `tools/call` request using Streamable HTTP. (Legacy SSE-only testing can omit the initialize step and session header.)
+
 ### 1. Verify the `tools/list` Endpoint
 
 The `tools/list` endpoint should return a list of available tools the server supports.
 
 ```bash
-curl -X POST http://localhost:61169/mcp \
+curl -s http://localhost:61169/mcp \
+  -H "Accept: application/json, text/event-stream" \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq
+  -H "mcp-session-id: $MCP_SESSION_ID" \
+  --data-binary '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | jq
 ```
 
 Expected response format:
@@ -46,9 +65,11 @@ Expected response format:
 The `tools/call` endpoint should allow calling the "ping" tool and receive a "pong" response with the current WigAI version.
 
 ```bash
-curl -X POST http://localhost:61169/mcp \
+curl -s http://localhost:61169/mcp \
+  -H "Accept: application/json, text/event-stream" \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"ping","arguments":{}}}' | jq
+  -H "mcp-session-id: $MCP_SESSION_ID" \
+  --data-binary '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"ping","arguments":{}}}' | jq
 ```
 
 Expected response format:
@@ -102,9 +123,13 @@ Expected: Parse error.
 The `list_scenes` tool should return all scenes in the current project with their details.
 
 ```bash
-curl -X POST http://localhost:61169/mcp \
+curl -s http://localhost:61169/mcp \
+  -H "Accept: application/json, text/event-stream" \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_scenes","arguments":{}}}' | jq
+  -H "mcp-session-id: $MCP_SESSION_ID" \
+  --data-binary '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_scenes","arguments":{}}}' \
+  | sed -n 's/^data: //p' \
+  | jq
 ```
 
 Expected response format:

@@ -80,6 +80,7 @@ class StatusToolTest {
         when(bitwigApiFacade.getProjectParameters()).thenReturn(createMockProjectParameters());
         when(bitwigApiFacade.getSelectedTrackInfo()).thenReturn(createMockTrackInfo());
         when(bitwigApiFacade.getSelectedDeviceInfo()).thenReturn(createMockDeviceInfo());
+        when(bitwigApiFacade.getSelectedClipSlotInfo()).thenReturn(createMockClipSlotInfo());
 
         // Act: Create response using McpErrorHandler directly (simulating what executeWithErrorHandling does)
         Map<String, Object> statusData = createExpectedStatusData();
@@ -96,6 +97,7 @@ class StatusToolTest {
         assertTrue(dataNode.has("project_parameters"));
         assertTrue(dataNode.has("selected_track"));
         assertTrue(dataNode.has("selected_device"));
+        assertTrue(dataNode.has("selected_clip_slot"));
 
         assertEquals("1.0.0", dataNode.get("wigai_version").asText());
         assertEquals("Test Project", dataNode.get("project_name").asText());
@@ -195,6 +197,24 @@ class StatusToolTest {
 
         data.put("selected_track", createMockTrackInfo());
         data.put("selected_device", createMockDeviceInfo());
+        data.put("selected_clip_slot", createMockClipSlotInfo());
         return data;
+    }
+
+    private Map<String, Object> createMockClipSlotInfo() {
+        Map<String, Object> slot = new LinkedHashMap<>();
+        slot.put("track_name", "Track 1");
+        slot.put("track_index", 0);
+        slot.put("slot_index", 1);
+        slot.put("scene_index", 1);
+        slot.put("scene_name", "Intro");
+        slot.put("has_content", true);
+        slot.put("clip_name", "Clip A");
+        slot.put("is_playing", true);
+        slot.put("is_recording", false);
+        slot.put("is_playback_queued", false);
+        slot.put("is_recording_queued", false);
+        slot.put("is_stop_queued", false);
+        return slot;
     }
 }

@@ -47,6 +47,20 @@ Communication is message-based, typically using JSON-RPC or a similar structured
         "soloed": false,
         "armed": true
       },
+      "selected_clip_slot": {
+        "track_name": "Drums",
+        "track_index": 0,
+        "slot_index": 0,
+        "scene_index": 0,
+        "scene_name": "Intro",
+        "has_content": true,
+        "clip_name": "Drum Loop 1",
+        "is_playing": false,
+        "is_recording": false,
+        "is_playback_queued": false,
+        "is_recording_queued": false,
+        "is_stop_queued": false
+      },
       "selected_device": {
         "track_name": "Track Name",
         "track_index": 0,
@@ -72,6 +86,8 @@ Communication is message-based, typically using JSON-RPC or a similar structured
     - `selected_track`: Object containing currently selected track details, or `null` if no track is selected
     - `selected_track.type`: Track type (e.g., "audio", "instrument", "group", "hybrid", "effect", "master")
     - `selected_track.index`: 0-based index in the current track bank, or -1 if not found in visible tracks
+    - `selected_clip_slot`: Object describing the currently active clip slot (track context, slot/scene indices, clip status/state), or `null` if no clip slot is active/selected
+    - `selected_clip_slot.scene_name`: `null` when the scene is unnamed or unavailable
     - `selected_device`: Object containing currently selected device details, or `null` if no device is selected
     - `selected_device.track_name`: Name of the track containing the selected device
     - `selected_device.track_index`: 0-based index of the track containing the device, or -1 if not found in visible tracks
