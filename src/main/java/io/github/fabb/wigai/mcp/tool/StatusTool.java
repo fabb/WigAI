@@ -62,6 +62,7 @@ public class StatusTool {
                         } catch (Exception e) { responseData.put("project_parameters", new ArrayList<>()); partialFailures.add("project_parameters: " + e.getMessage()); }
                         try { responseData.put("selected_track", bitwigApiFacade.getSelectedTrackInfo()); } catch (Exception e) { responseData.put("selected_track", null); partialFailures.add("selected_track: " + e.getMessage()); }
                         try { responseData.put("selected_device", bitwigApiFacade.getSelectedDeviceInfo()); } catch (Exception e) { responseData.put("selected_device", null); partialFailures.add("selected_device: " + e.getMessage()); }
+                        try { responseData.put("selected_clip_slot", bitwigApiFacade.getSelectedClipSlotInfo()); } catch (Exception e) { responseData.put("selected_clip_slot", null); partialFailures.add("selected_clip_slot: " + e.getMessage()); }
                         if (!partialFailures.isEmpty()) { responseData.put("partial_failures", partialFailures); responseData.put("status_note", "Status retrieved with " + partialFailures.size() + " partial failures"); }
                         return responseData;
                     }

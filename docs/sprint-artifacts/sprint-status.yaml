@@ -1,4 +1,4 @@
-# generated: 2025-12-14 14:38:04
+# generated: 2025-12-15
 # project: WigAI
 # project_key: wigai
 # tracking_system: file-system
@@ -29,7 +29,7 @@
 # - SM typically drafts next story ONLY after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then Dev runs code-review (fresh context, ideally different LLM)
 
-generated: 2025-12-14 14:38:04
+generated: 2025-12-15
 project: WigAI
 project_key: wigai
 tracking_system: file-system
@@ -42,55 +42,46 @@ development_status:
   1-3-implement-mcp-ping-command: done
   1-4-implement-mcp-transport-start-command: done
   1-5-implement-mcp-transport-stop-command: done
-
   epic-1-retrospective: optional
 
   epic-2: done
   2-1-read-selected-device-s-parameters-via-mcp: done
   2-2-set-a-single-parameter-value-for-selected-device-via-mcp: done
   2-3-set-multiple-parameter-values-for-selected-device-via-mcp: done
-
   epic-2-retrospective: optional
 
   epic-3: done
   3-1-trigger-clip-by-track-name-and-clip-index-via-mcp: done
   3-2-trigger-scene-by-index-via-mcp: done
   3-3-trigger-scene-by-name-via-mcp: done
-
   epic-3-retrospective: optional
 
-  epic-4: in-progress
-  4-1-extract-config-interfaces: ready-for-dev
-  4-2-implement-preferences-backed-configuration: drafted
-  4-3-observer-wiring-and-mcp-server-restart: drafted
-  4-4-wigai-extension-integration-help-surfacing: drafted
+  epic-4: done
+  4-1-extract-config-interfaces: done
+  4-2-implement-preferences-backed-configuration: done
+  4-3-observer-wiring-and-mcp-server-restart: done
+  4-4-wigai-extension-integration-help-surfacing: done
   4-5-replace-static-string-settings-with-bitwig-notification-system: done
-
   epic-4-retrospective: optional
 
   epic-5: in-progress
   5-1-core-project-and-transport-status: done
-  5-2-selected-track-and-project-parameters-status: in-progress
-  5-3-selected-device-status-and-parameters: review
-  5-4-selected-clip-slot-status: drafted
-  5-5-implement-unified-error-handling-architecture: done
-
+  5-2-selected-track-and-project-parameters-status: done
+  5-3-selected-device-status-and-parameters: done
+  5-4-selected-clip-slot-status: review
   epic-5-retrospective: optional
 
-  epic-6: in-progress
+  epic-6: done
   6-1-implement-list-tracks-tool: done
-  6-2-implement-get-track-details-tool: drafted
-
+  6-2-implement-get-track-details-tool: done
   epic-6-retrospective: optional
 
-  epic-7: in-progress
-  7-1-implement-list-scenes-tool: drafted
-  7-2-implement-get-clips-in-scene-tool: review
-
+  epic-7: done
+  7-1-implement-list-scenes-tool: done
+  7-2-implement-get-clips-in-scene-tool: done
   epic-7-retrospective: optional
 
-  epic-8: in-progress
-  8-1-implement-list-devices-on-track-tool: review
-  8-2-implement-get-device-details-tool: drafted
-
+  epic-8: done
+  8-1-implement-list-devices-on-track-tool: done
+  8-2-implement-get-device-details-tool: done
   epic-8-retrospective: optional

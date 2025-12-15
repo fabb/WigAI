@@ -929,6 +929,86 @@ public class BitwigApiFacade {
     }
 
     /**
+     * Gets information about the currently selected clip slot including track context,
+     * slot position, content status, and playback state.
+     *
+     * @return A map containing selected clip slot information, or null if no track is selected
+     */
+    public Map<String, Object> getSelectedClipSlotInfo() {
+        logger.info("BitwigApiFacade: Getting selected clip slot information");
+
+        if (!cursorTrack.exists().get()) {
+            logger.info("BitwigApiFacade: No track selected");
+            return null;
+        }
+
+        Map<String, Object> clipSlotInfo = new LinkedHashMap<>();
+
+        try {
+            // Get track context
+            String trackName = cursorTrack.name().get();
+            int trackIndex = getTrackIndexByName(trackName);
+
+            clipSlotInfo.put("track_name", trackName);
+            clipSlotInfo.put("track_index", trackIndex);
+
+            // Get clip launcher slot bank for the selected track
+            ClipLauncherSlotBank slotBank = cursorTrack.clipLauncherSlotBank();
+
+            // Find the "selected" slot using workaround:
+            // 1. Find first slot that is playing, queued, or recording
+            // 2. If none found, use slot 0 as default
+            int selectedSlotIndex = 0;
+
+            for (int i = 0; i < slotBank.getSizeOfBank(); i++) {
+                ClipLauncherSlot slot = slotBank.getItemAt(i);
+                if (slot.isPlaying().get() || slot.isRecording().get() ||
+                    slot.isPlaybackQueued().get() || slot.isRecordingQueued().get() ||
+                    slot.isStopQueued().get()) {
+                    selectedSlotIndex = i;
+                    break;
+                }
+            }
+
+            // Slot position
+            clipSlotInfo.put("slot_index", selectedSlotIndex);
+            clipSlotInfo.put("scene_index", selectedSlotIndex); // Scene index aligns with slot index
+
+            // Scene information
+            String sceneName = sceneBankFacade.getSceneName(selectedSlotIndex);
+            clipSlotInfo.put("scene_name", sceneName);
+
+            // Get the selected slot
+            ClipLauncherSlot selectedSlot = slotBank.getItemAt(selectedSlotIndex);
+
+            // Content status
+            boolean hasContent = selectedSlot.hasContent().get();
+            clipSlotInfo.put("has_content", hasContent);
+
+            String clipName = null;
+            if (hasContent) {
+                String name = selectedSlot.name().get();
+                clipName = (name != null && name.trim().isEmpty()) ? null : name;
+            }
+            clipSlotInfo.put("clip_name", clipName);
+
+            // Playback state flags
+            clipSlotInfo.put("is_playing", selectedSlot.isPlaying().get());
+            clipSlotInfo.put("is_recording", selectedSlot.isRecording().get());
+            clipSlotInfo.put("is_playback_queued", selectedSlot.isPlaybackQueued().get());
+            clipSlotInfo.put("is_recording_queued", selectedSlot.isRecordingQueued().get());
+            clipSlotInfo.put("is_stop_queued", selectedSlot.isStopQueued().get());
+
+            logger.info("BitwigApiFacade: Retrieved selected clip slot info: track=" + trackName + ", slot=" + selectedSlotIndex);
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Error getting selected clip slot info: " + e.getMessage());
+            return null;
+        }
+
+        return clipSlotInfo;
+    }
+
+    /**
      * Gets a list of all tracks in the project with summary information.
      *
      * @param typeFilter Optional filter by track type (e.g., "audio", "instrument", "group", "effect", "master")
