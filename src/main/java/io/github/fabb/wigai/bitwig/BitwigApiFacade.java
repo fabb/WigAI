@@ -1023,53 +1023,45 @@ public class BitwigApiFacade {
      *
      * @param trackIndex The index of the track to get devices from
      * @return A list of device information maps
+     * @throws RuntimeException if device enumeration fails
      */
     private List<Map<String, Object>> getTrackDevices(int trackIndex) {
         List<Map<String, Object>> devices = new ArrayList<>();
 
-        try {
-            // Use the pre-existing device bank for this track that was created in the constructor
-            // and already has its properties marked as interested
-            if (trackIndex < 0 || trackIndex >= trackDeviceBanks.size()) {
-                logger.warn("BitwigApiFacade: Invalid track index for devices: " + trackIndex);
-                return devices;
-            }
-
-            DeviceBank deviceBank = trackDeviceBanks.get(trackIndex);
-            Track track = trackBank.getItemAt(trackIndex);
-
-            // Create device info for each existing device
-            for (int i = 0; i < deviceBank.getSizeOfBank(); i++) {
-                Device device = deviceBank.getItemAt(i);
-
-                // Check if device exists - this should work since markInterested() was called in constructor
-                if (!device.exists().get()) {
-                    continue;
-                }
-
-                Map<String, Object> deviceInfo = new LinkedHashMap<>();
-                deviceInfo.put("index", i);
-
-                // Get device name
-                String deviceName = device.name().get();
-                deviceInfo.put("name", deviceName);
-
-                // Get device type
-                String deviceType = device.deviceType().get();
-                deviceInfo.put("type", mapDeviceType(deviceType));
-
-                // Get device enabled status (bypassed = !enabled)
-                boolean isEnabled = device.isEnabled().get();
-                deviceInfo.put("bypassed", !isEnabled);
-
-                devices.add(deviceInfo);
-            }
-
-            logger.info("BitwigApiFacade: Found " + devices.size() + " devices on track: " + track.name().get());
-
-        } catch (Exception e) {
-            logger.warn("BitwigApiFacade: Error getting devices for track index " + trackIndex + ": " + e.getMessage());
+        // Use the pre-existing device bank for this track that was created in the constructor
+        // and already has its properties marked as interested
+        if (trackIndex < 0 || trackIndex >= trackDeviceBanks.size()) {
+            logger.warn("BitwigApiFacade: Invalid track index for devices: " + trackIndex);
+            return devices;
         }
+
+        DeviceBank deviceBank = trackDeviceBanks.get(trackIndex);
+        Track track = trackBank.getItemAt(trackIndex);
+
+        // Create device info for each existing device
+        for (int i = 0; i < deviceBank.getSizeOfBank(); i++) {
+            Device device = deviceBank.getItemAt(i);
+
+            // Check if device exists - this should work since markInterested() was called in constructor
+            if (!device.exists().get()) {
+                continue;
+            }
+
+            Map<String, Object> deviceInfo = new LinkedHashMap<>();
+            deviceInfo.put("index", i);
+
+            // Get device name
+            String deviceName = device.name().get();
+            deviceInfo.put("name", deviceName);
+
+            // Get device type
+            String deviceType = device.deviceType().get();
+            deviceInfo.put("type", mapDeviceType(deviceType));
+
+            devices.add(deviceInfo);
+        }
+
+        logger.info("BitwigApiFacade: Found " + devices.size() + " devices on track: " + track.name().get());
 
         return devices;
     }
