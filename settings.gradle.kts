@@ -13,7 +13,7 @@ configure<com.mooltiverse.oss.nyx.gradle.NyxExtension> {
             type.set("GITHUB")
             options.set(mapOf(
                 "AUTHENTICATION_TOKEN" to "{{#environmentVariable}}GITHUB_TOKEN{{/environmentVariable}}",
-                "REPOSITORY_OWNER" to "fabb",
+                "REPOSITORY_OWNER" to "jmeachum",
                 "REPOSITORY_NAME" to "WigAI",
             ))
         }
