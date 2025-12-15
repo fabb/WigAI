@@ -23,9 +23,13 @@ configure<com.mooltiverse.oss.nyx.gradle.NyxExtension> {
         publicationServices.set(listOf("github"))
         items {
             register("mainline") {
+                gitPush.set("true")
+                gitTag.set("true")
                 publish.set("true")
             }
             register("internal") {
+                gitPush.set("true")
+                gitTag.set("true")
                 publish.set("true")
             }
         }
