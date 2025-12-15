@@ -385,8 +385,8 @@ Communication is message-based, typically using JSON-RPC or a similar structured
         "color": "rgb(255,128,0)",
         "is_selected": true,
         "devices": [
-          { "index": 0, "name": "EQ Eight", "type": "AudioFX", "bypassed": false },
-          { "index": 1, "name": "Compressor", "type": "AudioFX", "bypassed": false }
+          { "index": 0, "name": "EQ Eight", "type": "AudioFX" },
+          { "index": 1, "name": "Compressor", "type": "AudioFX" }
         ],
         "volume": 0.63,
         "volume_str": "-4.0 dB",

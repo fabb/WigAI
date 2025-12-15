@@ -78,7 +78,7 @@ development_status:
   epic-5-retrospective: optional
 
   epic-6: in-progress
-  6-1-implement-list-tracks-tool: review
+  6-1-implement-list-tracks-tool: done
   6-2-implement-get-track-details-tool: drafted
 
   epic-6-retrospective: optional
