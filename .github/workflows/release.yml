@@ -41,9 +41,14 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
 
       - name: Build extension with updated version
-        run: ./gradlew bwextension
+        run: ./gradlew clean build --warning-mode=none
+
+      - name: Verify extension file exists
+        run: |
+          ls -la build/extensions/
+          test -f build/extensions/WigAI.bwextension && echo "Extension file exists" || echo "Extension file missing!"
 
       - name: Nyx publish release with assets
-        run: ./gradlew nyxPublish --warning-mode=none
+        run: ./gradlew nyxPublish --warning-mode=none --info
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
