@@ -866,6 +866,83 @@ public class BitwigApiFacadeTest {
     }
 
     @Test
+    void testGetAllTracksInfo_MapsDeviceTypes() {
+        when(mockTrackBank.getSizeOfBank()).thenReturn(1);
+
+        when(mockTrackBank.getItemAt(anyInt())).thenReturn(mockTrack);
+
+        com.bitwig.extension.controller.api.BooleanValue trackExists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(trackExists.get()).thenReturn(true);
+        when(mockTrack.exists()).thenReturn(trackExists);
+
+        SettableStringValue trackName = mock(SettableStringValue.class);
+        when(trackName.get()).thenReturn("Track 1");
+        when(mockTrack.name()).thenReturn(trackName);
+
+        SettableStringValue trackType = mock(SettableStringValue.class);
+        when(trackType.get()).thenReturn("AUDIO");
+        when(mockTrack.trackType()).thenReturn(trackType);
+
+        com.bitwig.extension.controller.api.BooleanValue isGroup = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(isGroup.get()).thenReturn(false);
+        when(mockTrack.isGroup()).thenReturn(isGroup);
+
+        SettableBooleanValue activated = mock(SettableBooleanValue.class);
+        when(activated.get()).thenReturn(true);
+        when(mockTrack.isActivated()).thenReturn(activated);
+
+        SettableColorValue color = mock(SettableColorValue.class);
+        Color rawColor = mock(Color.class);
+        when(rawColor.getRed()).thenReturn(0.5);
+        when(rawColor.getGreen()).thenReturn(0.5);
+        when(rawColor.getBlue()).thenReturn(0.5);
+        when(color.get()).thenReturn(rawColor);
+        when(mockTrack.color()).thenReturn(color);
+
+        com.bitwig.extension.controller.api.IntegerValue position = mock(com.bitwig.extension.controller.api.IntegerValue.class);
+        when(position.get()).thenReturn(0);
+        when(mockTrack.position()).thenReturn(position);
+
+        when(mockTrack.createParentTrack(anyInt(), anyInt())).thenReturn(null);
+
+        com.bitwig.extension.controller.api.BooleanValue cursorExists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(cursorExists.get()).thenReturn(false);
+        when(mockCursorTrack.exists()).thenReturn(cursorExists);
+
+        when(mockTrackBankCanScrollForwards.get()).thenReturn(false);
+        when(mockTrackBankCanScrollBackwards.get()).thenReturn(false);
+
+        com.bitwig.extension.controller.api.BooleanValue deviceExists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(deviceExists.get()).thenReturn(true);
+        Device mockDevice = mock(Device.class);
+        when(mockDevice.exists()).thenReturn(deviceExists);
+
+        SettableStringValue deviceName = mock(SettableStringValue.class);
+        when(deviceName.get()).thenReturn("My Device");
+        when(mockDevice.name()).thenReturn(deviceName);
+
+        com.bitwig.extension.controller.api.EnumValue deviceType = mock(com.bitwig.extension.controller.api.EnumValue.class);
+        when(deviceType.get()).thenReturn("DEVICE_AUDIO");
+        when(mockDevice.deviceType()).thenReturn(deviceType);
+
+        SettableBooleanValue deviceEnabled = mock(SettableBooleanValue.class);
+        when(deviceEnabled.get()).thenReturn(true);
+        when(mockDevice.isEnabled()).thenReturn(deviceEnabled);
+
+        when(mockDeviceBank.getSizeOfBank()).thenReturn(1);
+        when(mockDeviceBank.getItemAt(0)).thenReturn(mockDevice);
+
+        bitwigApiFacade = new BitwigApiFacade(mockHost, mockLogger);
+
+        java.util.List<java.util.Map<String, Object>> tracks = bitwigApiFacade.getAllTracksInfo(null);
+        assertEquals(1, tracks.size());
+        @SuppressWarnings("unchecked")
+        java.util.List<java.util.Map<String, Object>> devices = (java.util.List<java.util.Map<String, Object>>) tracks.get(0).get("devices");
+        assertEquals(1, devices.size());
+        assertEquals("AudioFX", devices.get(0).get("type"));
+    }
+
+    @Test
     void testGetAllTracksInfo_PropagatesBitwigFailures() {
         when(mockTrackBank.getSizeOfBank()).thenThrow(new RuntimeException("track bank failure"));
 

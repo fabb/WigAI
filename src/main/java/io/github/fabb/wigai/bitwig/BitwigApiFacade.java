@@ -993,21 +993,21 @@ public class BitwigApiFacade {
     }
 
     private Map<String, Object> buildTrackSummary(Track track, int slotIndex, String trackType, Integer selectedTrackIndex) {
-        Map<String, Object> trackInfo = new LinkedHashMap<>();
+            Map<String, Object> trackInfo = new LinkedHashMap<>();
 
-        int projectIndex = resolveTrackProjectIndex(track, slotIndex);
-        trackInfo.put("index", projectIndex);
-        trackInfo.put("name", track.name().get());
-        trackInfo.put("type", trackType);
-        trackInfo.put("is_group", track.isGroup().get());
-        trackInfo.put("parent_group_index", resolveParentGroupIndex(track));
-        trackInfo.put("activated", track.isActivated().get());
-        trackInfo.put("color", formatTrackColor(track.color().get()));
-        boolean isSelected = selectedTrackIndex != null && selectedTrackIndex == projectIndex;
-        trackInfo.put("is_selected", isSelected);
-        trackInfo.put("devices", getTrackDevices(slotIndex));
-        return trackInfo;
-    }
+            int projectIndex = resolveTrackProjectIndex(track, slotIndex);
+            trackInfo.put("index", projectIndex);
+            trackInfo.put("name", track.name().get());
+            trackInfo.put("type", trackType);
+            trackInfo.put("is_group", track.isGroup().get());
+            trackInfo.put("parent_group_index", resolveParentGroupIndex(track));
+            trackInfo.put("activated", track.isActivated().get());
+            trackInfo.put("color", formatTrackColor(track.color().get()));
+            boolean isSelected = selectedTrackIndex != null && selectedTrackIndex == projectIndex;
+            trackInfo.put("is_selected", isSelected);
+            trackInfo.put("devices", getTrackDevices(slotIndex));
+            return trackInfo;
+        }
 
     private void resetTrackBankToStart() {
         int safetyCounter = 0;
@@ -1056,7 +1056,7 @@ public class BitwigApiFacade {
 
                 // Get device type
                 String deviceType = device.deviceType().get();
-                deviceInfo.put("type", deviceType);
+                deviceInfo.put("type", mapDeviceType(deviceType));
 
                 // Get device enabled status (bypassed = !enabled)
                 boolean isEnabled = device.isEnabled().get();
