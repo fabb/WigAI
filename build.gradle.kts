@@ -59,7 +59,7 @@ testing {
 
 // Configure the Shadow JAR (fat JAR with all dependencies)
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-    archiveFileName.set("wigai-all-${project.version}.jar")
+    archiveFileName.set(provider { "wigai-all-${project.version}.jar" })
     manifest.inheritFrom(tasks.named<org.gradle.api.tasks.bundling.Jar>("jar").get().manifest)
     mergeServiceFiles() // Merge META-INF/services for SPI
 }
@@ -76,11 +76,16 @@ tasks.register<Jar>("bwextension") {
     destinationDirectory.set(layout.buildDirectory.dir("extensions"))
 
     manifest {
+        val projectName = project.name
+        val projectVersion = project.version.toString()
+        val projectGroup = project.group.toString()
+        val gradleVersionString = gradle.gradleVersion
+
         attributes(
-            "Implementation-Title" to project.name,
-            "Implementation-Version" to project.version.toString(),
-            "Implementation-Vendor" to project.group.toString(),
-            "Created-By" to "Gradle ${gradle.gradleVersion}",
+            "Implementation-Title" to projectName,
+            "Implementation-Version" to projectVersion,
+            "Implementation-Vendor" to projectGroup,
+            "Created-By" to "Gradle $gradleVersionString",
         )
     }
 
