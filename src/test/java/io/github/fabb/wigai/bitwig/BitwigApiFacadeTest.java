@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -53,6 +55,15 @@ public class BitwigApiFacadeTest {
     private ClipLauncherSlot mockClipLauncherSlot;
 
     @Mock
+    private ClipLauncherSlotBank mockCursorClipLauncherSlotBank;
+
+    @Mock
+    private ClipLauncherSlot mockCursorClipLauncherSlotActive;
+
+    @Mock
+    private ClipLauncherSlot mockCursorClipLauncherSlotIdle;
+
+    @Mock
     private SceneBank mockSceneBank;
 
     @Mock
@@ -94,7 +105,7 @@ public class BitwigApiFacadeTest {
         // Setup basic mocks
         when(mockHost.createTransport()).thenReturn(mockTransport);
         when(mockHost.createApplication()).thenReturn(mockApplication);
-        when(mockHost.createCursorTrack(0, 0)).thenReturn(mockCursorTrack);
+        when(mockHost.createCursorTrack(0, 128)).thenReturn(mockCursorTrack);
         when(mockCursorTrack.createCursorDevice()).thenReturn(mockCursorDevice);
         when(mockCursorDevice.createCursorRemoteControlsPage(8)).thenReturn(mockParameterBank);
 
@@ -259,6 +270,27 @@ public class BitwigApiFacadeTest {
         lenient().when(mockClipLauncherSlot.isStopQueued()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
         lenient().when(mockClipLauncherSlot.color()).thenReturn(mock(com.bitwig.extension.controller.api.SettableColorValue.class));
         lenient().when(mockClipLauncherSlot.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+        lenient().when(mockCursorClipLauncherSlotIdle.hasContent()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotIdle.isPlaying()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotIdle.isRecording()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotIdle.isPlaybackQueued()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotIdle.isRecordingQueued()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotIdle.isStopQueued()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotIdle.color()).thenReturn(mock(com.bitwig.extension.controller.api.SettableColorValue.class));
+        lenient().when(mockCursorClipLauncherSlotIdle.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+        lenient().when(mockCursorClipLauncherSlotActive.hasContent()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotActive.isPlaying()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotActive.isRecording()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotActive.isPlaybackQueued()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotActive.isRecordingQueued()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotActive.isStopQueued()).thenReturn(mock(com.bitwig.extension.controller.api.BooleanValue.class));
+        lenient().when(mockCursorClipLauncherSlotActive.color()).thenReturn(mock(com.bitwig.extension.controller.api.SettableColorValue.class));
+        lenient().when(mockCursorClipLauncherSlotActive.name()).thenReturn(mock(com.bitwig.extension.controller.api.SettableStringValue.class));
+        when(mockCursorTrack.clipLauncherSlotBank()).thenReturn(mockCursorClipLauncherSlotBank);
+        when(mockCursorClipLauncherSlotBank.getSizeOfBank()).thenReturn(8);
+        when(mockCursorClipLauncherSlotBank.getItemAt(anyInt())).thenReturn(mockCursorClipLauncherSlotIdle);
+        when(mockCursorClipLauncherSlotBank.getItemAt(0)).thenReturn(mockCursorClipLauncherSlotIdle);
+        when(mockCursorClipLauncherSlotBank.getItemAt(1)).thenReturn(mockCursorClipLauncherSlotActive);
 
         // Setup Send mock properties
         lenient().when(mockSend.name()).thenReturn(mock(com.bitwig.extension.controller.api.StringValue.class));
@@ -1036,5 +1068,126 @@ public class BitwigApiFacadeTest {
 
         // Verify logging
         verify(mockLogger).info("BitwigApiFacade: Getting all scenes info");
+    }
+
+    @Test
+    void testGetSelectedClipSlotInfo_NoTrackSelected() {
+        com.bitwig.extension.controller.api.BooleanValue trackExists = boolValue(false);
+        when(mockCursorTrack.exists()).thenReturn(trackExists);
+
+        assertNull(bitwigApiFacade.getSelectedClipSlotInfo());
+    }
+
+    @Test
+    void testGetSelectedClipSlotInfo_WithActiveSlot() {
+        var cursorTrackExists = boolValue(true);
+        when(mockCursorTrack.exists()).thenReturn(cursorTrackExists);
+        var cursorTrackName = stringValue("Track 1");
+        when(mockCursorTrack.name()).thenReturn(cursorTrackName);
+
+        var bankTrackExists = boolValue(true);
+        when(mockTrack.exists()).thenReturn(bankTrackExists);
+        var bankTrackName = stringValue("Track 1");
+        when(mockTrack.name()).thenReturn(bankTrackName);
+
+        var sceneExists = boolValue(true);
+        when(mockScene.exists()).thenReturn(sceneExists);
+        var sceneNameValue = stringValue("Intro");
+        when(mockScene.name()).thenReturn(sceneNameValue);
+
+        setupSlotBooleanStates(mockCursorClipLauncherSlotIdle, false, false, false, false, false);
+        var idleHasContent = boolValue(false);
+        when(mockCursorClipLauncherSlotIdle.hasContent()).thenReturn(idleHasContent);
+
+        setupSlotBooleanStates(mockCursorClipLauncherSlotActive, true, false, false, false, false);
+        var activeHasContent = boolValue(true);
+        when(mockCursorClipLauncherSlotActive.hasContent()).thenReturn(activeHasContent);
+        var clipName = stringValue("Clip A");
+        when(mockCursorClipLauncherSlotActive.name()).thenReturn(clipName);
+
+        Map<String, Object> info = bitwigApiFacade.getSelectedClipSlotInfo();
+
+        assertNotNull(info);
+        assertEquals("Track 1", info.get("track_name"));
+        assertEquals(0, info.get("track_index"));
+        assertEquals(1, info.get("slot_index"));
+        assertEquals(1, info.get("scene_index"));
+        assertEquals("Intro", info.get("scene_name"));
+        assertEquals(true, info.get("has_content"));
+        assertEquals("Clip A", info.get("clip_name"));
+        assertEquals(true, info.get("is_playing"));
+        assertEquals(false, info.get("is_recording"));
+    }
+
+    @Test
+    void testGetSelectedClipSlotInfo_NoActiveSlotDefaultsToSlot0() {
+        var cursorTrackExists = boolValue(true);
+        when(mockCursorTrack.exists()).thenReturn(cursorTrackExists);
+        var cursorTrackName = stringValue("Track 1");
+        when(mockCursorTrack.name()).thenReturn(cursorTrackName);
+
+        var bankTrackExists = boolValue(true);
+        when(mockTrack.exists()).thenReturn(bankTrackExists);
+        var bankTrackName = stringValue("Track 1");
+        when(mockTrack.name()).thenReturn(bankTrackName);
+
+        var sceneExists = boolValue(true);
+        when(mockScene.exists()).thenReturn(sceneExists);
+        var sceneNameValue = stringValue(null);
+        when(mockScene.name()).thenReturn(sceneNameValue);
+
+        setupSlotBooleanStates(mockCursorClipLauncherSlotIdle, false, false, false, false, false);
+        var idleHasContent = boolValue(false);
+        when(mockCursorClipLauncherSlotIdle.hasContent()).thenReturn(idleHasContent);
+
+        setupSlotBooleanStates(mockCursorClipLauncherSlotActive, false, false, false, false, false);
+        var activeHasContent = boolValue(false);
+        when(mockCursorClipLauncherSlotActive.hasContent()).thenReturn(activeHasContent);
+
+        Map<String, Object> info = bitwigApiFacade.getSelectedClipSlotInfo();
+
+        assertNotNull(info);
+        assertEquals("Track 1", info.get("track_name"));
+        assertEquals(0, info.get("track_index"));
+        assertEquals(0, info.get("slot_index"));
+        assertEquals(0, info.get("scene_index"));
+        assertNull(info.get("scene_name"));
+        assertEquals(false, info.get("has_content"));
+        assertNull(info.get("clip_name"));
+        assertEquals(false, info.get("is_playing"));
+        assertEquals(false, info.get("is_recording"));
+    }
+
+    private com.bitwig.extension.controller.api.BooleanValue boolValue(boolean value) {
+        com.bitwig.extension.controller.api.BooleanValue bool = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(bool.get()).thenReturn(value);
+        return bool;
+    }
+
+    private SettableStringValue stringValue(String value) {
+        SettableStringValue str = mock(SettableStringValue.class);
+        when(str.get()).thenReturn(value);
+        return str;
+    }
+
+    private void setupSlotBooleanStates(
+        ClipLauncherSlot slot,
+        boolean playing,
+        boolean recording,
+        boolean playbackQueued,
+        boolean recordingQueued,
+        boolean stopQueued
+    ) {
+        com.bitwig.extension.controller.api.BooleanValue playingValue = boolValue(playing);
+        com.bitwig.extension.controller.api.BooleanValue recordingValue = boolValue(recording);
+        com.bitwig.extension.controller.api.BooleanValue playbackValue = boolValue(playbackQueued);
+        com.bitwig.extension.controller.api.BooleanValue recordingQueuedValue = boolValue(recordingQueued);
+        com.bitwig.extension.controller.api.BooleanValue stopQueuedValue = boolValue(stopQueued);
+
+        when(slot.isPlaying()).thenReturn(playingValue);
+        when(slot.isRecording()).thenReturn(recordingValue);
+        when(slot.isPlaybackQueued()).thenReturn(playbackValue);
+        when(slot.isRecordingQueued()).thenReturn(recordingQueuedValue);
+        when(slot.isStopQueued()).thenReturn(stopQueuedValue);
     }
 }

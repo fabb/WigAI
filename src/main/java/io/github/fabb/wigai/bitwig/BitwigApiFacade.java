@@ -54,6 +54,7 @@ public class BitwigApiFacade {
     private final CursorTrack cursorTrack;
     private final RemoteControlsPage projectParameterBank;
     private final List<DeviceBank> trackDeviceBanks;
+    private final ClipLauncherSlotBank cursorClipLauncherSlotBank;
 
     /**
      * Creates a new BitwigApiFacade instance.
@@ -83,9 +84,10 @@ public class BitwigApiFacade {
         application.hasActiveEngine().markInterested();
 
         // Initialize device control - use CursorTrack.createCursorDevice() instead of deprecated host.createCursorDevice()
-        this.cursorTrack = host.createCursorTrack(0, 0);
+        this.cursorTrack = host.createCursorTrack(0, Constants.MAX_SCENES);
         this.cursorDevice = cursorTrack.createCursorDevice();
         this.deviceParameterBank = cursorDevice.createCursorRemoteControlsPage(Constants.DEVICE_PARAMETER_COUNT);
+        this.cursorClipLauncherSlotBank = cursorTrack.clipLauncherSlotBank();
 
         // Initialize project parameter access via MasterTrack (project parameters)
         MasterTrack masterTrack = host.createMasterTrack(0);
@@ -144,6 +146,23 @@ public class BitwigApiFacade {
         cursorTrack.volume().displayedValue().markInterested();
         cursorTrack.pan().value().markInterested();
         cursorTrack.pan().displayedValue().markInterested();
+
+        if (cursorClipLauncherSlotBank == null) {
+            logger.warn("BitwigApiFacade: Cursor clip launcher slot bank unavailable - selected clip slot info disabled");
+        } else {
+            int cursorSlotBankSize = cursorClipLauncherSlotBank.getSizeOfBank();
+            for (int slotIndex = 0; slotIndex < cursorSlotBankSize; slotIndex++) {
+                ClipLauncherSlot slot = cursorClipLauncherSlotBank.getItemAt(slotIndex);
+                slot.hasContent().markInterested();
+                slot.isPlaying().markInterested();
+                slot.isRecording().markInterested();
+                slot.isPlaybackQueued().markInterested();
+                slot.isRecordingQueued().markInterested();
+                slot.isStopQueued().markInterested();
+                slot.color().markInterested();
+                slot.name().markInterested();
+            }
+        }
 
         // Mark interest in track properties for clip launching and track listing
         for (int trackIndex = 0; trackIndex < trackBank.getSizeOfBank(); trackIndex++) {
@@ -953,14 +972,23 @@ public class BitwigApiFacade {
             clipSlotInfo.put("track_index", trackIndex);
 
             // Get clip launcher slot bank for the selected track
-            ClipLauncherSlotBank slotBank = cursorTrack.clipLauncherSlotBank();
+            ClipLauncherSlotBank slotBank = cursorClipLauncherSlotBank;
+            if (slotBank == null) {
+                logger.info("BitwigApiFacade: Cursor clip launcher slot bank unavailable");
+                return null;
+            }
+            int slotBankSize = slotBank.getSizeOfBank();
+            if (slotBankSize == 0) {
+                logger.info("BitwigApiFacade: Selected track has no clip launcher slots");
+                return null;
+            }
 
             // Find the "selected" slot using workaround:
             // 1. Find first slot that is playing, queued, or recording
             // 2. If none found, use slot 0 as default
             int selectedSlotIndex = 0;
 
-            for (int i = 0; i < slotBank.getSizeOfBank(); i++) {
+            for (int i = 0; i < slotBankSize; i++) {
                 ClipLauncherSlot slot = slotBank.getItemAt(i);
                 if (slot.isPlaying().get() || slot.isRecording().get() ||
                     slot.isPlaybackQueued().get() || slot.isRecordingQueued().get() ||
