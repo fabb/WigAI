@@ -1120,7 +1120,36 @@ public class BitwigApiFacadeTest {
     }
 
     @Test
-    void testGetSelectedClipSlotInfo_NoActiveSlotDefaultsToSlot0() {
+    void testGetSelectedClipSlotInfo_BlankSceneNameReturnsNull() {
+        var cursorTrackExists = boolValue(true);
+        when(mockCursorTrack.exists()).thenReturn(cursorTrackExists);
+        var cursorTrackName = stringValue("Track 1");
+        when(mockCursorTrack.name()).thenReturn(cursorTrackName);
+
+        var bankTrackExists = boolValue(true);
+        when(mockTrack.exists()).thenReturn(bankTrackExists);
+        var bankTrackName = stringValue("Track 1");
+        when(mockTrack.name()).thenReturn(bankTrackName);
+
+        var sceneExists = boolValue(true);
+        when(mockScene.exists()).thenReturn(sceneExists);
+        var sceneNameValue = stringValue("");
+        when(mockScene.name()).thenReturn(sceneNameValue);
+
+        setupSlotBooleanStates(mockCursorClipLauncherSlotIdle, true, false, false, false, false);
+        var slotHasContent = boolValue(true);
+        when(mockCursorClipLauncherSlotIdle.hasContent()).thenReturn(slotHasContent);
+        var clipName = stringValue("Clip A");
+        when(mockCursorClipLauncherSlotIdle.name()).thenReturn(clipName);
+
+        Map<String, Object> info = bitwigApiFacade.getSelectedClipSlotInfo();
+
+        assertNotNull(info);
+        assertNull(info.get("scene_name"));
+    }
+
+    @Test
+    void testGetSelectedClipSlotInfo_NoActiveSlotReturnsNull() {
         var cursorTrackExists = boolValue(true);
         when(mockCursorTrack.exists()).thenReturn(cursorTrackExists);
         var cursorTrackName = stringValue("Track 1");
@@ -1146,16 +1175,7 @@ public class BitwigApiFacadeTest {
 
         Map<String, Object> info = bitwigApiFacade.getSelectedClipSlotInfo();
 
-        assertNotNull(info);
-        assertEquals("Track 1", info.get("track_name"));
-        assertEquals(0, info.get("track_index"));
-        assertEquals(0, info.get("slot_index"));
-        assertEquals(0, info.get("scene_index"));
-        assertNull(info.get("scene_name"));
-        assertEquals(false, info.get("has_content"));
-        assertNull(info.get("clip_name"));
-        assertEquals(false, info.get("is_playing"));
-        assertEquals(false, info.get("is_recording"));
+        assertNull(info);
     }
 
     private com.bitwig.extension.controller.api.BooleanValue boolValue(boolean value) {
