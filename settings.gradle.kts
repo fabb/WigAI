@@ -21,6 +21,14 @@ configure<com.mooltiverse.oss.nyx.gradle.NyxExtension> {
 
     releaseTypes {
         publicationServices.set(listOf("github"))
+        items {
+            register("mainline") {
+                publish.set("true")
+            }
+            register("internal") {
+                publish.set("true")
+            }
+        }
     }
 
     // Release assets to upload
