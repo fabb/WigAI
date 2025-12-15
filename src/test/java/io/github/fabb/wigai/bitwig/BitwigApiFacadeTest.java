@@ -184,7 +184,9 @@ public class BitwigApiFacadeTest {
         lenient().when(mockCursorTrack.mute()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
         lenient().when(mockCursorTrack.solo()).thenReturn(mock(com.bitwig.extension.controller.api.SoloValue.class));
         lenient().when(mockCursorTrack.arm()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
-        lenient().when(mockCursorTrack.position()).thenReturn(mock(com.bitwig.extension.controller.api.IntegerValue.class));
+        com.bitwig.extension.controller.api.IntegerValue mockCursorPosition = mock(com.bitwig.extension.controller.api.IntegerValue.class);
+        lenient().when(mockCursorPosition.get()).thenReturn(0);
+        lenient().when(mockCursorTrack.position()).thenReturn(mockCursorPosition);
 
         // Additional stubs for newly monitored track channel controls
         lenient().when(mockTrack.mute()).thenReturn(mock(com.bitwig.extension.controller.api.SettableBooleanValue.class));
@@ -215,6 +217,9 @@ public class BitwigApiFacadeTest {
         SettableEnumValue mockMonitorMode = mock(SettableEnumValue.class);
         lenient().when(mockMonitorMode.get()).thenReturn("AUTO");
         lenient().when(mockTrack.monitorMode()).thenReturn(mockMonitorMode);
+        com.bitwig.extension.controller.api.IntegerValue mockTrackPosition = mock(com.bitwig.extension.controller.api.IntegerValue.class);
+        lenient().when(mockTrackPosition.get()).thenReturn(0);
+        lenient().when(mockTrack.position()).thenReturn(mockTrackPosition);
         // Cursor track additional channel controls
         RemoteControl mockCursorVolume = mock(RemoteControl.class);
         SettableRangedValue mockCursorVolVal = mock(SettableRangedValue.class);
@@ -609,6 +614,9 @@ public class BitwigApiFacadeTest {
         com.bitwig.extension.controller.api.SettableStringValue mockCursorName = mock(com.bitwig.extension.controller.api.SettableStringValue.class);
         when(mockCursorName.get()).thenReturn("Track 2");
         when(mockCursorTrack.name()).thenReturn(mockCursorName);
+        com.bitwig.extension.controller.api.IntegerValue mockCursorPositionValue = mock(com.bitwig.extension.controller.api.IntegerValue.class);
+        when(mockCursorPositionValue.get()).thenReturn(1);
+        when(mockCursorTrack.position()).thenReturn(mockCursorPositionValue);
 
         // Setup 3 different tracks
         Track[] tracks = new Track[3];
@@ -644,6 +652,9 @@ public class BitwigApiFacadeTest {
             // Track color
             com.bitwig.extension.controller.api.SettableColorValue mockColor = mock(com.bitwig.extension.controller.api.SettableColorValue.class);
             when(tracks[i].color()).thenReturn(mockColor);
+            com.bitwig.extension.controller.api.IntegerValue mockPositionValue = mock(com.bitwig.extension.controller.api.IntegerValue.class);
+            when(mockPositionValue.get()).thenReturn(i);
+            when(tracks[i].position()).thenReturn(mockPositionValue);
 
             // No parent track for this test
             when(tracks[i].createParentTrack(0, 0)).thenReturn(null);
@@ -706,6 +717,89 @@ public class BitwigApiFacadeTest {
 
         // Verify logging
         verify(mockLogger, times(2)).info(contains("Getting all tracks info"));
+    }
+
+    @Test
+    void testGetAllTracksInfo_UsesProjectIndexForSelectionAndParent() {
+        when(mockTrackBank.getSizeOfBank()).thenReturn(2);
+
+        com.bitwig.extension.controller.api.BooleanValue cursorExists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(cursorExists.get()).thenReturn(true);
+        when(mockCursorTrack.exists()).thenReturn(cursorExists);
+        com.bitwig.extension.controller.api.IntegerValue cursorPosition = mock(com.bitwig.extension.controller.api.IntegerValue.class);
+        when(cursorPosition.get()).thenReturn(1);
+        when(mockCursorTrack.position()).thenReturn(cursorPosition);
+
+        Track groupTrack = mock(Track.class);
+        Track childTrack = mock(Track.class);
+        Track[] tracks = new Track[] { groupTrack, childTrack };
+
+        for (int i = 0; i < tracks.length; i++) {
+            Track current = tracks[i];
+            com.bitwig.extension.controller.api.BooleanValue exists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+            when(exists.get()).thenReturn(true);
+            when(current.exists()).thenReturn(exists);
+
+            com.bitwig.extension.controller.api.SettableStringValue trackName = mock(com.bitwig.extension.controller.api.SettableStringValue.class);
+            when(trackName.get()).thenReturn("Bass");
+            when(current.name()).thenReturn(trackName);
+
+            com.bitwig.extension.controller.api.SettableStringValue trackType = mock(com.bitwig.extension.controller.api.SettableStringValue.class);
+            when(trackType.get()).thenReturn(i == 0 ? "GROUP" : "AUDIO");
+            when(current.trackType()).thenReturn(trackType);
+
+            com.bitwig.extension.controller.api.BooleanValue isGroup = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+            when(isGroup.get()).thenReturn(i == 0);
+            when(current.isGroup()).thenReturn(isGroup);
+
+            com.bitwig.extension.controller.api.SettableBooleanValue activated = mock(com.bitwig.extension.controller.api.SettableBooleanValue.class);
+            when(activated.get()).thenReturn(true);
+            when(current.isActivated()).thenReturn(activated);
+
+            com.bitwig.extension.controller.api.SettableColorValue colorValue = mock(com.bitwig.extension.controller.api.SettableColorValue.class);
+            when(current.color()).thenReturn(colorValue);
+
+            com.bitwig.extension.controller.api.IntegerValue positionValue = mock(com.bitwig.extension.controller.api.IntegerValue.class);
+            when(positionValue.get()).thenReturn(i);
+            when(current.position()).thenReturn(positionValue);
+
+            DeviceBank mockBank = mock(DeviceBank.class);
+            when(current.createDeviceBank(8)).thenReturn(mockBank);
+            when(mockBank.getSizeOfBank()).thenReturn(0);
+
+            when(current.createParentTrack(0, 0)).thenReturn(null);
+
+            when(mockTrackBank.getItemAt(i)).thenReturn(current);
+        }
+
+        // Child should report parent index 0 even though names are identical
+        Track parentTrack = mock(Track.class);
+        com.bitwig.extension.controller.api.BooleanValue parentExists = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(parentExists.get()).thenReturn(true);
+        when(parentTrack.exists()).thenReturn(parentExists);
+        com.bitwig.extension.controller.api.BooleanValue parentIsGroup = mock(com.bitwig.extension.controller.api.BooleanValue.class);
+        when(parentIsGroup.get()).thenReturn(true);
+        when(parentTrack.isGroup()).thenReturn(parentIsGroup);
+        com.bitwig.extension.controller.api.IntegerValue parentPosition = mock(com.bitwig.extension.controller.api.IntegerValue.class);
+        when(parentPosition.get()).thenReturn(0);
+        when(parentTrack.position()).thenReturn(parentPosition);
+        com.bitwig.extension.controller.api.SettableStringValue parentName = mock(com.bitwig.extension.controller.api.SettableStringValue.class);
+        when(parentName.get()).thenReturn("Bass");
+        when(parentTrack.name()).thenReturn(parentName);
+        when(childTrack.createParentTrack(0, 0)).thenReturn(parentTrack);
+
+        java.util.List<java.util.Map<String, Object>> tracksInfo = bitwigApiFacade.getAllTracksInfo(null);
+        assertEquals(2, tracksInfo.size());
+
+        java.util.Map<String, Object> first = tracksInfo.get(0);
+        assertEquals(0, first.get("index"));
+        assertFalse((Boolean) first.get("is_selected"));
+        assertNull(first.get("parent_group_index"));
+
+        java.util.Map<String, Object> second = tracksInfo.get(1);
+        assertEquals(1, second.get("index"));
+        assertTrue((Boolean) second.get("is_selected"));
+        assertEquals(0, second.get("parent_group_index"));
     }
 
     @Test

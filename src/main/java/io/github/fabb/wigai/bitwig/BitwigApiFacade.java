@@ -150,6 +150,7 @@ public class BitwigApiFacade {
             track.isGroup().markInterested();
             track.isActivated().markInterested();
             track.color().markInterested();
+            track.position().markInterested();
 
             // Mark interest in device properties for this track
             DeviceBank deviceBank = trackDeviceBanks.get(trackIndex);
@@ -932,16 +933,11 @@ public class BitwigApiFacade {
     public List<Map<String, Object>> getAllTracksInfo(String typeFilter) {
         logger.info("BitwigApiFacade: Getting all tracks info" + (typeFilter != null ? " filtered by type: " + typeFilter : ""));
         List<Map<String, Object>> tracksInfo = new ArrayList<>();
+        Integer selectedTrackIndex = getSelectedTrackProjectIndex();
 
         try {
-            // Get selected track name for comparison
-            String selectedTrackName = null;
-            if (cursorTrack.exists().get()) {
-                selectedTrackName = cursorTrack.name().get();
-            }
-
             // Create parent track mapping to determine parent group indices
-            Map<String, Integer> parentGroupMapping = buildParentGroupMapping();
+            Map<Integer, Integer> parentGroupMapping = buildParentGroupMapping();
 
             for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
                 Track track = trackBank.getItemAt(i);
@@ -952,7 +948,8 @@ public class BitwigApiFacade {
                 Map<String, Object> trackInfo = new LinkedHashMap<>();
 
                 // Basic track properties
-                trackInfo.put("index", i);
+                int projectIndex = resolveTrackProjectIndex(track, i);
+                trackInfo.put("index", projectIndex);
                 String trackName = track.name().get();
                 trackInfo.put("name", trackName);
 
@@ -967,7 +964,7 @@ public class BitwigApiFacade {
                 trackInfo.put("is_group", track.isGroup().get());
 
                 // Get parent group index from mapping
-                trackInfo.put("parent_group_index", parentGroupMapping.get(trackName));
+                trackInfo.put("parent_group_index", parentGroupMapping.get(projectIndex));
 
                 // Get track activation status
                 trackInfo.put("activated", track.isActivated().get());
@@ -976,7 +973,7 @@ public class BitwigApiFacade {
                 trackInfo.put("color", formatTrackColor(track.color().get()));
 
                 // Check if this track is selected
-                boolean isSelected = selectedTrackName != null && selectedTrackName.equals(trackName);
+                boolean isSelected = selectedTrackIndex != null && selectedTrackIndex == projectIndex;
                 trackInfo.put("is_selected", isSelected);
 
                 // Get devices on this track using the pre-existing device bank
@@ -1056,8 +1053,8 @@ public class BitwigApiFacade {
      *
      * @return A map where keys are track names and values are parent group indices (null if no parent)
      */
-    private Map<String, Integer> buildParentGroupMapping() {
-        Map<String, Integer> parentMapping = new LinkedHashMap<>();
+    private Map<Integer, Integer> buildParentGroupMapping() {
+        Map<Integer, Integer> parentMapping = new LinkedHashMap<>();
 
         try {
             for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
@@ -1066,37 +1063,62 @@ public class BitwigApiFacade {
                     continue;
                 }
 
-                String trackName = track.name().get();
-                Integer parentGroupIndex = null;
-
-                try {
-                    // Create parent track object to check for parent group
-                    Track parentTrack = track.createParentTrack(0, 0);
-                    if (parentTrack != null && parentTrack.exists().get()) {
-                        String parentName = parentTrack.name().get();
-
-                        // Find the index of the parent track in our track bank
-                        for (int j = 0; j < trackBank.getSizeOfBank(); j++) {
-                            Track candidateParent = trackBank.getItemAt(j);
-                            if (candidateParent.exists().get() &&
-                                candidateParent.isGroup().get() &&
-                                parentName.equals(candidateParent.name().get())) {
-                                parentGroupIndex = j;
-                                break;
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    logger.warn("BitwigApiFacade: Error determining parent for track " + trackName + ": " + e.getMessage());
-                }
-
-                parentMapping.put(trackName, parentGroupIndex);
+                int projectIndex = resolveTrackProjectIndex(track, i);
+                parentMapping.put(projectIndex, resolveParentGroupIndex(track));
             }
         } catch (Exception e) {
             logger.warn("BitwigApiFacade: Error building parent group mapping: " + e.getMessage());
         }
 
         return parentMapping;
+    }
+
+    /**
+     * Resolves the parent group index for the provided track using the actual project index.
+     */
+    private Integer resolveParentGroupIndex(Track track) {
+        try {
+            Track parentTrack = track.createParentTrack(0, 0);
+            if (parentTrack == null) {
+                return null;
+            }
+            parentTrack.exists().markInterested();
+            parentTrack.isGroup().markInterested();
+            parentTrack.position().markInterested();
+
+            if (parentTrack.exists().get() && parentTrack.isGroup().get()) {
+                return parentTrack.position().get();
+            }
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Error determining parent for track " + track.name().get() + ": " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Returns the global project index for the given track, falling back to the provided index if unavailable.
+     */
+    private int resolveTrackProjectIndex(Track track, int fallbackIndex) {
+        try {
+            return track.position().get();
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Unable to resolve project index for track " + track.name().get() + ": " + e.getMessage());
+            return fallbackIndex;
+        }
+    }
+
+    /**
+     * Returns the project index for the currently selected track, if any.
+     */
+    private Integer getSelectedTrackProjectIndex() {
+        try {
+            if (cursorTrack.exists().get()) {
+                return cursorTrack.position().get();
+            }
+        } catch (Exception e) {
+            logger.warn("BitwigApiFacade: Unable to resolve selected track index: " + e.getMessage());
+        }
+        return null;
     }
 
     /**
@@ -1199,18 +1221,20 @@ public class BitwigApiFacade {
         Map<String, Object> trackInfo = new LinkedHashMap<>();
         try {
             // Basic fields similar to getAllTracksInfo
-            trackInfo.put("index", index);
+            int projectIndex = resolveTrackProjectIndex(track, index);
+            trackInfo.put("index", projectIndex);
             String trackName = track.name().get();
             trackInfo.put("name", trackName);
             String trackType = track.trackType().get().toLowerCase();
             trackInfo.put("type", trackType);
             trackInfo.put("is_group", track.isGroup().get());
-            Map<String, Integer> parentMap = buildParentGroupMapping();
-            trackInfo.put("parent_group_index", parentMap.get(trackName));
+            Map<Integer, Integer> parentMap = buildParentGroupMapping();
+            trackInfo.put("parent_group_index", parentMap.get(projectIndex));
             trackInfo.put("activated", track.isActivated().get());
             trackInfo.put("color", formatTrackColor(track.color().get()));
             // Selected state
-            boolean isSelected = cursorTrack.exists().get() && trackName.equals(cursorTrack.name().get());
+            Integer selectedIndex = getSelectedTrackProjectIndex();
+            boolean isSelected = selectedIndex != null && selectedIndex == projectIndex;
             trackInfo.put("is_selected", isSelected);
             // Devices
             trackInfo.put("devices", getTrackDevices(index));
