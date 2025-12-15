@@ -931,11 +931,12 @@ public class BitwigApiFacade {
      * @return A list of track information maps
      */
     public List<Map<String, Object>> getAllTracksInfo(String typeFilter) {
-        logger.info("BitwigApiFacade: Getting all tracks info" + (typeFilter != null ? " filtered by type: " + typeFilter : ""));
-        List<Map<String, Object>> tracksInfo = new ArrayList<>();
-        Integer selectedTrackIndex = getSelectedTrackProjectIndex();
+        final String operation = "list_tracks";
+        return WigAIErrorHandler.executeWithErrorHandling(operation, () -> {
+            logger.info("BitwigApiFacade: Getting all tracks info" + (typeFilter != null ? " filtered by type: " + typeFilter : ""));
+            List<Map<String, Object>> tracksInfo = new ArrayList<>();
+            Integer selectedTrackIndex = getSelectedTrackProjectIndex();
 
-        try {
             // Create parent track mapping to determine parent group indices
             Map<Integer, Integer> parentGroupMapping = buildParentGroupMapping();
 
@@ -984,11 +985,8 @@ public class BitwigApiFacade {
             }
 
             logger.info("BitwigApiFacade: Retrieved " + tracksInfo.size() + " tracks");
-        } catch (Exception e) {
-            logger.warn("BitwigApiFacade: Error getting tracks info: " + e.getMessage());
-        }
-
-        return tracksInfo;
+            return tracksInfo;
+        });
     }
 
     /**

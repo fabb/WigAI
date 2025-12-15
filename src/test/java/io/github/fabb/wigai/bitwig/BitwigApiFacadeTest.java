@@ -803,6 +803,20 @@ public class BitwigApiFacadeTest {
     }
 
     @Test
+    void testGetAllTracksInfo_PropagatesBitwigFailures() {
+        when(mockTrackBank.getSizeOfBank()).thenThrow(new RuntimeException("track bank failure"));
+
+        BitwigApiException exception = assertThrows(
+            BitwigApiException.class,
+            () -> bitwigApiFacade.getAllTracksInfo(null)
+        );
+
+        assertEquals("list_tracks", exception.getOperation());
+        assertEquals(ErrorCode.OPERATION_FAILED, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("track bank failure"));
+    }
+
+    @Test
     void testGetAllScenesInfo() {
         // Arrange - setup scenes
         when(mockSceneBank.getSizeOfBank()).thenReturn(3);
