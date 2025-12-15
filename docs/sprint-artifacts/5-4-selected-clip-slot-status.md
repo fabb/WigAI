@@ -216,22 +216,25 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 ### Debug Log References
 
-BitwigApiFacade.java:938 - getSelectedClipSlotInfo() method logs selected clip slot retrieval
-BitwigApiFacade.java:1004 - Logs track name and slot index for selected clip slot
+BitwigApiFacade.java:950 - getSelectedClipSlotInfo() method logs selected clip slot retrieval
+BitwigApiFacade.java:1018 - Logs track name and slot index for selected clip slot
 StatusTool.java:65 - Integrated selected_clip_slot into status response with partial failure handling
+BitwigApiFacadeTest.java:330 - Validates selected clip slot info signaling and null cases
+StatusToolTest.java:47 - Ensures status payload exposes selected_clip_slot payload
 
 ### Completion Notes List
 
-- ✅ Implemented getSelectedClipSlotInfo() method in BitwigApiFacade (lines 937-1011)
+- ✅ Implemented getSelectedClipSlotInfo() method in BitwigApiFacade (lines 937-1015)
 - ✅ Method returns null when no track is selected (AC for null scenario)
-- ✅ Uses workaround to detect "selected" clip slot: finds first active/queued slot, defaults to slot 0
+- ✅ Uses workaround to detect "selected" clip slot by checking active/queued/recording slots; returns null when none are active
+- ✅ Cursor clip launcher slot bank now marks required properties as interested to deliver real-time status
 - ✅ Integrated into StatusTool with proper partial failure handling (line 65)
-- ✅ Follows existing patterns from Stories 5.1, 5.2, and 5.3
-- ✅ All ClipLauncherSlot properties already marked as interested (no new subscriptions needed)
-- ✅ Scene name retrieved via sceneBankFacade.getSceneName()
-- ✅ All acceptance criteria satisfied: track context, slot position, content status, playback flags
+- ✅ Status payload updated to document selected_clip_slot object in docs/api-reference.md
+- ✅ Added regression tests in BitwigApiFacadeTest to cover slot selection and null cases
+- ✅ Added StatusToolTest coverage to ensure selected_clip_slot propagates through status responses
 - ✅ Build successful, all tests pass
-- Manual testing ready: Extension can be loaded in Bitwig to verify status command output
+- ✅ Manual testing complete: Verified working in Bitwig with playing clip - selected_clip_slot returns correct playback state
+- ✅ Fixed cursor track initialization (0 scenes → 128 scenes) to enable clip slot bank access
 
 ### Implementation Plan
 
@@ -243,8 +246,11 @@ Implemented getSelectedClipSlotInfo() following three-tier architecture:
 ### File List
 
 Modified files:
-- `src/main/java/io/github/fabb/wigai/bitwig/BitwigApiFacade.java` (added getSelectedClipSlotInfo method, lines 937-1011)
-- `src/main/java/io/github/fabb/wigai/mcp/tool/StatusTool.java` (added selected_clip_slot integration, line 65)
+- `src/main/java/io/github/fabb/wigai/bitwig/BitwigApiFacade.java` (selected clip slot retrieval, cursor slot subscriptions)
+- `src/test/java/io/github/fabb/wigai/bitwig/BitwigApiFacadeTest.java` (new tests for clip slot info/null scenarios)
+- `src/test/java/io/github/fabb/wigai/mcp/tool/StatusToolTest.java` (status payload coverage for selected_clip_slot)
+- `docs/api-reference.md` (documents selected_clip_slot response structure)
+- `docs/sprint-artifacts/5-4-selected-clip-slot-status.md` (Dev Agent record & file list updates)
 
 Files referenced for context:
 - `docs/prd/epic-5.md`
@@ -254,3 +260,5 @@ Files referenced for context:
 ### Change Log
 
 - 2025-12-15: Implemented selected clip slot status functionality for MCP status command
+- 2025-12-15: Fixed cursor track initialization to support 128 clip launcher slots (was 0, causing null returns)
+- 2025-12-15: Manual testing verified working - clip playback state correctly reported
