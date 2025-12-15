@@ -75,12 +75,13 @@ tasks.register<Jar>("bwextension") {
 
     destinationDirectory.set(layout.buildDirectory.dir("extensions"))
 
-    manifest {
-        val projectName = project.name
-        val projectVersion = project.version.toString()
-        val projectGroup = project.group.toString()
-        val gradleVersionString = gradle.gradleVersion
+    // Capture project properties at configuration time
+    val projectName = project.name
+    val projectVersion = project.version.toString()
+    val projectGroup = project.group.toString()
+    val gradleVersionString = gradle.gradleVersion
 
+    manifest {
         attributes(
             "Implementation-Title" to projectName,
             "Implementation-Version" to projectVersion,

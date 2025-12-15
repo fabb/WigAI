@@ -1,5 +1,5 @@
 plugins {
-    id("com.mooltiverse.oss.nyx") version "3.1.3"
+    id("com.mooltiverse.oss.nyx") version "3.1.4"
 }
 
 rootProject.name = "wigai"
