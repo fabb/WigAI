@@ -1,0 +1,87 @@
+# generated: 2025-12-15
+# project: WigAI
+# project_key: wigai
+# tracking_system: file-system
+# story_location: /Users/josh/code/WigAI/docs/sprint-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder
+#   - ready-for-dev: Draft approved, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done by *retrospective
+#
+# WORKFLOW NOTES:
+# ===============
+# - Mark epic as 'in-progress' when starting work on its first story
+# - SM typically drafts next story ONLY after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then Dev runs code-review (fresh context, ideally different LLM)
+
+generated: 2025-12-15
+project: WigAI
+project_key: wigai
+tracking_system: file-system
+story_location: /Users/josh/code/WigAI/docs/sprint-artifacts
+
+development_status:
+  epic-1: done
+  1-1-basic-bitwig-extension-project-setup: done
+  1-2-mcp-server-listener-implementation: done
+  1-3-implement-mcp-ping-command: done
+  1-4-implement-mcp-transport-start-command: done
+  1-5-implement-mcp-transport-stop-command: done
+  epic-1-retrospective: optional
+
+  epic-2: done
+  2-1-read-selected-device-s-parameters-via-mcp: done
+  2-2-set-a-single-parameter-value-for-selected-device-via-mcp: done
+  2-3-set-multiple-parameter-values-for-selected-device-via-mcp: done
+  epic-2-retrospective: optional
+
+  epic-3: done
+  3-1-trigger-clip-by-track-name-and-clip-index-via-mcp: done
+  3-2-trigger-scene-by-index-via-mcp: done
+  3-3-trigger-scene-by-name-via-mcp: done
+  epic-3-retrospective: optional
+
+  epic-4: done
+  4-1-extract-config-interfaces: done
+  4-2-implement-preferences-backed-configuration: done
+  4-3-observer-wiring-and-mcp-server-restart: done
+  4-4-wigai-extension-integration-help-surfacing: done
+  4-5-replace-static-string-settings-with-bitwig-notification-system: done
+  epic-4-retrospective: optional
+
+  epic-5: done
+  5-1-core-project-and-transport-status: done
+  5-2-selected-track-and-project-parameters-status: done
+  5-3-selected-device-status-and-parameters: done
+  5-4-selected-clip-slot-status: done
+  epic-5-retrospective: optional
+
+  epic-6: done
+  6-1-implement-list-tracks-tool: done
+  6-2-implement-get-track-details-tool: done
+  epic-6-retrospective: optional
+
+  epic-7: done
+  7-1-implement-list-scenes-tool: done
+  7-2-implement-get-clips-in-scene-tool: done
+  epic-7-retrospective: optional
+
+  epic-8: done
+  8-1-implement-list-devices-on-track-tool: done
+  8-2-implement-get-device-details-tool: done
+  epic-8-retrospective: optional

@@ -14,5 +14,5 @@
       * **Development:** Local machine with Bitwig Studio, a Java IDE (IntelliJ IDEA CE / VS Code), and Gradle.
       * **Testing:** Similar to development, using Bitwig Studio for integration testing and a separate MCP client (e.g., a script) for end-to-end command testing.
       * **Production:** The user's Bitwig Studio installation on macOS, Windows, or Linux.
-  * **(See `docs/environment-vars.md` for any potential runtime configuration details, though MVP primarily uses internal constants).**
-  * **(See `docs/project-structure.md` for code organization and build output paths).**
+  * **(See `environment-vars.md` for any potential runtime configuration details, though MVP primarily uses internal constants).**
+  * **(See `project-structure.md` for code organization and build output paths).**

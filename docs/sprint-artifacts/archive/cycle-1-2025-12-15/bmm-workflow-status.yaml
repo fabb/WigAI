@@ -60,11 +60,11 @@ workflow_status:
         - id: "create-epics-and-stories"
           status: "docs/stories/"
         - id: "test-design"
-          status: "recommended"
+          status: "skipped"
         - id: "validate-architecture"
-          status: "optional"
+          status: "skipped"
         - id: "implementation-readiness"
-          status: "required"
+          status: "skipped"
     - phase: 3
       name: "Implementation"
       required: true

@@ -141,20 +141,20 @@ The `.bwextension` file (created in `build/extensions/`) is copied to:
 ## Documentation Map
 
 ### Architecture & Design
-- [**Architecture** (architecture.md)](./architecture.md) - System design and patterns
+- [**Architecture** (architecture.md)](../architecture.md) - System design and patterns
 - [**Component Architecture Deep Dive** (component-architecture-deep-dive.md)](./component-architecture-deep-dive.md) - Detailed component breakdown
 - [**Component View** (component-view.md)](./component-view.md) - Component interactions
 - [**Sequence Diagrams** (sequence-diagrams.md)](./sequence-diagrams.md) - Key workflows
 
 ### API & Integration
 - [**API Reference** (api-reference.md)](./api-reference.md) - Full MCP API specification
-- [**MCP Tools Reference** (mcp-tools-reference.md)](./mcp-tools-reference.md) - Tool implementations
+- [**MCP Tools Reference** (mcp-tools-reference.md)](../mcp-tools-reference.md) - Tool implementations
 - [**Data Models** (data-models.md)](./data-models.md) - Request/response structures
 
 ### Requirements & Planning
-- [**Product Requirements** (prd/)](./prd/) - Complete PRD by epic
-- [**Project Brief** (project-brief.md)](./project-brief.md) - High-level project overview
-- [**Epics & Stories** (stories/)](./stories/) - Implementation stories
+- [**Product Requirements** (prd/)](../sprint-artifacts/archive/cycle-1-2025-12-15/index.md) - Complete PRD by epic (archived from cycle 1)
+- [**Project Brief** (project-brief.md)](../project-brief.md) - High-level project overview
+- [**Epics & Stories** (stories/)](../sprint-artifacts/archive/cycle-1-2025-12-15/) - Implementation stories (archived from cycle 1)
 
 ### Development
 - [**Tech Stack** (tech-stack.md)](./tech-stack.md) - Technology decisions and justification
@@ -170,19 +170,19 @@ The `.bwextension` file (created in `build/extensions/`) is copied to:
 ## Getting Started
 
 ### For New Developers
-1. **Read:** [Project Brief](./project-brief.md) for context
-2. **Review:** [Architecture](./architecture.md) for system understanding
+1. **Read:** [Project Brief](../project-brief.md) for context
+2. **Review:** [Architecture](../architecture.md) for system understanding
 3. **Setup:** Follow build instructions above
-4. **Explore:** Check [stories/](./stories/) for active work items
+4. **Explore:** Check [archived stories](../sprint-artifacts/archive/cycle-1-2025-12-15/) for completed work items
 
 ### For Feature Development
 1. **Check:** [API Reference](./api-reference.md) for existing endpoints
-2. **Review:** Related story in [stories/](./stories/)
+2. **Review:** Related story in [archived stories](../sprint-artifacts/archive/cycle-1-2025-12-15/)
 3. **Reference:** [Component Architecture Deep Dive](./component-architecture-deep-dive.md) for implementation patterns
 4. **Test:** Add tests following patterns in `src/test/java/`
 
 ### For API Integration
-1. **Start:** [MCP Tools Reference](./mcp-tools-reference.md)
+1. **Start:** [MCP Tools Reference](../mcp-tools-reference.md)
 2. **Understand:** [Data Models](./data-models.md) for request/response formats
 3. **Review:** [Sequence Diagrams](./sequence-diagrams.md) for interaction flows
 

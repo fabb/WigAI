@@ -64,11 +64,11 @@ development_status:
   4-5-replace-static-string-settings-with-bitwig-notification-system: done
   epic-4-retrospective: optional
 
-  epic-5: in-progress
+  epic-5: done
   5-1-core-project-and-transport-status: done
   5-2-selected-track-and-project-parameters-status: done
   5-3-selected-device-status-and-parameters: done
-  5-4-selected-clip-slot-status: in-progress
+  5-4-selected-clip-slot-status: done
   epic-5-retrospective: optional
 
   epic-6: done

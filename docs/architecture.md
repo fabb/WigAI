@@ -67,7 +67,7 @@ graph TD
 
 ## 3. Component View
 
-(Details are now in `docs/component-view.md`)
+(Details are now in `docs/reference/component-view.md`)
 
 ## 4. Key Architectural Decisions & Patterns
 
@@ -100,13 +100,13 @@ This section highlights the significant architectural choices made for WigAI and
 
 ## 5. Project Structure
 
-(Details will be provided in `docs/project-structure.md` as per PRD.)
+(Details will be provided in `docs/reference/project-structure.md` as per PRD.)
 
 ## 6. API Reference
 
 ### Internal APIs Provided
 
-(Details of the MCP commands, their JSON structures, parameters, and expected responses will be provided in `docs/api-reference.md` as per PRD.)
+(Details of the MCP commands, their JSON structures, parameters, and expected responses will be provided in `docs/reference/api-reference.md` as per PRD.)
 
 ### External APIs Consumed
 
@@ -114,19 +114,19 @@ WigAI does not consume any external APIs.
 
 ## 7. Data Models
 
-(Significant data structures or objects, if any beyond the API specification, will be described in `docs/data-models.md` as per PRD.)
+(Significant data structures or objects, if any beyond the API specification, will be described in `docs/reference/data-models.md` as per PRD.)
 
 ## 8. Core Workflow / Sequence Diagrams
 
-(Details are now in `docs/sequence-diagrams.md`)
+(Details are now in `docs/reference/sequence-diagrams.md`)
 
 ## 9. Definitive Tech Stack Selections
 
-(A detailed breakdown of technologies, frameworks, and library versions will be provided in `docs/tech-stack.md` as per PRD.)
+(A detailed breakdown of technologies, frameworks, and library versions will be provided in `docs/reference/tech-stack.md` as per PRD.)
 
 ## 10. Infrastructure and Deployment Overview
 
-(Details are now in `docs/infra-deployment.md`)
+(Details are now in `docs/reference/infra-deployment.md`)
 
 ## 11. Error Handling Strategy
 
@@ -273,11 +273,11 @@ Structured logging with:
 
 ## 14. Security Best Practices
 
-(Key security considerations and practices will be detailed in a dedicated Security Best Practices document or integrated with relevant documents like `docs/coding-standards.md` and `docs/operational-guidelines.md`.)
+(Key security considerations and practices will be detailed in a dedicated Security Best Practices document or integrated with relevant documents like `docs/coding-standards.md` and `docs/reference/operational-guidelines.md`.)
 
 ## 15. Key Reference Documents
 
-(Details are now in `docs/key-references.md`)
+(Details are now in `docs/reference/key-references.md`)
 
 ## 16. Change Log
 

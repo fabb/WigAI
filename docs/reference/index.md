@@ -4,7 +4,7 @@
 
 **Quick Links:**
 - 📊 [Project Overview](project-overview.md) — Start here for executive summary
-- 🎯 [Architecture Overview](architecture.md) — System design
+- 🎯 [Architecture Overview](../architecture.md) — System design
 - 📚 [API Reference](api-reference.md) — Full MCP API spec
 - 🏗️ [Component Deep Dive](component-architecture-deep-dive.md) — Detailed component breakdown
 
@@ -14,8 +14,8 @@
 
 ### 🎯 **Getting Started**
 - [**Project Overview**](project-overview.md) - Executive summary, architecture at a glance, tech stack
-- [**Project Brief**](project-brief.md) - High-level project goals and scope
-- [**Architecture Overview**](architecture.md) - Main system architecture and design patterns
+- [**Project Brief**](../project-brief.md) - High-level project goals and scope
+- [**Architecture Overview**](../architecture.md) - Main system architecture and design patterns
 
 ### 🏗️ **Architecture & Design**
 - [**Component Architecture - Deep Dive**](component-architecture-deep-dive.md) - Detailed breakdown of every major component
@@ -25,7 +25,7 @@
 
 ### 🔌 **API & Integration**
 - [**API Reference**](api-reference.md) - Complete MCP API specification with all endpoints
-- [**MCP Tools Reference**](mcp-tools-reference.md) - Detailed tool implementations and error codes
+- [**MCP Tools Reference**](../mcp-tools-reference.md) - Detailed tool implementations and error codes
 - [**Key References**](key-references.md) - External documentation links and resources
 
 ### 🛠️ **Development**
@@ -53,16 +53,16 @@
 ### I need to...
 
 **...understand what this project does**
-→ Start with [Project Overview](project-overview.md), then read [Project Brief](project-brief.md)
+→ Start with [Project Overview](project-overview.md), then read [Project Brief](../project-brief.md)
 
 **...understand the architecture**
-→ Read [Architecture Overview](architecture.md), then dive into [Component Architecture Deep Dive](component-architecture-deep-dive.md)
+→ Read [Architecture Overview](../architecture.md), then dive into [Component Architecture Deep Dive](component-architecture-deep-dive.md)
 
 **...integrate with the MCP API**
-→ Review [API Reference](api-reference.md), then check [MCP Tools Reference](mcp-tools-reference.md) for tool details
+→ Review [API Reference](api-reference.md), then check [MCP Tools Reference](../mcp-tools-reference.md) for tool details
 
 **...add a new feature**
-→ Find your story in [stories/](stories/), review [Architecture](architecture.md), check [Component Deep Dive](component-architecture-deep-dive.md) for patterns
+→ Find your story in [stories/](stories/), review [Architecture](../architecture.md), check [Component Deep Dive](component-architecture-deep-dive.md) for patterns
 
 **...understand data flow**
 → Check [Sequence Diagrams](sequence-diagrams.md) and [Data Models](data-models.md)
@@ -97,15 +97,15 @@
 ## 🔍 **Document Organization**
 
 ### Architecture Docs (For Understanding System Design)
-- For **system overview**: [Architecture Overview](architecture.md)
+- For **system overview**: [Architecture Overview](../architecture.md)
 - For **component details**: [Component Architecture - Deep Dive](component-architecture-deep-dive.md)
 - For **interactions**: [Sequence Diagrams](sequence-diagrams.md)
 - For **data structures**: [Data Models](data-models.md)
 
 ### API Docs (For Integration)
 - For **endpoint specifications**: [API Reference](api-reference.md)
-- For **tool implementations**: [MCP Tools Reference](mcp-tools-reference.md)
-- For **error handling**: [MCP Tools Reference - Error Codes](mcp-tools-reference.md#error-codes)
+- For **tool implementations**: [MCP Tools Reference](../mcp-tools-reference.md)
+- For **error handling**: [MCP Tools Reference - Error Codes](../mcp-tools-reference.md#error-codes)
 
 ### Dev Docs (For Development)
 - For **setup**: [Project Structure](project-structure.md), [Environment Variables](environment-vars.md)
@@ -114,9 +114,9 @@
 - For **features**: [Implementation Stories](stories/)
 
 ### Requirements Docs (For Understanding Scope)
-- For **product goals**: [Project Brief](project-brief.md)
-- For **detailed requirements**: [Product Requirements Directory](prd/)
-- For **implementation tasks**: [Stories Directory](stories/)
+- For **product goals**: [Project Brief](../project-brief.md)
+- For **detailed requirements**: [Product Requirements Directory](../sprint-artifacts/archive/cycle-1-2025-12-15/index.md)
+- For **implementation tasks**: [Stories Directory](../sprint-artifacts/archive/cycle-1-2025-12-15/)
 
 ---
 
@@ -124,12 +124,12 @@
 
 | Purpose | Files |
 |---------|-------|
-| **Architecture** | `architecture.md`, `component-architecture-deep-dive.md`, `component-view.md` |
-| **API** | `api-reference.md`, `mcp-tools-reference.md` |
+| **Architecture** | `../architecture.md`, `component-architecture-deep-dive.md`, `component-view.md` |
+| **API** | `api-reference.md`, `../mcp-tools-reference.md` |
 | **Data** | `data-models.md` |
 | **Dev Setup** | `project-structure.md`, `environment-vars.md`, `tech-stack.md` |
 | **Operations** | `operational-guidelines.md`, `infra-deployment.md`, `semantic-versioning-guide.md` |
-| **Planning** | `prd/`, `stories/`, `project-brief.md` |
+| **Planning** | `../sprint-artifacts/archive/cycle-1-2025-12-15/`, `../project-brief.md` |
 
 ---
 
@@ -139,9 +139,9 @@ When using these docs as context:
 
 1. **Start with:** [Project Overview](project-overview.md) for rapid context loading
 2. **For architecture questions:** Check [Component Deep Dive](component-architecture-deep-dive.md)
-3. **For API questions:** Reference [API Reference](api-reference.md) + [MCP Tools Reference](mcp-tools-reference.md)
+3. **For API questions:** Reference [API Reference](api-reference.md) + [MCP Tools Reference](../mcp-tools-reference.md)
 4. **For data questions:** Use [Data Models](data-models.md)
-5. **For feature development:** Check related story in [stories/](stories/)
+5. **For feature development:** Check related story in [archived stories](../sprint-artifacts/archive/cycle-1-2025-12-15/)
 
 ---
 
