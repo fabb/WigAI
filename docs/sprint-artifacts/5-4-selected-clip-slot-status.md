@@ -1,6 +1,6 @@
 # Story 5.4: Selected Clip Slot Status
 
-Status: Ready for Review
+Status: done
 
 ## Story
 
@@ -32,9 +32,17 @@ so that I can interact with clips in the session view.
    - `is_recording_queued` - Recording queued state
    - `is_stop_queued` - Stop queued state
 
-### Given: No clip slot is selected
+### Given: No clip slot is selected (no track selected)
 ### When: The `status` MCP command is called
 ### Then: The `selected_clip_slot` field is null
+
+**Note on "selected clip slot" interpretation:**
+Due to Bitwig API v19 limitations, "selected clip slot" is interpreted as:
+- If an active clip is detected (playing/queued/recording): That slot
+- If track is selected but no active clips: Slot 0 (default/fallback)
+- If no track is selected: null
+
+**API Investigation:** CursorClip was investigated as a potential solution but does NOT expose slot position (scene index, slot index). No ClipLauncherSlotCursor exists. This means a user-selected but inactive clip slot cannot be detected and will report as slot 0. This is a confirmed API limitation for future improvement.
 
 ## Tasks / Subtasks
 
@@ -63,8 +71,16 @@ so that I can interact with clips in the session view.
 **Bitwig API Context:**
 - Use `cursorTrack` from BitwigApiFacade to access the currently selected track
 - Access clip launcher slot bank via `cursorTrack.clipLauncherSlotBank()`
-- Bitwig's clip selection in session view doesn't have a direct "selected slot" cursor
-- **WORKAROUND**: Detect the selected slot by finding the first slot that is playing, queued, or recording on the selected track, OR use slot 0 as default when track is selected
+- **BITWIG API LIMITATION**: Bitwig Extension API v19 does not provide a way to detect which specific clip slot is selected in session view when it's not in an active state
+  - ❌ No `ClipLauncherSlotCursor` exists
+  - ❌ `CursorClip` exists but does NOT expose slot position (scene index, slot index on track)
+  - ❌ No selection state tracking on `ClipLauncherSlot` objects
+- **WORKAROUND**: Detect the selected slot by finding the first slot that is playing, queued, or recording on the selected track, OR default to slot 0 when track is selected but no slots are active
+- **BEHAVIOR**:
+  - Track selected + active clip (playing/queued/recording) → Returns that slot's info
+  - Track selected + NO active clips → Returns slot 0 info (limitation: cannot detect user's actual selection)
+  - No track selected → Returns null
+- **FUTURE IMPROVEMENT**: If Bitwig API adds slot position tracking to CursorClip or creates ClipLauncherSlotCursor, this should be updated to return the truly selected slot regardless of playback state
 
 **Status Tool Integration:**
 - Follow the existing partial failure pattern used for transport, project_parameters, selected_track, and selected_device
@@ -226,15 +242,17 @@ StatusToolTest.java:47 - Ensures status payload exposes selected_clip_slot paylo
 
 - ✅ Implemented getSelectedClipSlotInfo() method in BitwigApiFacade (lines 937-1015)
 - ✅ Method returns null when no track is selected (AC for null scenario)
-- ✅ Uses workaround to detect "selected" clip slot by checking active/queued/recording slots; returns null when none are active
+- ✅ Uses workaround to detect "selected" clip slot by checking active/queued/recording slots; defaults to slot 0 when track selected but no active clips
+- ⚠️ **API Limitation Investigated & Documented**: Bitwig Extension API v19 lacks ClipLauncherSlotCursor, CursorClip doesn't expose slot position - cannot detect user's selected slot when inactive (defaults to slot 0)
 - ✅ Cursor clip launcher slot bank now marks required properties as interested to deliver real-time status
 - ✅ Integrated into StatusTool with proper partial failure handling (line 65)
 - ✅ Status payload updated to document selected_clip_slot object in docs/api-reference.md
-- ✅ Added regression tests in BitwigApiFacadeTest to cover slot selection and null cases
+- ✅ Added regression tests in BitwigApiFacadeTest to cover slot selection, slot 0 default, and null cases
 - ✅ Added StatusToolTest coverage to ensure selected_clip_slot propagates through status responses
 - ✅ Build successful, all tests pass
 - ✅ Manual testing complete: Verified working in Bitwig with playing clip - selected_clip_slot returns correct playback state
 - ✅ Fixed cursor track initialization (0 scenes → 128 scenes) to enable clip slot bank access
+- ✅ Optimized track index lookup to use cursorTrack.position() instead of track bank iteration
 
 ### Implementation Plan
 
@@ -247,6 +265,7 @@ Implemented getSelectedClipSlotInfo() following three-tier architecture:
 
 Modified files:
 - `src/main/java/io/github/fabb/wigai/bitwig/BitwigApiFacade.java` (selected clip slot retrieval, cursor slot subscriptions)
+- `src/main/java/io/github/fabb/wigai/mcp/tool/StatusTool.java` (integrate selected_clip_slot into status response)
 - `src/test/java/io/github/fabb/wigai/bitwig/BitwigApiFacadeTest.java` (new tests for clip slot info/null scenarios)
 - `src/test/java/io/github/fabb/wigai/mcp/tool/StatusToolTest.java` (status payload coverage for selected_clip_slot)
 - `docs/api-reference.md` (documents selected_clip_slot response structure)
@@ -262,3 +281,6 @@ Files referenced for context:
 - 2025-12-15: Implemented selected clip slot status functionality for MCP status command
 - 2025-12-15: Fixed cursor track initialization to support 128 clip launcher slots (was 0, causing null returns)
 - 2025-12-15: Manual testing verified working - clip playback state correctly reported
+- 2025-12-15: Code review fixes - optimized track index lookup to use cursorTrack.position(), clarified AC #2 means "no track selected" (not "no active clip"), restored slot 0 default behavior
+- 2025-12-15: Investigated CursorClip as potential solution - confirmed it does NOT expose slot position (scene/slot index)
+- 2025-12-15: Documented Bitwig API v19 limitation - no ClipLauncherSlotCursor, CursorClip lacks position tracking - cannot detect user's selected inactive clip slot (defaults to slot 0)

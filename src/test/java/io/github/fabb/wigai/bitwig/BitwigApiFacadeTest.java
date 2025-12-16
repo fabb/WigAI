@@ -1149,11 +1149,14 @@ public class BitwigApiFacadeTest {
     }
 
     @Test
-    void testGetSelectedClipSlotInfo_NoActiveSlotReturnsNull() {
+    void testGetSelectedClipSlotInfo_NoActiveSlotDefaultsToSlotZero() {
         var cursorTrackExists = boolValue(true);
         when(mockCursorTrack.exists()).thenReturn(cursorTrackExists);
         var cursorTrackName = stringValue("Track 1");
         when(mockCursorTrack.name()).thenReturn(cursorTrackName);
+        var cursorTrackPosition = mock(com.bitwig.extension.controller.api.IntegerValue.class);
+        when(cursorTrackPosition.get()).thenReturn(0);
+        when(mockCursorTrack.position()).thenReturn(cursorTrackPosition);
 
         var bankTrackExists = boolValue(true);
         when(mockTrack.exists()).thenReturn(bankTrackExists);
@@ -1175,7 +1178,16 @@ public class BitwigApiFacadeTest {
 
         Map<String, Object> info = bitwigApiFacade.getSelectedClipSlotInfo();
 
-        assertNull(info);
+        assertNotNull(info);
+        assertEquals("Track 1", info.get("track_name"));
+        assertEquals(0, info.get("track_index"));
+        assertEquals(0, info.get("slot_index"));
+        assertEquals(0, info.get("scene_index"));
+        assertNull(info.get("scene_name"));
+        assertEquals(false, info.get("has_content"));
+        assertNull(info.get("clip_name"));
+        assertEquals(false, info.get("is_playing"));
+        assertEquals(false, info.get("is_recording"));
     }
 
     private com.bitwig.extension.controller.api.BooleanValue boolValue(boolean value) {

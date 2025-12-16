@@ -86,8 +86,12 @@ Communication is message-based, typically using JSON-RPC or a similar structured
     - `selected_track`: Object containing currently selected track details, or `null` if no track is selected
     - `selected_track.type`: Track type (e.g., "audio", "instrument", "group", "hybrid", "effect", "master")
     - `selected_track.index`: 0-based index in the current track bank, or -1 if not found in visible tracks
-    - `selected_clip_slot`: Object describing the currently active clip slot (track context, slot/scene indices, clip status/state), or `null` if no clip slot is active/selected
+    - `selected_clip_slot`: Object describing the currently selected clip slot (track context, slot/scene indices, clip status/state), or `null` if no track is selected
     - `selected_clip_slot.scene_name`: `null` when the scene is unnamed or unavailable
+    - **API Limitation**: Bitwig Extension API v19 does not provide a way to detect selected clip slot position. CursorClip exists but does not expose slot position (scene/slot index). No ClipLauncherSlotCursor exists. The slot is detected as follows:
+      - If a clip is playing/queued/recording: Returns that slot's information
+      - If track is selected but no active clips: Returns slot 0 as default (cannot detect user's actual selection)
+      - If no track is selected: Returns `null`
     - `selected_device`: Object containing currently selected device details, or `null` if no device is selected
     - `selected_device.track_name`: Name of the track containing the selected device
     - `selected_device.track_index`: 0-based index of the track containing the device, or -1 if not found in visible tracks

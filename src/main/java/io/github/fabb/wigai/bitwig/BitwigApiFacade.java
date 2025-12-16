@@ -966,7 +966,7 @@ public class BitwigApiFacade {
         try {
             // Get track context
             String trackName = cursorTrack.name().get();
-            int trackIndex = getTrackIndexByName(trackName);
+            int trackIndex = cursorTrack.position().get();
 
             clipSlotInfo.put("track_name", trackName);
             clipSlotInfo.put("track_index", trackIndex);
@@ -983,9 +983,10 @@ public class BitwigApiFacade {
                 return null;
             }
 
-            // Find a slot that is clearly active in some way (playing/queued/recording).
-            // If no slot meets that heuristic, we treat it as "no selection" per AC.
-            int selectedSlotIndex = -1;
+            // Try to find a slot that is clearly active (playing/queued/recording).
+            // If none meet that heuristic, fall back to slot 0 as the inferred selection.
+            int selectedSlotIndex = 0;
+            boolean slotDetected = false;
 
             for (int i = 0; i < slotBankSize; i++) {
                 ClipLauncherSlot slot = slotBank.getItemAt(i);
@@ -993,13 +994,13 @@ public class BitwigApiFacade {
                     slot.isPlaybackQueued().get() || slot.isRecordingQueued().get() ||
                     slot.isStopQueued().get()) {
                     selectedSlotIndex = i;
+                    slotDetected = true;
                     break;
                 }
             }
 
-            if (selectedSlotIndex == -1) {
-                logger.info("BitwigApiFacade: No active clip slot detected on selected track");
-                return null;
+            if (!slotDetected) {
+                logger.info("BitwigApiFacade: No active slot detected, using slot 0 as default");
             }
 
             // Slot position
