@@ -1,0 +1,97 @@
+name: Build and Test (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      run-ci:
+        description: 'Whether to run tests/build (set false for docs-only PRs so required checks still pass)'
+        required: false
+        type: boolean
+        default: true
+      upload-artifact:
+        description: 'Whether to upload the built extension as an artifact'
+        required: false
+        type: boolean
+        default: false
+      artifact-name-suffix:
+        description: 'Suffix for artifact name (e.g., pr-123 or release)'
+        required: false
+        type: string
+        default: ''
+    outputs:
+      artifact-name:
+        description: 'Name of the uploaded artifact'
+        value: ${{ jobs.build.outputs.artifact-name }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip (no code changes)
+        if: ${{ !inputs.run-ci }}
+        run: echo "No code changes detected; skipping tests."
+
+      - name: Checkout code
+        if: ${{ inputs.run-ci }}
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        if: ${{ inputs.run-ci }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        if: ${{ inputs.run-ci }}
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run tests
+        if: ${{ inputs.run-ci }}
+        run: ./gradlew test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      artifact-name: ${{ steps.set-artifact-name.outputs.name }}
+    steps:
+      - name: Skip (no code changes)
+        if: ${{ !inputs.run-ci }}
+        run: echo "No code changes detected; skipping build."
+
+      - name: Checkout code
+        if: ${{ inputs.run-ci }}
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        if: ${{ inputs.run-ci }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        if: ${{ inputs.run-ci }}
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build extension
+        if: ${{ inputs.run-ci }}
+        run: ./gradlew bwextension -x test
+
+      - name: Set artifact name
+        id: set-artifact-name
+        run: |
+          if [ -n "${{ inputs.artifact-name-suffix }}" ]; then
+            echo "name=WigAI.bwextension-${{ inputs.artifact-name-suffix }}" >> $GITHUB_OUTPUT
+          else
+            echo "name=WigAI.bwextension" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload extension artifact
+        if: ${{ inputs.upload-artifact && inputs.run-ci }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.set-artifact-name.outputs.name }}
+          path: build/extensions/WigAI.bwextension
+          retention-days: 7

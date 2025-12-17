@@ -1,0 +1,71 @@
+name: Branch Policy Enforcement
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - 'develop/cycle-*'
+
+jobs:
+  enforce-branch-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check main branch PR source
+        if: github.base_ref == 'main'
+        run: |
+          SOURCE="${{ github.head_ref }}"
+
+          # Check if source matches allowed patterns for main
+          if [[ "$SOURCE" =~ ^develop/cycle-[0-9]+$ ]] || [[ "$SOURCE" =~ ^hotfix/ ]]; then
+            echo "✅ Valid: PR from '$SOURCE' to 'main'"
+          else
+            echo "❌ ERROR: PRs to 'main' must come from 'develop/cycle-*' or 'hotfix/*' branches"
+            echo ""
+            echo "Current PR:"
+            echo "  Source: $SOURCE"
+            echo "  Target: ${{ github.base_ref }}"
+            echo ""
+            echo "Allowed patterns:"
+            echo "  - develop/cycle-<n> (cycle completion)"
+            echo "  - hotfix/<id>-<short-name> (urgent production fixes)"
+            echo ""
+            echo "Examples:"
+            echo "  - develop/cycle-2"
+            echo "  - hotfix/42-critical-bug-fix"
+            echo ""
+            echo "See docs/engineering/git-workflow.md for branch naming conventions"
+            exit 1
+          fi
+
+      - name: Check develop/cycle-* branch PR source
+        if: startsWith(github.base_ref, 'develop/cycle-')
+        run: |
+          SOURCE="${{ github.head_ref }}"
+          TARGET="${{ github.base_ref }}"
+
+          # Extract cycle number from target branch
+          CYCLE_NUM=$(echo "$TARGET" | grep -oP 'cycle-\K[0-9]+')
+
+          # Check if source matches allowed patterns
+          if [[ "$SOURCE" =~ ^feature/ ]] || \
+             [[ "$SOURCE" =~ ^planning/cycle-${CYCLE_NUM}- ]] || \
+             [[ "$SOURCE" =~ ^docs/ ]] || \
+             [[ "$SOURCE" =~ ^hotfix/ ]]; then
+            echo "✅ Valid: PR from '$SOURCE' to '$TARGET'"
+          else
+            echo "❌ ERROR: PRs to 'develop/cycle-*' must come from allowed branch patterns"
+            echo ""
+            echo "Current PR:"
+            echo "  Source: $SOURCE"
+            echo "  Target: $TARGET"
+            echo ""
+            echo "Allowed patterns for $TARGET:"
+            echo "  - feature/<id>-<short-name>"
+            echo "  - planning/cycle-${CYCLE_NUM}-<topic>"
+            echo "  - docs/<short-name>"
+            echo "  - hotfix/<id>-<short-name> (cherry-pick from main)"
+            echo ""
+            echo "See docs/engineering/git-workflow.md for branch naming conventions"
+            exit 1
+          fi

@@ -41,7 +41,11 @@ Once the extension is activated in Bitwig Studio, the MCP server will be availab
 
 ## Development
 
-This project is developed using the [BMAD v2 method](https://github.com/bmadcode/BMAD-METHOD) with AI Agents. The files in folders `agents`, `ai` and `docs` used for this development method.
+This project is developed using the [BMAD v2 method](https://github.com/bmadcode/BMAD-METHOD) with AI Agents. The files in folders `.bmad`, `.claude` and `docs` are used for this development method.
+
+**Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md) for workflow, branch naming, and PR guidelines.
+
+**Documentation**: Comprehensive project documentation is available in [docs/reference/](docs/reference/)
 
 ## Releases
 

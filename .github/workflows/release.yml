@@ -13,8 +13,20 @@ permissions:
   packages: write
 
 jobs:
+  # Build and test using reusable workflow
+  # Tests/build are only run if not already verified by CI (e.g., manual triggers)
+  build-and-test:
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/build-and-test.yml
+    with:
+      upload-artifact: false
+
+  # Release job runs after build (if triggered) or immediately (on merge from CI)
   release:
     runs-on: ubuntu-latest
+    needs: [build-and-test]
+    # Allow release to run even if build-and-test is skipped
+    if: always() && (needs.build-and-test.result == 'success' || needs.build-and-test.result == 'skipped')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,8 +43,8 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Run tests
-        run: ./gradlew test
+      # Tests are already run in PR validation workflow and enforced via branch protection
+      # For manual triggers, tests run in build-and-test job above
 
       - name: Configure Git
         run: |

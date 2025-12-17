@@ -1,0 +1,60 @@
+name: PR Validation
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Check if code files were changed to determine if we need to run tests
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should-test: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - 'src/**'
+              - 'bitwig-api-doc-scraper/**'
+              - 'gradle/**'
+              - 'gradlew'
+              - 'gradlew.bat'
+              - 'gradle.properties'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+              - '**/*.kt'
+              - '**/*.kts'
+
+  build-and-test:
+    needs: check-changes
+    uses: ./.github/workflows/build-and-test.yml
+    with:
+      run-ci: ${{ needs.check-changes.outputs.should-test == 'true' }}
+      upload-artifact: true
+      artifact-name-suffix: pr-${{ github.event.number || github.sha }}
+
+  # Always-passing job that summarizes the validation status
+  validation-summary:
+    runs-on: ubuntu-latest
+    needs: [check-changes, build-and-test]
+    # Run even if build-and-test is skipped
+    if: always()
+    steps:
+      - name: Report validation status
+        run: |
+          if [[ "${{ needs.check-changes.outputs.should-test }}" == "false" ]]; then
+            echo "✅ No code changes detected - skipping tests"
+            echo "Changed files are documentation or configuration only"
+            exit 0
+          elif [[ "${{ needs.build-and-test.result }}" == "success" ]]; then
+            echo "✅ All tests passed"
+            exit 0
+          else
+            echo "❌ Tests failed"
+            exit 1
+          fi
