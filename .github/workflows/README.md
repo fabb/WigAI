@@ -130,7 +130,7 @@ Our workflows integrate with branch protection rules:
 2. **Develop/Cycle-* Branch Protection**
    - Requires `enforce-branch-policy` check to pass
    - Requires `validation-summary` (from pr-validation.yml) to pass
-   - Only accepts PRs from `feature/*`, `planning/cycle-*`, or `docs/*` branches
+   - Only accepts PRs from `analysis/cycle-*`, `planning/cycle-*`, `solutioning/cycle-*`, `implementation/*`, `docs/*`, or `hotfix/*` branches
 
 3. **Trust Model**
    - Branch protection ensures all code is tested before merge
@@ -147,7 +147,7 @@ Our workflows integrate with branch protection rules:
 
 **Validates:**
 - PRs to `main` must come from `develop/cycle-*` or `hotfix/*`
-- PRs to `develop/cycle-*` must come from `feature/*`, `planning/cycle-*`, or `docs/*`
+- PRs to `develop/cycle-*` must come from `analysis/cycle-*`, `planning/cycle-*`, `solutioning/cycle-*`, `implementation/*`, `docs/*`, or `hotfix/*`
 
 **Error Messages:**
 - Provides clear, actionable feedback with examples

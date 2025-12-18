@@ -64,7 +64,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 - `main` is protected; merges to `main` trigger releases.
 - Day-to-day work happens on `develop/cycle-*` and is promoted to `main` via PR at cycle completion.
-- Use branch naming conventions per `docs/engineering/git-workflow.md` (e.g., `feature/*`, `docs/*`, `hotfix/*`).
+- Use branch naming conventions per `docs/engineering/git-workflow.md` (e.g., `analysis/*`, `planning/*`, `solutioning/*`, `implementation/*`, `docs/*`, `hotfix/*`).
 - CI: PR validation runs tests/build for code changes; docs-only changes skip tests but still report status checks.
 
 ### Critical Don't-Miss Rules

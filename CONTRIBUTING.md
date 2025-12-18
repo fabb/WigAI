@@ -16,7 +16,7 @@ This project uses a cycle-based development workflow with branch protection. Ple
 ### Branch Naming and PR Targeting
 
 See [docs/engineering/git-workflow.md](docs/engineering/git-workflow.md) for:
-- Branch naming conventions (`develop/cycle-*`, `feature/*`, `planning/*`, `docs/*`, `hotfix/*`)
+- Branch naming conventions (`develop/cycle-*`, `analysis/*`, `planning/*`, `solutioning/*`, `implementation/*`, `docs/*`, `hotfix/*`)
 - PR targeting rules (all PRs target `develop/cycle-*`, not `main`)
 - Merge strategies and protection rules
 
@@ -30,14 +30,14 @@ See [.github/workflows/README.md](.github/workflows/README.md) for:
 
 ## Making Changes
 
-### 1. Create a Feature Branch
+### 1. Create a Working Branch
 
-Branch from the current cycle's integration branch (e.g., `develop/cycle-2`):
+Branch from the current cycle's integration branch (e.g., `develop/cycle-2`). For code changes, use an `implementation/*` branch:
 
 ```bash
 git checkout develop/cycle-2
 git pull
-git checkout -b feature/123-your-feature-name
+git checkout -b implementation/123-your-feature-name
 ```
 
 ### 2. Make Your Changes
@@ -62,7 +62,7 @@ cp build/extensions/WigAI.bwextension ~/Documents/Bitwig\ Studio/Extensions/
 ### 4. Submit a Pull Request
 
 ```bash
-git push -u origin feature/123-your-feature-name
+git push -u origin implementation/123-your-feature-name
 ```
 
 Then create a PR targeting the current `develop/cycle-*` branch (NOT `main`).
@@ -148,4 +148,3 @@ This project is developed using the [BMAD v2 method](https://github.com/bmadcode
 ## License
 
 By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
-

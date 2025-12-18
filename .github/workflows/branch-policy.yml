@@ -105,8 +105,10 @@ jobs:
           CYCLE_NUM=$(echo "$TARGET" | grep -oP 'cycle-\K[0-9]+')
 
           # Check if source matches allowed patterns
-          if [[ "$SOURCE" =~ ^feature/ ]] || \
+          if [[ "$SOURCE" =~ ^analysis/cycle-${CYCLE_NUM}- ]] || \
              [[ "$SOURCE" =~ ^planning/cycle-${CYCLE_NUM}- ]] || \
+             [[ "$SOURCE" =~ ^solutioning/cycle-${CYCLE_NUM}- ]] || \
+             [[ "$SOURCE" =~ ^implementation/ ]] || \
              [[ "$SOURCE" =~ ^docs/ ]] || \
              [[ "$SOURCE" =~ ^hotfix/ ]]; then
             echo "✅ Valid: PR from '$SOURCE' to '$TARGET'"
@@ -118,8 +120,10 @@ jobs:
             echo "  Target: $TARGET"
             echo ""
             echo "Allowed patterns for $TARGET:"
-            echo "  - feature/<id>-<short-name>"
+            echo "  - analysis/cycle-${CYCLE_NUM}-<topic>"
             echo "  - planning/cycle-${CYCLE_NUM}-<topic>"
+            echo "  - solutioning/cycle-${CYCLE_NUM}-<topic>"
+            echo "  - implementation/<id>-<short-name>"
             echo "  - docs/<short-name>"
             echo "  - hotfix/<id>-<short-name> (cherry-pick from main)"
             echo ""
