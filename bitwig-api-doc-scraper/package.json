@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "scrape": "node --experimental-transform-types scrape.ts"
+    "scrape": "node --experimental-transform-types scrape.ts",
+    "scrape:sharded": "node --experimental-transform-types scrape.ts --no-combined"
   },
   "author": "",
   "license": "MIT",

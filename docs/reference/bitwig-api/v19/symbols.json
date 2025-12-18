@@ -1,0 +1,1158 @@
+{
+  "com.bitwig.extension.Extension": {
+    "kind": "class",
+    "path": "com/bitwig/extension/Extension.md"
+  },
+  "com.bitwig.extension.ExtensionDefinition": {
+    "kind": "class",
+    "path": "com/bitwig/extension/ExtensionDefinition.md"
+  },
+  "com.bitwig.extension.Host": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/Host.md"
+  },
+  "com.bitwig.extension.api.Color": {
+    "kind": "class",
+    "path": "com/bitwig/extension/api/Color.md"
+  },
+  "com.bitwig.extension.api.Host": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/Host.md"
+  },
+  "com.bitwig.extension.api.MemoryBlock": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/MemoryBlock.md"
+  },
+  "com.bitwig.extension.api.PlatformType": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/api/PlatformType.md"
+  },
+  "com.bitwig.extension.api.graphics.Bitmap": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/Bitmap.md"
+  },
+  "com.bitwig.extension.api.graphics.FontExtents": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/FontExtents.md"
+  },
+  "com.bitwig.extension.api.graphics.FontFace": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/FontFace.md"
+  },
+  "com.bitwig.extension.api.graphics.FontOptions": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/FontOptions.md"
+  },
+  "com.bitwig.extension.api.graphics.GradientPattern": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/GradientPattern.md"
+  },
+  "com.bitwig.extension.api.graphics.GraphicsOutput": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/GraphicsOutput.md"
+  },
+  "com.bitwig.extension.api.graphics.Image": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/Image.md"
+  },
+  "com.bitwig.extension.api.graphics.MeshPattern": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/MeshPattern.md"
+  },
+  "com.bitwig.extension.api.graphics.Path": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/Path.md"
+  },
+  "com.bitwig.extension.api.graphics.Pattern": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/Pattern.md"
+  },
+  "com.bitwig.extension.api.graphics.Renderer": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/Renderer.md"
+  },
+  "com.bitwig.extension.api.graphics.TextExtents": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/graphics/TextExtents.md"
+  },
+  "com.bitwig.extension.api.graphics.BitmapFormat": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/api/graphics/BitmapFormat.md"
+  },
+  "com.bitwig.extension.api.graphics.GraphicsOutput.AntialiasMode": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/api/graphics/GraphicsOutput.AntialiasMode.md"
+  },
+  "com.bitwig.extension.api.graphics.GraphicsOutput.FillRule": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/api/graphics/GraphicsOutput.FillRule.md"
+  },
+  "com.bitwig.extension.api.graphics.GraphicsOutput.HintMetrics": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/api/graphics/GraphicsOutput.HintMetrics.md"
+  },
+  "com.bitwig.extension.api.graphics.GraphicsOutput.HintStyle": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/api/graphics/GraphicsOutput.HintStyle.md"
+  },
+  "com.bitwig.extension.api.graphics.GraphicsOutput.LineCap": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/api/graphics/GraphicsOutput.LineCap.md"
+  },
+  "com.bitwig.extension.api.graphics.GraphicsOutput.LineJoin": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/api/graphics/GraphicsOutput.LineJoin.md"
+  },
+  "com.bitwig.extension.api.graphics.GraphicsOutput.Operator": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/api/graphics/GraphicsOutput.Operator.md"
+  },
+  "com.bitwig.extension.api.graphics.GraphicsOutput.SubPixelOrder": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/api/graphics/GraphicsOutput.SubPixelOrder.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscInvalidArgumentTypeException": {
+    "kind": "class",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscInvalidArgumentTypeException.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscIOException": {
+    "kind": "class",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscIOException.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscPacketSizeExceededException": {
+    "kind": "class",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscPacketSizeExceededException.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscAddressSpace": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscAddressSpace.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscBundle": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscBundle.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscConnection": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscConnection.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscMessage": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscMessage.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscMethodCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscMethodCallback.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscModule": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscModule.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscPacket": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscPacket.md"
+  },
+  "com.bitwig.extension.api.opensoundcontrol.OscServer": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/api/opensoundcontrol/OscServer.md"
+  },
+  "com.bitwig.extension.api.util.midi.ShortMidiMessage": {
+    "kind": "class",
+    "path": "com/bitwig/extension/api/util/midi/ShortMidiMessage.md"
+  },
+  "com.bitwig.extension.api.util.midi.SysexBuilder": {
+    "kind": "class",
+    "path": "com/bitwig/extension/api/util/midi/SysexBuilder.md"
+  },
+  "com.bitwig.extension.callback.BooleanValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/BooleanValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.Callback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/Callback.md"
+  },
+  "com.bitwig.extension.callback.ClipLauncherSlotBankPlaybackStateChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/ClipLauncherSlotBankPlaybackStateChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.ColorValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/ColorValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.ConnectionEstablishedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/ConnectionEstablishedCallback.md"
+  },
+  "com.bitwig.extension.callback.DataReceivedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/DataReceivedCallback.md"
+  },
+  "com.bitwig.extension.callback.DirectParameterDisplayedValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/DirectParameterDisplayedValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.DirectParameterNameChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/DirectParameterNameChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.DirectParameterNormalizedValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/DirectParameterNormalizedValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.DoubleValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/DoubleValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.EnumValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/EnumValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.FloatValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/FloatValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.IndexedBooleanValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/IndexedBooleanValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.IndexedColorValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/IndexedColorValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.IndexedStringValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/IndexedStringValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.IndexedValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/IndexedValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.IntegerValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/IntegerValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.NoArgsCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/NoArgsCallback.md"
+  },
+  "com.bitwig.extension.callback.NotePlaybackCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/NotePlaybackCallback.md"
+  },
+  "com.bitwig.extension.callback.NoteStepChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/NoteStepChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.ObjectValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/ObjectValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.ShortMidiDataReceivedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/ShortMidiDataReceivedCallback.md"
+  },
+  "com.bitwig.extension.callback.ShortMidiMessageReceivedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/ShortMidiMessageReceivedCallback.md"
+  },
+  "com.bitwig.extension.callback.StepDataChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/StepDataChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.StringArrayValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/StringArrayValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.StringValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/StringValueChangedCallback.md"
+  },
+  "com.bitwig.extension.callback.SysexMidiDataReceivedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/SysexMidiDataReceivedCallback.md"
+  },
+  "com.bitwig.extension.callback.ValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/callback/ValueChangedCallback.md"
+  },
+  "com.bitwig.extension.controller.AutoDetectionMidiPortNames": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/AutoDetectionMidiPortNames.md"
+  },
+  "com.bitwig.extension.controller.AutoDetectionMidiPortNamesList": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/AutoDetectionMidiPortNamesList.md"
+  },
+  "com.bitwig.extension.controller.ControllerExtension": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/ControllerExtension.md"
+  },
+  "com.bitwig.extension.controller.ControllerExtensionDefinition": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/ControllerExtensionDefinition.md"
+  },
+  "com.bitwig.extension.controller.HardwareDeviceMatcher": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/HardwareDeviceMatcher.md"
+  },
+  "com.bitwig.extension.controller.HardwareDeviceMatcherList": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/HardwareDeviceMatcherList.md"
+  },
+  "com.bitwig.extension.controller.UsbConfigurationMatcher": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/UsbConfigurationMatcher.md"
+  },
+  "com.bitwig.extension.controller.UsbDeviceMatcher": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/UsbDeviceMatcher.md"
+  },
+  "com.bitwig.extension.controller.UsbEndpointMatcher": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/UsbEndpointMatcher.md"
+  },
+  "com.bitwig.extension.controller.UsbInterfaceMatcher": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/UsbInterfaceMatcher.md"
+  },
+  "com.bitwig.extension.controller.UsbMatcher": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/UsbMatcher.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareLightVisualState": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/api/HardwareLightVisualState.md"
+  },
+  "com.bitwig.extension.controller.api.InternalHardwareLightState": {
+    "kind": "class",
+    "path": "com/bitwig/extension/controller/api/InternalHardwareLightState.md"
+  },
+  "com.bitwig.extension.controller.api.AbsoluteHardwarControlBindable": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/AbsoluteHardwarControlBindable.md"
+  },
+  "com.bitwig.extension.controller.api.AbsoluteHardwareControl": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/AbsoluteHardwareControl.md"
+  },
+  "com.bitwig.extension.controller.api.AbsoluteHardwareControlBinding": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/AbsoluteHardwareControlBinding.md"
+  },
+  "com.bitwig.extension.controller.api.AbsoluteHardwareKnob": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/AbsoluteHardwareKnob.md"
+  },
+  "com.bitwig.extension.controller.api.AbsoluteHardwareValueMatcher": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/AbsoluteHardwareValueMatcher.md"
+  },
+  "com.bitwig.extension.controller.api.Action": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Action.md"
+  },
+  "com.bitwig.extension.controller.api.ActionCategory": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ActionCategory.md"
+  },
+  "com.bitwig.extension.controller.api.Application": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Application.md"
+  },
+  "com.bitwig.extension.controller.api.Arpeggiator": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Arpeggiator.md"
+  },
+  "com.bitwig.extension.controller.api.Arranger": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Arranger.md"
+  },
+  "com.bitwig.extension.controller.api.AsyncTransferCompledCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/AsyncTransferCompledCallback.md"
+  },
+  "com.bitwig.extension.controller.api.AudioHardwareIoInfo": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/AudioHardwareIoInfo.md"
+  },
+  "com.bitwig.extension.controller.api.AudioIoDeviceMatcher": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/AudioIoDeviceMatcher.md"
+  },
+  "com.bitwig.extension.controller.api.Bank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Bank.md"
+  },
+  "com.bitwig.extension.controller.api.BeatTimeFormatter": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BeatTimeFormatter.md"
+  },
+  "com.bitwig.extension.controller.api.BeatTimeValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BeatTimeValue.md"
+  },
+  "com.bitwig.extension.controller.api.BitwigBrowsingSession": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BitwigBrowsingSession.md"
+  },
+  "com.bitwig.extension.controller.api.BooleanHardwareProperty": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BooleanHardwareProperty.md"
+  },
+  "com.bitwig.extension.controller.api.BooleanValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BooleanValue.md"
+  },
+  "com.bitwig.extension.controller.api.Browser": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Browser.md"
+  },
+  "com.bitwig.extension.controller.api.BrowserColumn": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowserColumn.md"
+  },
+  "com.bitwig.extension.controller.api.BrowserFilterColumn": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowserFilterColumn.md"
+  },
+  "com.bitwig.extension.controller.api.BrowserFilterColumnBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowserFilterColumnBank.md"
+  },
+  "com.bitwig.extension.controller.api.BrowserFilterItem": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowserFilterItem.md"
+  },
+  "com.bitwig.extension.controller.api.BrowserFilterItemBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowserFilterItemBank.md"
+  },
+  "com.bitwig.extension.controller.api.BrowserItem": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowserItem.md"
+  },
+  "com.bitwig.extension.controller.api.BrowserItemBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowserItemBank.md"
+  },
+  "com.bitwig.extension.controller.api.BrowserResultsColumn": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowserResultsColumn.md"
+  },
+  "com.bitwig.extension.controller.api.BrowserResultsItem": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowserResultsItem.md"
+  },
+  "com.bitwig.extension.controller.api.BrowserResultsItemBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowserResultsItemBank.md"
+  },
+  "com.bitwig.extension.controller.api.BrowsingSession": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowsingSession.md"
+  },
+  "com.bitwig.extension.controller.api.BrowsingSessionBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/BrowsingSessionBank.md"
+  },
+  "com.bitwig.extension.controller.api.ChainSelector": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ChainSelector.md"
+  },
+  "com.bitwig.extension.controller.api.Channel": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Channel.md"
+  },
+  "com.bitwig.extension.controller.api.ChannelBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ChannelBank.md"
+  },
+  "com.bitwig.extension.controller.api.Clip": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Clip.md"
+  },
+  "com.bitwig.extension.controller.api.ClipBrowsingSession": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ClipBrowsingSession.md"
+  },
+  "com.bitwig.extension.controller.api.ClipLauncherSlot": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ClipLauncherSlot.md"
+  },
+  "com.bitwig.extension.controller.api.ClipLauncherSlotBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ClipLauncherSlotBank.md"
+  },
+  "com.bitwig.extension.controller.api.ClipLauncherSlotOrScene": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ClipLauncherSlotOrScene.md"
+  },
+  "com.bitwig.extension.controller.api.ClipLauncherSlotOrSceneBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ClipLauncherSlotOrSceneBank.md"
+  },
+  "com.bitwig.extension.controller.api.ColorHardwareProperty": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ColorHardwareProperty.md"
+  },
+  "com.bitwig.extension.controller.api.ColorValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ColorValue.md"
+  },
+  "com.bitwig.extension.controller.api.ContinuousHardwareControl": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ContinuousHardwareControl.md"
+  },
+  "com.bitwig.extension.controller.api.ContinuousHardwareValueMatcher": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ContinuousHardwareValueMatcher.md"
+  },
+  "com.bitwig.extension.controller.api.ControllerHost": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ControllerHost.md"
+  },
+  "com.bitwig.extension.controller.api.CueMarker": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CueMarker.md"
+  },
+  "com.bitwig.extension.controller.api.CueMarkerBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CueMarkerBank.md"
+  },
+  "com.bitwig.extension.controller.api.Cursor": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Cursor.md"
+  },
+  "com.bitwig.extension.controller.api.CursorBrowserFilterColumn": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorBrowserFilterColumn.md"
+  },
+  "com.bitwig.extension.controller.api.CursorBrowserFilterItem": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorBrowserFilterItem.md"
+  },
+  "com.bitwig.extension.controller.api.CursorBrowserItem": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorBrowserItem.md"
+  },
+  "com.bitwig.extension.controller.api.CursorBrowserResultItem": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorBrowserResultItem.md"
+  },
+  "com.bitwig.extension.controller.api.CursorBrowsingSession": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorBrowsingSession.md"
+  },
+  "com.bitwig.extension.controller.api.CursorChannel": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorChannel.md"
+  },
+  "com.bitwig.extension.controller.api.CursorClip": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorClip.md"
+  },
+  "com.bitwig.extension.controller.api.CursorDevice": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorDevice.md"
+  },
+  "com.bitwig.extension.controller.api.CursorDeviceLayer": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorDeviceLayer.md"
+  },
+  "com.bitwig.extension.controller.api.CursorDeviceSlot": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorDeviceSlot.md"
+  },
+  "com.bitwig.extension.controller.api.CursorRemoteControlsPage": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorRemoteControlsPage.md"
+  },
+  "com.bitwig.extension.controller.api.CursorTrack": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/CursorTrack.md"
+  },
+  "com.bitwig.extension.controller.api.DeleteableObject": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DeleteableObject.md"
+  },
+  "com.bitwig.extension.controller.api.DetailEditor": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DetailEditor.md"
+  },
+  "com.bitwig.extension.controller.api.Device": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Device.md"
+  },
+  "com.bitwig.extension.controller.api.DeviceBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DeviceBank.md"
+  },
+  "com.bitwig.extension.controller.api.DeviceBrowsingSession": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DeviceBrowsingSession.md"
+  },
+  "com.bitwig.extension.controller.api.DeviceChain": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DeviceChain.md"
+  },
+  "com.bitwig.extension.controller.api.DeviceLayer": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DeviceLayer.md"
+  },
+  "com.bitwig.extension.controller.api.DeviceLayerBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DeviceLayerBank.md"
+  },
+  "com.bitwig.extension.controller.api.DeviceMatcher": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DeviceMatcher.md"
+  },
+  "com.bitwig.extension.controller.api.DeviceSlot": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DeviceSlot.md"
+  },
+  "com.bitwig.extension.controller.api.DirectParameterValueDisplayObserver": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DirectParameterValueDisplayObserver.md"
+  },
+  "com.bitwig.extension.controller.api.DocumentState": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DocumentState.md"
+  },
+  "com.bitwig.extension.controller.api.DoubleValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DoubleValue.md"
+  },
+  "com.bitwig.extension.controller.api.DrumPad": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DrumPad.md"
+  },
+  "com.bitwig.extension.controller.api.DrumPadBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DrumPadBank.md"
+  },
+  "com.bitwig.extension.controller.api.DuplicableObject": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/DuplicableObject.md"
+  },
+  "com.bitwig.extension.controller.api.EnumDefinition": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/EnumDefinition.md"
+  },
+  "com.bitwig.extension.controller.api.EnumValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/EnumValue.md"
+  },
+  "com.bitwig.extension.controller.api.EnumValueDefinition": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/EnumValueDefinition.md"
+  },
+  "com.bitwig.extension.controller.api.GenericBrowsingSession": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/GenericBrowsingSession.md"
+  },
+  "com.bitwig.extension.controller.api.Groove": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Groove.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareAction": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareAction.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareActionBindable": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareActionBindable.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareActionBinding": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareActionBinding.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareActionMatcher": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareActionMatcher.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareBindable": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareBindable.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareBinding": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareBinding.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareBindingSource": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareBindingSource.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareBindingWithRange": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareBindingWithRange.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareBindingWithSensitivity": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareBindingWithSensitivity.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareButton": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareButton.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareControl": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareControl.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareDevice": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareDevice.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareElement": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareElement.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareInputMatcher": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareInputMatcher.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareLight": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareLight.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareOutputElement": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareOutputElement.md"
+  },
+  "com.bitwig.extension.controller.api.HardwarePixelDisplay": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwarePixelDisplay.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareProperty": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareProperty.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareSlider": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareSlider.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareSurface": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareSurface.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareTextDisplay": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareTextDisplay.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareTextDisplayLine": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/HardwareTextDisplayLine.md"
+  },
+  "com.bitwig.extension.controller.api.InputPipe": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/InputPipe.md"
+  },
+  "com.bitwig.extension.controller.api.InsertionPoint": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/InsertionPoint.md"
+  },
+  "com.bitwig.extension.controller.api.IntegerHardwareProperty": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/IntegerHardwareProperty.md"
+  },
+  "com.bitwig.extension.controller.api.IntegerValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/IntegerValue.md"
+  },
+  "com.bitwig.extension.controller.api.LastClickedParameter": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/LastClickedParameter.md"
+  },
+  "com.bitwig.extension.controller.api.Macro": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Macro.md"
+  },
+  "com.bitwig.extension.controller.api.MasterRecorder": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/MasterRecorder.md"
+  },
+  "com.bitwig.extension.controller.api.MasterTrack": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/MasterTrack.md"
+  },
+  "com.bitwig.extension.controller.api.MidiExpressions": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/MidiExpressions.md"
+  },
+  "com.bitwig.extension.controller.api.MidiIn": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/MidiIn.md"
+  },
+  "com.bitwig.extension.controller.api.MidiOut": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/MidiOut.md"
+  },
+  "com.bitwig.extension.controller.api.Mixer": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Mixer.md"
+  },
+  "com.bitwig.extension.controller.api.ModulationSource": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ModulationSource.md"
+  },
+  "com.bitwig.extension.controller.api.MultiSampleBrowsingSession": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/MultiSampleBrowsingSession.md"
+  },
+  "com.bitwig.extension.controller.api.MultiStateHardwareLight": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/MultiStateHardwareLight.md"
+  },
+  "com.bitwig.extension.controller.api.MusicBrowsingSession": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/MusicBrowsingSession.md"
+  },
+  "com.bitwig.extension.controller.api.NoteInput": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/NoteInput.md"
+  },
+  "com.bitwig.extension.controller.api.NoteLatch": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/NoteLatch.md"
+  },
+  "com.bitwig.extension.controller.api.NoteStep": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/NoteStep.md"
+  },
+  "com.bitwig.extension.controller.api.NotificationSettings": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/NotificationSettings.md"
+  },
+  "com.bitwig.extension.controller.api.ObjectArrayValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ObjectArrayValue.md"
+  },
+  "com.bitwig.extension.controller.api.ObjectHardwareProperty": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ObjectHardwareProperty.md"
+  },
+  "com.bitwig.extension.controller.api.ObjectProxy": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ObjectProxy.md"
+  },
+  "com.bitwig.extension.controller.api.OnOffHardwareLight": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/OnOffHardwareLight.md"
+  },
+  "com.bitwig.extension.controller.api.OutputPipe": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/OutputPipe.md"
+  },
+  "com.bitwig.extension.controller.api.Parameter": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Parameter.md"
+  },
+  "com.bitwig.extension.controller.api.ParameterBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ParameterBank.md"
+  },
+  "com.bitwig.extension.controller.api.PianoKeyboard": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/PianoKeyboard.md"
+  },
+  "com.bitwig.extension.controller.api.PinnableCursor": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/PinnableCursor.md"
+  },
+  "com.bitwig.extension.controller.api.PinnableCursorClip": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/PinnableCursorClip.md"
+  },
+  "com.bitwig.extension.controller.api.PinnableCursorDevice": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/PinnableCursorDevice.md"
+  },
+  "com.bitwig.extension.controller.api.Pipe": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Pipe.md"
+  },
+  "com.bitwig.extension.controller.api.PlayingNote": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/PlayingNote.md"
+  },
+  "com.bitwig.extension.controller.api.PlayingNoteArrayValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/PlayingNoteArrayValue.md"
+  },
+  "com.bitwig.extension.controller.api.PopupBrowser": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/PopupBrowser.md"
+  },
+  "com.bitwig.extension.controller.api.Preferences": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Preferences.md"
+  },
+  "com.bitwig.extension.controller.api.PresetBrowsingSession": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/PresetBrowsingSession.md"
+  },
+  "com.bitwig.extension.controller.api.PrimaryDevice": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/PrimaryDevice.md"
+  },
+  "com.bitwig.extension.controller.api.Project": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Project.md"
+  },
+  "com.bitwig.extension.controller.api.RangedValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RangedValue.md"
+  },
+  "com.bitwig.extension.controller.api.RelativeHardwarControlBindable": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RelativeHardwarControlBindable.md"
+  },
+  "com.bitwig.extension.controller.api.RelativeHardwareControl": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RelativeHardwareControl.md"
+  },
+  "com.bitwig.extension.controller.api.RelativeHardwareControlBinding": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RelativeHardwareControlBinding.md"
+  },
+  "com.bitwig.extension.controller.api.RelativeHardwareControlToRangedValueBinding": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RelativeHardwareControlToRangedValueBinding.md"
+  },
+  "com.bitwig.extension.controller.api.RelativeHardwareKnob": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RelativeHardwareKnob.md"
+  },
+  "com.bitwig.extension.controller.api.RelativeHardwareValueMatcher": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RelativeHardwareValueMatcher.md"
+  },
+  "com.bitwig.extension.controller.api.RemoteConnection": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RemoteConnection.md"
+  },
+  "com.bitwig.extension.controller.api.RemoteControl": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RemoteControl.md"
+  },
+  "com.bitwig.extension.controller.api.RemoteControlsPage": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RemoteControlsPage.md"
+  },
+  "com.bitwig.extension.controller.api.RemoteSocket": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/RemoteSocket.md"
+  },
+  "com.bitwig.extension.controller.api.SampleBrowsingSession": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SampleBrowsingSession.md"
+  },
+  "com.bitwig.extension.controller.api.Scene": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Scene.md"
+  },
+  "com.bitwig.extension.controller.api.SceneBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SceneBank.md"
+  },
+  "com.bitwig.extension.controller.api.Scrollable": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Scrollable.md"
+  },
+  "com.bitwig.extension.controller.api.ScrollbarModel": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ScrollbarModel.md"
+  },
+  "com.bitwig.extension.controller.api.Send": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Send.md"
+  },
+  "com.bitwig.extension.controller.api.SendBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SendBank.md"
+  },
+  "com.bitwig.extension.controller.api.SettableBeatTimeValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SettableBeatTimeValue.md"
+  },
+  "com.bitwig.extension.controller.api.SettableBooleanValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SettableBooleanValue.md"
+  },
+  "com.bitwig.extension.controller.api.SettableColorValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SettableColorValue.md"
+  },
+  "com.bitwig.extension.controller.api.SettableDoubleValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SettableDoubleValue.md"
+  },
+  "com.bitwig.extension.controller.api.SettableEnumValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SettableEnumValue.md"
+  },
+  "com.bitwig.extension.controller.api.SettableIntegerValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SettableIntegerValue.md"
+  },
+  "com.bitwig.extension.controller.api.SettableRangedValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SettableRangedValue.md"
+  },
+  "com.bitwig.extension.controller.api.SettableStringArrayValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SettableStringArrayValue.md"
+  },
+  "com.bitwig.extension.controller.api.SettableStringValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SettableStringValue.md"
+  },
+  "com.bitwig.extension.controller.api.Setting": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Setting.md"
+  },
+  "com.bitwig.extension.controller.api.Settings": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Settings.md"
+  },
+  "com.bitwig.extension.controller.api.Signal": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Signal.md"
+  },
+  "com.bitwig.extension.controller.api.SoloValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SoloValue.md"
+  },
+  "com.bitwig.extension.controller.api.SourceSelector": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SourceSelector.md"
+  },
+  "com.bitwig.extension.controller.api.SpecificBitwigDevice": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SpecificBitwigDevice.md"
+  },
+  "com.bitwig.extension.controller.api.SpecificDevice": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SpecificDevice.md"
+  },
+  "com.bitwig.extension.controller.api.SpecificPluginDevice": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/SpecificPluginDevice.md"
+  },
+  "com.bitwig.extension.controller.api.StringArrayValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/StringArrayValue.md"
+  },
+  "com.bitwig.extension.controller.api.StringHardwareProperty": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/StringHardwareProperty.md"
+  },
+  "com.bitwig.extension.controller.api.StringValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/StringValue.md"
+  },
+  "com.bitwig.extension.controller.api.Subscribable": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Subscribable.md"
+  },
+  "com.bitwig.extension.controller.api.TimelineEditor": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/TimelineEditor.md"
+  },
+  "com.bitwig.extension.controller.api.TimeSignatureValue": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/TimeSignatureValue.md"
+  },
+  "com.bitwig.extension.controller.api.Track": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Track.md"
+  },
+  "com.bitwig.extension.controller.api.TrackBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/TrackBank.md"
+  },
+  "com.bitwig.extension.controller.api.Transport": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Transport.md"
+  },
+  "com.bitwig.extension.controller.api.UsbDevice": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/UsbDevice.md"
+  },
+  "com.bitwig.extension.controller.api.UsbInputPipe": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/UsbInputPipe.md"
+  },
+  "com.bitwig.extension.controller.api.UsbInterface": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/UsbInterface.md"
+  },
+  "com.bitwig.extension.controller.api.UsbOutputPipe": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/UsbOutputPipe.md"
+  },
+  "com.bitwig.extension.controller.api.UsbPipe": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/UsbPipe.md"
+  },
+  "com.bitwig.extension.controller.api.UserControlBank": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/UserControlBank.md"
+  },
+  "com.bitwig.extension.controller.api.Value": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/Value.md"
+  },
+  "com.bitwig.extension.controller.api.ValueChangedCallback": {
+    "kind": "interface",
+    "path": "com/bitwig/extension/controller/api/ValueChangedCallback.md"
+  },
+  "com.bitwig.extension.controller.api.CursorDeviceFollowMode": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/CursorDeviceFollowMode.md"
+  },
+  "com.bitwig.extension.controller.api.CursorNavigationMode": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/CursorNavigationMode.md"
+  },
+  "com.bitwig.extension.controller.api.HardwareControlType": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/HardwareControlType.md"
+  },
+  "com.bitwig.extension.controller.api.NoteInput.NoteExpression": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/NoteInput.NoteExpression.md"
+  },
+  "com.bitwig.extension.controller.api.NoteOccurrence": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/NoteOccurrence.md"
+  },
+  "com.bitwig.extension.controller.api.NoteStep.State": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/NoteStep.State.md"
+  },
+  "com.bitwig.extension.controller.api.PrimaryDevice.ChainLocation": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/PrimaryDevice.ChainLocation.md"
+  },
+  "com.bitwig.extension.controller.api.PrimaryDevice.DeviceType": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/PrimaryDevice.DeviceType.md"
+  },
+  "com.bitwig.extension.controller.api.RelativePosition": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/RelativePosition.md"
+  },
+  "com.bitwig.extension.controller.api.UsbTransferDirection": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/UsbTransferDirection.md"
+  },
+  "com.bitwig.extension.controller.api.UsbTransferStatus": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/UsbTransferStatus.md"
+  },
+  "com.bitwig.extension.controller.api.UsbTransferType": {
+    "kind": "enum",
+    "path": "com/bitwig/extension/controller/api/UsbTransferType.md"
+  }
+}

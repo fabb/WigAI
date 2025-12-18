@@ -1,0 +1,79 @@
+# Workflow Status for WigAI
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-12-16T20:17:35-07:00"
+project: "WigAI"
+project_type: "Bitwig Extension (Backend/Java)"
+project_level: 3
+selected_track: "method"
+field_type: "brownfield"
+workflow_path: "method-brownfield.yaml"
+workflow_status:
+  phases:
+    - prerequisite: true
+      name: "Documentation"
+      conditional: "if_undocumented"
+      note: "NOT a phase - prerequisite for brownfield without docs"
+      workflows:
+        - id: "document-project"
+          status: "docs/reference/index.md"
+          note: "Existing project documentation already present"
+    - phase: 0
+      name: "Discovery (Optional)"
+      optional: true
+      note: "User-selected during workflow-init"
+      workflows:
+        - id: "brainstorm-project"
+          status: "skipped"
+        - id: "research"
+          status: "docs/analysis/research/technical-bitwig-midi-clip-creation-research-2025-12-16.md"
+        - id: "product-brief"
+          status: "docs/project-brief.md"
+    - phase: 1
+      name: "Planning"
+      required: true
+      workflows:
+        - id: "prd"
+          status: "docs/prd.md"
+          note: "Updated PRD (new feature scope) created from archived baseline"
+        - id: "create-ux-design"
+          status: "conditional"
+          note: "if_has_ui"
+    - phase: 2
+      name: "Solutioning"
+      required: true
+      workflows:
+        - id: "create-architecture"
+          status: "docs/architecture.md"
+        - id: "create-epics-and-stories"
+          status: "required"
+          note: "Baseline epics/stories exist in docs/sprint-artifacts/archive/cycle-1-2025-12-15/"
+        - id: "test-design"
+          status: "recommended"
+        - id: "validate-architecture"
+          status: "optional"
+        - id: "implementation-readiness"
+          status: "required"
+          note: "Prior readiness reports exist in docs/sprint-artifacts/archive/cycle-1-2025-12-15/"
+    - phase: 3
+      name: "Implementation"
+      required: true
+      note: "Ongoing - tracked in sprint-status.yaml"
+      workflows:
+        - id: "sprint-planning"
+          status: "required"
+          note: "Prior sprint artifacts exist in docs/sprint-artifacts/archive/cycle-1-2025-12-15/"

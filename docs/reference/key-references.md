@@ -11,6 +11,6 @@ This architecture document should be read in conjunction with the following deta
   * `data-models.md`: Describes any significant data structures or objects used internally or in API communication.
   * `environment-vars.md`: Documents any environment variables used for configuration (though MVP aims for minimal).
   * `docs/testing-strategy.md`: Outlines the approach to unit, integration, and end-to-end testing. (To be created)
-  * Bitwig Java Extension API Documentation (Version 19): External reference for interacting with Bitwig Studio. ([Local Scraped Copy](bitwig-api-doc-scraper/bitwig-api-documentation.md))
+  * Bitwig Java Extension API Documentation (Version 19): External reference for interacting with Bitwig Studio. ([Local Scraped Copy](bitwig-api/v19/index.md))
   * Model Context Protocol (MCP) Specification: External reference for MCP principles and the Streamable HTTP transport. ([https://modelcontextprotocol.io/](https://modelcontextprotocol.io/))
   * MCP Java SDK Documentation: External reference for the chosen Java SDK.
