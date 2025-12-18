@@ -1,3 +1,37 @@
+---
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8]
+inputDocuments:
+  - docs/prd.md
+  - docs/prd/index.md
+  - docs/project-brief.md
+  - docs/analysis/research/technical-bitwig-midi-clip-creation-research-2025-12-16.md
+  - docs/reference/index.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/index.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/prd.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/epic-1.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/epic-2.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/epic-3.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/epic-4.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/epic-5.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/epic-6.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/epic-7.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/epic-8.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/5-4-selected-clip-slot-status.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/implementation-readiness-report.md
+  - docs/sprint-artifacts/archive/cycle-1-2025-12-15/implementation-readiness-report-detailed.md
+hasProjectContext: false
+contextPrecedence:
+  authoritative_requirements: docs/prd.md
+  historical_reference: docs/sprint-artifacts/archive/cycle-1-2025-12-15/
+workflowType: 'architecture'
+lastStep: 8
+status: 'complete'
+completedAt: '2025-12-18T04:46:09Z'
+project_name: 'WigAI'
+user_name: 'Josh'
+date: '2025-12-18T02:54:09Z'
+---
+
 # WigAI Architecture Document
 
 ## Table of Contents
@@ -287,3 +321,396 @@ Structured logging with:
 | Update        | 2025-05-18 | 0.2     | Updated component descriptions to align with MCP Java SDK 0.9.0+ integration. Revised MCP components to reflect the SDK's tool-based approach. | Architect Agent    |
 | Error handling alignment | 2025-06-08 | 0.3 | Updated error handling strategy to reflect actual implementation. Expanded error code taxonomy, simplified resilience patterns, and removed monitoring requirements. | Architect Agent |
 
+## Project Context Analysis
+
+### Requirements Overview
+
+**Authoritative requirements source:** `docs/prd.md` (archive is historical reference only)
+
+**Functional Requirements:**
+
+- MCP tool execution and structured responses/errors for each invocation
+- Explicit targeting/discoverability (track by index/name, safe handling of fuzzy/ambiguous matches)
+- Launcher MIDI clip creation with predictable placement and non-destructive defaults (e.g., “next empty slot” scan; `overwrite=false` by default)
+- Deterministic note writing into clips from explicit structured payloads (validation + exact application)
+- Optional launching behavior (`launch=true|false`) to support both “audition now” and batch creation workflows
+- Preserve and extend baseline capabilities (transport control, launch existing clips, read/write device remote controls)
+
+**Non-Functional Requirements:**
+
+- Performance: end-to-end create→write→(optional) launch should be fast for normal requests
+- Stability: never crash Bitwig; handle failures gracefully and avoid leaving inconsistent host state
+- Safety: refuse to overwrite/clear existing clip content unless explicitly enabled/confirmed
+- Local-first integration: bind to `localhost` by default; keep MCP interface stable within a release line
+- Observability: log tool invocation outcomes; avoid logging full note payloads by default (debug opt-in)
+
+**Scale & Complexity:**
+
+- Primary domain: in-process desktop extension + local protocol boundary (MCP) controlling a stateful DAW host
+- Complexity level: low-to-medium (product scope is focused; correctness/safety under host-state constraints is the hard part)
+- Planning context loaded: 8 archived epics with 27 archived stories (historical reference)
+
+### Technical Constraints & Dependencies
+
+- Must run inside Bitwig’s Java extension runtime and use Bitwig Extension API v19
+- Must avoid blocking Bitwig UI responsiveness; tool execution should be safe under changing host state
+- Cross-platform compatibility: macOS/Windows/Linux wherever Bitwig runs
+- MVP security posture relies on `localhost` binding (no authentication required for MVP)
+
+### Cross-Cutting Concerns Identified
+
+- Targeting reliability: track/scene/slot addressing, “next empty slot” scanning behavior, and ambiguity handling
+- Guardrails: overwrite/clear behaviors are explicit opt-ins; default behavior must be non-destructive
+- Determinism: WigAI applies explicit note payloads exactly; “musical intent” remains external to WigAI
+- Validation + error taxonomy: validate inputs early with actionable errors; map errors consistently across layers
+- Host-thread safety and timing: ensure Bitwig API calls are scheduled/executed without destabilizing the host
+- Observability without noise: log summaries and outcomes; keep verbose payload logging behind a debug flag
+
+## Starter Template Evaluation
+
+### Primary Technology Domain
+
+Bitwig Studio Extension (Java) with an embedded local MCP server (brownfield continuation)
+
+### Starter Options Considered
+
+- Re-scaffold from a Bitwig extension template: Not selected (project already exists; high risk for little gain)
+- Continue with existing WigAI repository as the foundation: Selected
+
+### Selected Starter: Existing WigAI Repository
+
+**Rationale for Selection:**
+
+- Preserves working brownfield architecture and avoids churn
+- Keeps build/release flow (Nyx + `.bwextension`) consistent
+- Keeps implementation aligned with the actual runtime constraints (Bitwig extension environment)
+
+**Initialization Command:**
+
+```bash
+./gradlew test
+./gradlew build
+./gradlew bwextension
+```
+
+**Architectural Decisions Provided by Starter:**
+
+**Language & Runtime:**
+
+- Java 21
+- Bitwig Extension API v19 (requirements baseline)
+
+**MCP / Protocol Boundary:**
+
+- MCP Java SDK via `io.modelcontextprotocol.sdk:mcp-bom:0.11.0`
+
+**HTTP Server:**
+
+- Jetty 11.x embedded server (currently pinned to 11.0.20)
+
+**Build Tooling:**
+
+- Gradle (Kotlin DSL)
+- Shadow plugin for fat-jar packaging
+
+**Testing Framework:**
+
+- JUnit Jupiter (currently pinned to 5.10.0)
+
+**Version Awareness (verified upstream metadata):**
+
+- Newer versions exist (Bitwig API 25, MCP BOM 0.17.0, Jetty 11.0.26 / Jetty 12.x, Shadow 9.3.0), but upgrades are treated as optional follow-on hardening, not required for architectural correctness.
+
+## Core Architectural Decisions
+
+### Decision Priority Analysis
+
+**Critical Decisions (Block Implementation):**
+
+- No persistence layer required for MVP (no database)
+- No note payload logging by default; only enable detailed note payload logging when debug is explicitly enabled
+
+**Important Decisions (Shape Architecture):**
+
+- Prefer stateless/tool-driven behavior over persisted user defaults for MVP
+- Validate all note payloads at the tool/controller boundary with actionable error codes
+- Treat “targeting resolution” and “non-destructive defaults” as first-class safety constraints (not just implementation details)
+
+**Deferred Decisions (Post-MVP):**
+
+- Persisted user defaults (e.g., default target track, default clip length)
+- Preset storage or note/pattern libraries (if/when you want reusable composition assets)
+
+### Data Architecture
+
+- **Database:** None for MVP.
+- **Persisted defaults:** Not needed for MVP; keep behavior stateless/config-driven.
+- **Logging:** Do not log full note payloads by default; log only summaries (counts/shape/validation outcomes). Allow full payload logging only behind a debug flag.
+- **Validation:** Perform strict input validation at the MCP tool/controller boundary (pitch/time/duration/velocity ranges; bounded request sizes) and return consistent, typed error codes.
+- **Caching:** Avoid long-lived caches; allow short-lived in-memory caching only if it demonstrably improves targeting performance and remains safe to invalidate.
+
+### Authentication & Security
+
+- **MVP authentication:** None (local-first).
+- **Network binding:** Bind to loopback only (`127.0.0.1` / `::1`) by default.
+- **Unsafe/non-loopback mode:** Only via explicit configuration; treat as unsafe and clearly documented (deferred unless/until needed).
+- **Authorization/safety gates:** Enforce non-destructive defaults at the tool boundary (e.g., `overwrite=false` by default; destructive actions require explicit opt-in flags).
+- **Future (deferred):** Add shared-secret/token only if introducing non-loopback access or other threat models that require it.
+
+### API & Communication Patterns
+
+- **Protocol boundary:** MCP tools are the public API; keep tool names and request/response shapes stable within a release line.
+- **Tool surface for MIDI workflow:** Provide both:
+  - **Composable primitives** (e.g., `create_launcher_midi_clip`, `write_launcher_clip_notes`, `launch_scene`) to support batching (`launch=false`) and partial workflows.
+  - **Convenience wrapper** (e.g., `create_write_launch_launcher_midi_clip`) that orchestrates primitives for the common end-to-end “intent → clip” journey.
+- **Idempotency for retries:** Support optional `request_id` on all mutating tools (create/write/launch) and dedupe by `(tool_name, request_id)` using short-lived, bounded in-memory storage (TTL + max entries). No durability across restarts.
+- **Error contract:** Use a single canonical error envelope and stable error codes across all tools; treat validation errors as fatal, and classify host-state/transport issues as retryable vs fatal for callers.
+- **Response metadata:** Return enough explicit identifiers for follow-up operations (resolved `track_name`/`track_index` where applicable, `scene_index`, `slot_index`, and an indication of what was created/selected/launched).
+
+### Infrastructure & Deployment
+
+- **Deployment model:** In-process Bitwig extension (no external hosting).
+- **Packaging artifact:** Gradle builds `build/extensions/WigAI.bwextension` via `./gradlew bwextension`.
+- **CI (PRs):** Continue using GitHub Actions PR validation; PRs produce build artifacts for verification, but do not publish releases.
+- **Releases:** Keep automatic releases on pushes to `main` using Nyx + GitHub Releases (publish `.bwextension` asset).
+- **Runtime posture:** Local-first; loopback binding by default; no auth for MVP.
+
+## Implementation Patterns & Consistency Rules
+
+### Pattern Categories Defined
+
+**Critical Conflict Points Identified:**
+
+- Tool + JSON naming conventions
+- Layer boundaries (tool/controller/facade)
+- Success/error response consistency
+- Retry/idempotency behavior for host timing
+- Logging discipline (especially note payloads)
+
+### Naming Patterns
+
+**MCP Tool Naming Conventions:**
+
+- Tool names MUST be `snake_case` verbs, consistent with existing tools (e.g., `transport_start`, `launch_clip`).
+- New MIDI workflow MUST expose:
+  - Composable primitives (e.g., `create_launcher_midi_clip`, `write_launcher_clip_notes`, `launch_scene`)
+  - One convenience wrapper (e.g., `create_write_launch_launcher_midi_clip`)
+
+**JSON Field Naming Conventions:**
+
+- All request fields MUST be `snake_case` (e.g., `track_name`, `track_index`, `scene_index`, `slot_index`, `request_id`).
+- Argument records SHOULD use `@JsonProperty("snake_case_name")` for clarity and stability.
+
+**Java Naming Conventions:**
+
+- Packages follow existing `io.github.fabb.wigai.*` layout.
+- Tool classes live in `src/main/java/io/github/fabb/wigai/mcp/tool/*Tool.java` and expose `*Specification(...)` factories.
+
+### Structure Patterns
+
+**Layering Rules (Hard Boundary):**
+
+- MCP Tools: parse/validate args → call controller → return structured success payload. No direct Bitwig API calls.
+- Controllers (`src/main/java/io/github/fabb/wigai/features/*`): implement domain logic + guardrails; decide retryable vs fatal behavior.
+- Bitwig API access: contained behind `src/main/java/io/github/fabb/wigai/bitwig/BitwigApiFacade.java` (and related bitwig helpers if needed).
+- Validation: use `src/main/java/io/github/fabb/wigai/common/validation/ParameterValidator.java` for required fields, ranges, and index validation.
+
+**Error Handling Rule (Single Path):**
+
+- All tool handlers MUST run inside `McpErrorHandler.executeWithErrorHandling(...)`.
+- Do not invent bespoke error envelopes per tool; rely on the unified handler + `ErrorCode` taxonomy.
+
+### Format Patterns
+
+**Success Response Format:**
+
+- Return a consistent top-level payload (via the unified handler) that includes:
+  - `action` (string) describing what happened
+  - Explicit identifiers for follow-up operations (resolved `track_name`/`track_index` where applicable, `scene_index`, `slot_index`)
+  - A human-readable `message` when useful
+
+**Error Response Format:**
+
+- Use the canonical error envelope produced by the unified error handler.
+- Treat validation errors as fatal (not retryable).
+- Host-state timing/availability errors MUST be classified as retryable vs fatal consistently.
+
+### Communication Patterns
+
+**Idempotency / Retry Safety:**
+
+- All mutating tools MUST accept optional `request_id`.
+- Idempotency is implemented by deduping `(tool_name, request_id)` in bounded in-memory storage (TTL + max entries).
+- Idempotency is best-effort and not durable across restarts (acceptable for local-first MVP).
+
+**Logging:**
+
+- Every tool invocation MUST log: `tool_name`, outcome (success/failure), and `request_id` when provided.
+- Note payloads MUST NOT be logged by default; allow payload logging only when an explicit debug mode is enabled.
+
+### Enforcement Guidelines
+
+**All AI Agents MUST:**
+
+- Use `snake_case` for tool names and JSON fields.
+- Keep Bitwig API calls behind controller/facade boundaries.
+- Use the unified MCP error handling path and existing `ErrorCode` taxonomy.
+- Implement `request_id` support on mutating tools and propagate it to logs.
+- Avoid note payload logging unless debug is explicitly enabled.
+
+**Anti-Patterns (Avoid):**
+
+- Direct Bitwig API calls from MCP tool classes
+- Ad-hoc response/error formats per tool
+- Retrying mutations without `request_id` (risk: duplicate clips/notes)
+- Logging full note payloads in normal operation
+
+## Project Structure & Boundaries
+
+### Complete Project Directory Structure
+
+```
+WigAI/
+├── build.gradle.kts
+├── settings.gradle.kts
+├── gradlew
+├── gradlew.bat
+├── gradle/
+├── src/
+│   ├── main/
+│   │   ├── java/io/github/fabb/wigai/
+│   │   │   ├── WigAIExtension.java
+│   │   │   ├── WigAIExtensionDefinition.java
+│   │   │   ├── bitwig/
+│   │   │   │   ├── BitwigApiFacade.java
+│   │   │   │   └── SceneBankFacade.java
+│   │   │   ├── common/
+│   │   │   │   ├── AppConstants.java
+│   │   │   │   ├── Logger.java
+│   │   │   │   ├── data/
+│   │   │   │   ├── error/
+│   │   │   │   ├── logging/
+│   │   │   │   └── validation/
+│   │   │   ├── config/
+│   │   │   │   ├── ConfigManager.java
+│   │   │   │   ├── PreferencesBackedConfigManager.java
+│   │   │   │   └── ConfigChangeObserver.java
+│   │   │   ├── features/
+│   │   │   │   ├── ClipSceneController.java
+│   │   │   │   ├── DeviceController.java
+│   │   │   │   ├── TransportController.java
+│   │   │   │   └── (new) MidiClipController.java
+│   │   │   ├── mcp/
+│   │   │   │   ├── McpServerManager.java
+│   │   │   │   ├── McpErrorHandler.java
+│   │   │   │   └── tool/
+│   │   │   │       ├── TransportTool.java
+│   │   │   │       ├── ClipTool.java
+│   │   │   │       ├── SceneTool.java
+│   │   │   │       ├── ...
+│   │   │   │       ├── (new) CreateLauncherMidiClipTool.java
+│   │   │   │       ├── (new) WriteLauncherClipNotesTool.java
+│   │   │   │       └── (new) CreateWriteLaunchLauncherMidiClipTool.java
+│   │   │   └── server/
+│   │   │       └── JettyServerManager.java
+│   │   └── resources/
+│   │       └── META-INF/services/
+│   └── test/java/io/github/fabb/wigai/
+│       ├── features/
+│       ├── mcp/tool/
+│       └── integration/
+├── docs/
+└── .github/workflows/
+```
+
+### Architectural Boundaries
+
+**API Boundaries:**
+
+- Public API = MCP tool surface in `src/main/java/io/github/fabb/wigai/mcp/tool/`
+- Tool schemas and argument parsing are owned by each `*Tool` class
+
+**Component Boundaries:**
+
+- `mcp/tool/*`: request parsing + validation + calling controller + returning structured result
+- `features/*Controller`: domain guardrails, orchestration, retry/idempotency policy decisions
+- `bitwig/*`: Bitwig Extension API calls (facade layer)
+
+**Service Boundaries:**
+
+- Single in-process service (no microservices)
+
+**Data Boundaries:**
+
+- No DB; runtime state is Bitwig host state + short-lived in-memory dedupe/cache (where needed)
+
+### Requirements to Structure Mapping
+
+- Launcher clip create/write/launch workflow (FR11–FR26): `features/MidiClipController.java` + new tools in `mcp/tool/`
+- Targeting & discoverability (FR5–FR10): shared validation/utilities + controller logic (likely shared with existing controllers)
+- Error handling & response contract (FR2–FR4, NFR3–NFR5): `mcp/McpErrorHandler.java` + `common/error/*`
+- Logging/observability (NFR9–NFR10): `common/logging/*` (and enforced by tool/controller patterns)
+
+### Integration Points
+
+- External: MCP client ↔ Jetty server ↔ MCP tool handlers
+- Internal: tools → controllers → Bitwig facade → Bitwig API
+
+### File Organization Patterns
+
+- New user-facing actions = new `*Tool.java` + controller methods (no direct Bitwig calls from tools)
+- Tests mirror structure: `src/test/java/.../mcp/tool/*ToolTest.java` and `.../features/*ControllerTest.java`
+
+## Architecture Validation & Completion
+
+### Coherence Validation ✅
+
+- Decisions are compatible (local-first, no DB, in-process extension, unified error handling).
+- API/tooling patterns align with existing repo structure and naming conventions.
+- Idempotency/retry strategy (`request_id` + bounded in-memory dedupe) aligns with DAW host-state timing risks.
+
+### Requirements Coverage Validation ✅
+
+**Functional Requirements Coverage:**
+
+- FR1–FR4: MCP tool surface + structured responses + composable tools enabling batching.
+- FR5–FR10: explicit targeting + ambiguity-safe behavior enforced at tool/controller boundary.
+- FR11–FR26: create launcher MIDI clip + write notes + launch scene covered by primitives + wrapper orchestration.
+
+**Non-Functional Requirements Coverage:**
+
+- Performance + stability: bounded retries + avoid UI-blocking patterns (design intent).
+- Safety: non-destructive defaults, explicit overwrite/clear opt-ins.
+- Integration/security: loopback-only binding by default, no auth for MVP.
+- Observability: structured per-tool logging; no note payload logging unless debug enabled.
+
+### Implementation Readiness Validation ✅
+
+- Consistency rules defined for naming, layering, error handling, idempotency, and logging.
+- Project structure and boundaries are concrete and mapped to new MIDI workflow components.
+- CI/release posture matches local-first extension distribution.
+
+### Gap Analysis Results
+
+**Non-blocking follow-ups:**
+
+- Define exact “retryable vs fatal” classifications per `ErrorCode`.
+- Choose concrete dedupe TTL + max entries for `(tool_name, request_id)` cache.
+- Align final tool names with `docs/reference/api-reference.md` (if/when updated).
+
+### Architecture Readiness Assessment
+
+**Overall Status:** READY FOR IMPLEMENTATION
+
+**Confidence Level:** High
+
+**Key Strengths:**
+
+- Clear tool/controller/facade boundaries
+- Explicit safety guardrails (overwrite + logging discipline)
+- Retry/idempotency strategy suitable for host timing variability
+
+**Areas for Future Enhancement:**
+
+- Optional auth for non-loopback mode (deferred)
+- Persisted defaults/presets (deferred)
