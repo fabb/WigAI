@@ -32,7 +32,7 @@ date: '2025-12-17T05:26:14Z'
 
 ## Executive Summary
 
-WigAI is a Bitwig Studio Java extension that exposes DAW control via the Model Context Protocol (MCP) so an external AI agent can assist music production workflows. WigAI is an established, working system (brownfield) with the original MVP capabilities implemented and manually verified in Bitwig. The new product scope extends WigAI with a producer-focused composition workflow: the ability for an AI agent to create a new launcher MIDI clip, write a MIDI sequence into it, and launch the resulting scene safely and predictably.
+WigAI is a Bitwig Studio Java extension that exposes DAW control via the Model Context Protocol (MCP) so an external AI agent can assist music production workflows. WigAI is an established, working system (brownfield) with the original MVP capabilities implemented and manually verified in Bitwig. The new product scope extends WigAI with a producer-focused composition workflow: the ability for an AI agent to create a new launcher MIDI clip, write a MIDI sequence into it, and launch the created clip slot safely and predictably.
 
 WigAI does not generate musical notes itself. Instead, an external AI agent translates producer intent (e.g., “a 4‑bar chord progression in G minor”) into explicit, structured note/step data. WigAI’s job is to apply those instructions in Bitwig reliably, with guardrails that prevent destructive edits by default.
 
@@ -53,7 +53,7 @@ This is a Bitwig Studio extension/plugin (running in-process) that exposes an MC
 
 ### User Success
 
-- A studio producer can request a new launcher MIDI clip with a described musical intent (e.g., “4 bars, chord progression in G minor”) and receive a newly created clip with notes written and the scene launched, end-to-end in under 10 seconds.
+- A studio producer can request a new launcher MIDI clip with a described musical intent (e.g., “4 bars, chord progression in G minor”) and receive a newly created clip with notes written and the created clip launched (auditioned), end-to-end in under 10 seconds.
 - The created clip is immediately usable in the current Bitwig project workflow (clip exists in the launcher, contains the requested pattern, and is placed predictably).
 - The producer can create multiple clips in a batch by setting `launch=false` (so clip creation/writing is decoupled from launching when desired).
 - The system is trustworthy: it never overwrites an existing clip unless explicitly requested/confirmed.
@@ -74,7 +74,7 @@ This is a Bitwig Studio extension/plugin (running in-process) that exposes an MC
 
 ### Measurable Outcomes
 
-- Success rate: percentage of valid requests that result in (a) clip created, (b) notes written, (c) scene launched when `launch=true`.
+- Success rate: percentage of valid requests that result in (a) clip created, (b) notes written, (c) created clip launched when `launch=true`.
 - Latency: end-to-end time distribution (at least average + worst-case observed during manual testing).
 - Safety incidents: number of unintended overwrites (target = 0).
 
@@ -90,14 +90,15 @@ This is a Bitwig Studio extension/plugin (running in-process) that exposes an MC
   - Clip naming: accept an explicit name, or allow the external agent to provide a reasonable inferred name.
 - Write MIDI notes into the created clip using explicit structured data from the external AI agent:
   - Support both step-grid style data and beat-time style data (as long as it is explicit and unambiguous).
-- Launch the resulting scene:
-  - `launch=true` by default for the create flow.
+- Launch the created clip (slot) for auditioning:
+  - `launch=true` by default for the create flow (launches the created clip slot, not the full scene row).
   - Allow `launch=false` for batching/advanced workflows.
+- Support launching scenes separately (e.g., `launch_scene`) when the user wants to audition a full row across tracks.
 - Expose the above via MCP tools (multiple tools is acceptable for composability).
 
 ### Growth Features (Post-MVP)
 
-- Launch individual clips (separate from scene launch).
+- More flexible launch controls (e.g., launch/stop policies, quantization options, stop-all, etc.).
 - Editing/augmenting existing clips (append vs replace policies, clearer targeting).
 - Richer metadata and helpers (e.g., returning clip/slot identifiers for follow-up operations).
 
@@ -121,7 +122,7 @@ WigAI:
 - Creates a new launcher MIDI clip in that slot.
 - Writes the provided notes into the clip.
 - Sets the clip name (explicit name provided, or a reasonable inferred name supplied by the agent).
-- Launches the scene by default (`launch=true`) so Kai immediately hears the result.
+- Launches the created clip slot by default (`launch=true`) so Kai immediately hears the result.
 
 Kai hears the pattern playing, sees the newly created clip selected, and can iterate: “Make the hats sparser” → agent sends an updated note payload → WigAI creates another clip in the next empty slot (non-destructive by default).
 
@@ -174,7 +175,7 @@ After clips exist, Noah asks: “Launch scene 12.” WigAI launches the specifie
 
 Rae is rehearsing a live set and wants a quick variation clip without risking overwriting existing performance clips. Rae selects the target track in Bitwig and asks the agent: “Create a 2‑bar fill variation and don’t overwrite anything.”
 
-The agent sends explicit note data and does not request overwrite. WigAI creates the clip in the next empty slot and (by default) launches the scene so Rae can hear it immediately. If Rae is preparing multiple ideas, Rae (or the agent) sets `launch=false` to create several variations first, then launches the preferred scene later.
+The agent sends explicit note data and does not request overwrite. WigAI creates the clip in the next empty slot and (by default) launches the created clip slot so Rae can hear it immediately. If Rae is preparing multiple ideas, Rae (or the agent) sets `launch=false` to create several variations first, then launches the preferred scene later.
 
 **Key decision points:**
 
@@ -186,12 +187,12 @@ The agent sends explicit note data and does not request overwrite. WigAI creates
 
 These journeys imply the system must provide:
 
-- MCP tools for: create launcher MIDI clip, write notes to clip, launch scene.
+- MCP tools for: create launcher MIDI clip (optionally launches the created clip), write notes to clip, launch clip, launch scene.
 - Track targeting: accept `track_index` or `track_name`; otherwise use selected track; if no selected track and none provided → request clarification.
 - Slot targeting: support optional `scene_index`; if omitted, scan forward to find next empty slot.
 - Occupancy safety: if `scene_index` specified and occupied → refuse unless `overwrite=true` (or explicit confirmation is satisfied).
 - Non-destructive defaults: `overwrite=false` by default.
-- Launch behavior: `launch=true` by default; allow `launch=false` for batching.
+- Launch behavior: `launch=true` launches the created clip slot by default; allow `launch=false` for batching.
 - Clip naming: accept explicit name; otherwise allow agent-provided inferred name.
 - Note writing: accept explicit structured notes (step-grid and/or beat-time representations) and apply them exactly.
 - Clear outcomes: return enough metadata (track/scene chosen, created/overwritten status, launch performed) for the agent to explain what happened to the user.
@@ -202,7 +203,7 @@ These journeys imply the system must provide:
 ### Detected Innovation Areas
 
 - **MCP as a universal control port for Bitwig Studio:** WigAI exposes DAW actions as MCP tools, making any MCP-capable AI client (e.g., Claude Desktop) able to control Bitwig reliably through a consistent protocol boundary.
-- **Producer-first “intent → clip” workflow:** A producer describes what they want musically, an external AI agent generates explicit structured note data, and WigAI materializes it as a new launcher MIDI clip inside Bitwig (optionally launching the scene by default).
+- **Producer-first “intent → clip” workflow:** A producer describes what they want musically, an external AI agent generates explicit structured note data, and WigAI materializes it as a new launcher MIDI clip inside Bitwig (optionally launching the created clip slot by default).
 - **Safety-oriented automation:** Non-destructive defaults (`overwrite=false`, next-empty-slot placement) make automation usable in real creative projects without fear of silent destructive edits.
 
 ### Market Context & Competitive Landscape
@@ -218,7 +219,7 @@ This is intentionally built for personal use rather than competitive positioning
 
 This is a pet project for personal use, so risk tolerance is high. If the end-to-end “intent → clip” experience is inconsistent, the system should still remain useful in a degraded mode:
 
-- **Degraded mode:** WigAI only performs deterministic execution (create clip, write explicit notes, launch scene) based on explicit structured payloads; no reliance on WigAI-side inference.
+- **Degraded mode:** WigAI only performs deterministic execution (create clip, write explicit notes, launch created clip) based on explicit structured payloads; no reliance on WigAI-side inference.
 
 ## desktop_app Specific Requirements
 
@@ -258,7 +259,7 @@ WigAI runs as a Bitwig Studio extension/plugin (in-process) and exposes an MCP t
 
 **Core User Journeys Supported:**
 
-- Studio Producer: intent → new launcher MIDI clip → notes written → scene launched
+- Studio Producer: intent → new launcher MIDI clip → notes written → created clip launched
 - Studio Producer (edge case): specified scene occupied → refuse unless overwrite explicitly enabled
 - Power user batching: create multiple clips with `launch=false`, launch scene later
 
@@ -334,7 +335,7 @@ WigAI runs as a Bitwig Studio extension/plugin (in-process) and exposes an MCP t
 ### Launching & Auditioning
 
 - FR24: An external AI agent can launch a scene (launcher row) by index.
-- FR25: When creating a clip, the system can launch the resulting scene by default (`launch=true`).
+- FR25: When creating a clip, the system can launch the created clip slot by default (`launch=true`).
 - FR26: When creating a clip, an external AI agent can suppress launching (`launch=false`) to support batching workflows.
 
 ### Baseline (Existing Brownfield Capabilities)

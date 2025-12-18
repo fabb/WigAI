@@ -124,6 +124,8 @@ Our workflows integrate with branch protection rules:
    - Requires `enforce-branch-policy` check to pass
    - Requires `validation-summary` (from pr-validation.yml) to pass
    - Only accepts PRs from `develop/cycle-*` or `hotfix/*` branches
+   - Blocks `develop/cycle-*` → `main` PRs that contain non-code only (override with PR label `allow-non-code-to-main`)
+   - Blocks workflow-only PRs to `main` unless the source branch is `hotfix/*`
 
 2. **Develop/Cycle-* Branch Protection**
    - Requires `enforce-branch-policy` check to pass

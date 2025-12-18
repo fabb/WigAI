@@ -2,6 +2,7 @@
 .gradle/
 build/
 gradle-app.setting
+.gradle-user-home/
 
 # IntelliJ IDEA
 .idea/

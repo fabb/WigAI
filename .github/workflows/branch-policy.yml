@@ -7,10 +7,67 @@ on:
       - main
       - 'develop/cycle-*'
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   enforce-branch-policy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect code changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - 'src/**'
+              - 'bitwig-api-doc-scraper/**'
+              - 'gradle/**'
+              - 'gradlew'
+              - 'gradlew.bat'
+              - 'gradle.properties'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+              - '**/*.kt'
+              - '**/*.kts'
+            workflows:
+              - '.github/workflows/**'
+            non_workflows:
+              - '**'
+              - '!.github/workflows/**'
+
+      - name: Block workflow-only PRs to main (hotfix only)
+        if: github.base_ref == 'main' && steps.filter.outputs.workflows == 'true' && steps.filter.outputs.non_workflows != 'true' && !startsWith(github.head_ref, 'hotfix/')
+        run: |
+          echo "❌ ERROR: Workflow-only PRs to 'main' must come from a 'hotfix/*' branch."
+          echo ""
+          echo "This prevents accidentally promoting an incomplete cycle to 'main' via workflow tweaks."
+          echo ""
+          echo "Options:"
+          echo "  1) Create a hotfix branch and open PR to main:"
+          echo "     - hotfix/<id>-<short-name>"
+          echo "  2) Include the necessary code changes in the cycle PR (if this is a true cycle promotion)"
+          exit 1
+
+      - name: Block non-code cycle PRs to main
+        if: startsWith(github.head_ref, 'develop/cycle-') && github.base_ref == 'main' && steps.filter.outputs.code != 'true' && !contains(github.event.pull_request.labels.*.name, 'allow-non-code-to-main')
+        run: |
+          echo "❌ ERROR: PRs from 'develop/cycle-*' to 'main' must include code changes."
+          echo ""
+          echo "This prevents accidentally promoting an incomplete cycle to 'main'."
+          echo ""
+          echo "Override (intentional, audited): add PR label 'allow-non-code-to-main'."
+          echo ""
+          echo "If this PR is intended to promote a completed cycle:"
+          echo "  - ensure code changes are included (src/**, gradle/**, *.kts, etc.)"
+          echo ""
+          echo "If this PR is docs/config only:"
+          echo "  - merge it into the cycle branch, but do NOT promote to main yet"
+          exit 1
+
       - name: Check main branch PR source
         if: github.base_ref == 'main'
         run: |
