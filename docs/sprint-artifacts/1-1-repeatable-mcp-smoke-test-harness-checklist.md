@@ -1,6 +1,6 @@
 # Story 1.1: Repeatable MCP Smoke Test Harness + Checklist
 
-Status: ready-for-dev
+Status: Ready for Review
 
 ## Story
 
@@ -28,27 +28,36 @@ so that MCP regressions and integration issues are caught early before we build 
 
 ## Tasks / Subtasks
 
-- [ ] Implement a host-required smoke harness runnable via Gradle
-  - [ ] Add a dedicated CLI entrypoint (Java) that can connect to an MCP server over HTTP SSE/streamable transport
-  - [ ] Read `mcpHost`, `mcpPort`, optional `mcpEndpointPath` (default `/mcp`) and print the resolved URL
-  - [ ] Implement a strict timeout budget (connect timeout + per-operation timeout) and ensure the process exits with non-zero on failure
-- [ ] Implement “safe mode” (default) read-only checks
-  - [ ] Run MCP discovery and print the full observed `tools/list` output (or a summarized list + full JSON in a debug section)
-  - [ ] Assert baseline tools exist (minimum: `status`; also validate presence of current baseline set)
-  - [ ] Execute read-only tools and validate response envelopes are parseable and actionable
-- [ ] Implement mutation-gated checks (off by default)
-  - [ ] Gate mutations behind `WIGAI_SMOKE_TEST_MUTATIONS=true` (env var only; no accidental mutation via default args)
-  - [ ] Execute `transport_start` then `transport_stop` and validate results and that the extension remains responsive
-  - [ ] (Optional) Device parameter “round-trip” only if a device is selected (skip with explicit message otherwise)
-- [ ] Ensure negative-path “no device selected” is validated
-  - [ ] Call `get_selected_device_parameters` with no device selected and assert a typed error (no stack trace / no unhandled exception)
-- [ ] Add a human-readable checklist + runbook for Josh
-  - [ ] Document prerequisites (Bitwig running, WigAI enabled, host/port known)
-  - [ ] Provide commands for safe mode and mutation mode
-  - [ ] Provide troubleshooting guidance and “what to attach to a bug report” (logs + harness output)
-- [ ] Wire up `./gradlew mcpSmokeTest`
-  - [ ] Add a `mcpSmokeTest` Gradle task that runs the harness without requiring the full `test` suite
-  - [ ] Ensure it is NOT part of default CI gating (Bitwig host required)
+- [x] Implement a host-required smoke harness runnable via Gradle
+  - [x] Add a dedicated CLI entrypoint (Java) that can connect to an MCP server over HTTP SSE/streamable transport
+  - [x] Read `mcpHost`, `mcpPort`, optional `mcpEndpointPath` (default `/mcp`) and print the resolved URL
+  - [x] Implement a strict timeout budget (connect timeout + per-operation timeout) and ensure the process exits with non-zero on failure
+- [x] Implement "safe mode" (default) read-only checks
+  - [x] Run MCP discovery and print the full observed `tools/list` output (or a summarized list + full JSON in a debug section)
+  - [x] Assert baseline tools exist (minimum: `status`; also validate presence of current baseline set)
+  - [x] Execute read-only tools and validate response envelopes are parseable and actionable
+- [x] Implement mutation-gated checks (off by default)
+  - [x] Gate mutations behind `WIGAI_SMOKE_TEST_MUTATIONS=true` (env var only; no accidental mutation via default args)
+  - [x] Execute `transport_start` then `transport_stop` and validate results and that the extension remains responsive
+  - [x] (Optional) Device parameter "round-trip" only if a device is selected (skip with explicit message otherwise)
+- [x] Ensure negative-path "no device selected" is validated
+  - [x] Call `get_selected_device_parameters` with no device selected and assert a typed error (no stack trace / no unhandled exception)
+- [x] Add a human-readable checklist + runbook for Josh
+  - [x] Document prerequisites (Bitwig running, WigAI enabled, host/port known)
+  - [x] Provide commands for safe mode and mutation mode
+  - [x] Provide troubleshooting guidance and "what to attach to a bug report" (logs + harness output)
+- [x] Wire up `./gradlew mcpSmokeTest`
+  - [x] Add a `mcpSmokeTest` Gradle task that runs the harness without requiring the full `test` suite
+  - [x] Ensure it is NOT part of default CI gating (Bitwig host required)
+
+### Review Follow-ups (AI)
+
+- [x] [AI-Review][Critical] Remove CLI `--mutations` flag or enforce env-var-only gating per AC4 [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessMain.java:62]
+- [x] [AI-Review][Critical] Validate full baseline tool set (not just `status`) per AC2 [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:19]
+- [x] [AI-Review][Critical] Parse/validate response envelopes instead of substring check for typed errors [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:113]
+- [x] [AI-Review][High] Fail mutation mode when required mutation tools are missing instead of skipping [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:78]
+- [x] [AI-Review][High] Fix Story File List to match git changes (remove unchanged files) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:161]
+- [x] [AI-Review][Medium] Add CI-safe tests for envelope parsing/error surfacing [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessArgsTest.java]
 
 ## Dev Notes
 
@@ -135,11 +144,11 @@ so that MCP regressions and integration issues are caught early before we build 
 
 ### Context Reference
 
-<!-- (Optional) add a follow-up story-context file if the team adopts separate context artifacts -->
+- Runbook: `docs/engineering/mcp-smoke-test-runbook.md`
 
 ### Agent Model Used
 
-GPT-5.2
+Claude Opus 4.5
 
 ### Debug Log References
 
@@ -148,7 +157,31 @@ GPT-5.2
 ### Completion Notes List
 
 - Ultimate context engine analysis completed — comprehensive developer guide created.
+- Implemented MCP smoke harness with ATDD red-green-refactor cycle
+- Created `McpSmokeHarness` with safe mode (read-only) and mutation mode
+- Created `HttpMcpClient` for HTTP-based MCP JSON-RPC communication
+- Created `McpSmokeHarnessMain` CLI entrypoint with argument parsing
+- Added `mcpSmokeTest` Gradle task for host-required smoke testing
+- Created comprehensive runbook at `docs/engineering/mcp-smoke-test-runbook.md`
+- All 5 ATDD tests pass, all CI-safe unit tests pass
+
+**Code Review Follow-ups (2025-12-18):**
+- Removed CLI `--mutations` flag to enforce env-var-only gating (AC4 compliance)
+- Expanded baseline tool validation to full read-only tool set (AC2 compliance)
+- Replaced substring-based error detection with proper JSON envelope parsing
+- Made mutation mode fail-fast when required tools are missing
+- Fixed File List to include only actually changed files
+- Added 8 CI-safe envelope parsing tests
+- All 25 CI-safe tests pass, all 7 ATDD tests pass
 
 ### File List
 
-- `docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md`
+- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java` (modified)
+- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessArgsTest.java` (new)
+- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java` (modified)
+- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessMain.java` (new)
+- `src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java` (new)
+- `build.gradle.kts` (modified - added mcpSmokeTest task)
+- `docs/engineering/mcp-smoke-test-runbook.md` (new)
+- `docs/sprint-artifacts/sprint-status.yaml` (modified)
+- `docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md` (modified)

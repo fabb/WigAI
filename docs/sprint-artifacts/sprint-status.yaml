@@ -42,8 +42,8 @@ story_location: '/Users/josh/code/WigAI/docs/sprint-artifacts'
 
 development_status:
 
-  epic-1: backlog
-  1-1-repeatable-mcp-smoke-test-harness-checklist: ready-for-dev
+  epic-1: in-progress
+  1-1-repeatable-mcp-smoke-test-harness-checklist: review
   1-2-localhost-binding-defaults-preferences-guardrails: backlog
   1-3-standardize-baseline-tool-response-envelopes-align-with-status-tool-api-reference: backlog
   1-4-logging-request-id-correlation-hardening-mutating-tools-only: backlog
