@@ -1,0 +1,79 @@
+# generated: 2025-12-18T15:14:52-07:00
+# project: WigAI
+# project_key: wigai
+# tracking_system: file-system
+# story_location: /Users/josh/code/WigAI/docs/sprint-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder
+#   - ready-for-dev: Draft approved and story context created
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically drafts next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: '2025-12-18T15:14:52-07:00'
+project: 'WigAI'
+project_key: 'wigai'
+tracking_system: 'file-system'
+story_location: '/Users/josh/code/WigAI/docs/sprint-artifacts'
+
+development_status:
+
+  epic-1: backlog
+  1-1-repeatable-mcp-smoke-test-harness-checklist: ready-for-dev
+  1-2-localhost-binding-defaults-preferences-guardrails: backlog
+  1-3-standardize-baseline-tool-response-envelopes-align-with-status-tool-api-reference: backlog
+  1-4-logging-request-id-correlation-hardening-mutating-tools-only: backlog
+  1-5-non-blocking-execution-bounded-retry-verification-baseline-tools: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-standard-track-targeting-contract-index-exact-name-selected-default: backlog
+  2-2-resolve-track-tool-deterministic-fuzzy-matching-candidate-list-ambiguity: backlog
+  2-3-apply-track-targeting-contract-to-existing-mutating-tools-documentation: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-resolve-target-track-slot-for-launcher-clip-creation: backlog
+  3-2-create-launcher-midi-clip-with-naming-overwrite-guardrails: backlog
+  3-3-create-launcher-midi-clip-mcp-tool-composable-primitive: backlog
+  3-4-launch-scene-mcp-tool-snake-case-alias-for-scene-row-launch: backlog
+  3-5-update-api-reference-for-new-clip-creation-and-scene-launch-tools: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-define-deterministic-note-payload-contracts-beat-time-step-grid: backlog
+  4-2-strict-validation-atomic-write-semantics-no-partial-writes: backlog
+  4-3-write-launcher-clip-notes-mcp-tool-composable-primitive: backlog
+  4-4-result-reporting-error-diagnostics-actionable-not-noisy: backlog
+  4-5-update-api-reference-for-note-writing-tool: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-batch-create-write-launcher-clips-mcp-tool-atomic-batch-with-per-item-results: backlog
+  5-2-guardrails-for-batch-safety-bounded-work: backlog
+  5-3-update-api-reference-for-batch-tool-recommended-workflows: backlog
+  epic-5-retrospective: optional

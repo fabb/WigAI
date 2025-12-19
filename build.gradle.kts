@@ -1,6 +1,7 @@
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.plugins.jvm.JvmTestSuite
+import org.gradle.api.tasks.testing.Test
 
 plugins {
     // Apply the Java plugin to add support for Java
@@ -53,7 +54,29 @@ testing {
         // Configure the built-in 'test' suite to use JUnit Jupiter
         val test by getting(JvmTestSuite::class) {
             useJUnitJupiter()
+
+            targets {
+                all {
+                    testTask.configure {
+                        useJUnitPlatform {
+                            excludeTags("atdd_red", "host_required")
+                        }
+                    }
+                }
+            }
         }
+    }
+}
+
+tasks.register<Test>("atddRedTest") {
+    group = "verification"
+    description = "Runs ATDD red-phase tests only (tagged @Tag(\"atdd_red\")). Not part of the default 'test' suite."
+
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+
+    useJUnitPlatform {
+        includeTags("atdd_red")
     }
 }
 
