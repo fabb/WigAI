@@ -99,6 +99,53 @@ public final class McpSmokeHarness {
                 err.println("FAIL: transport mutation failed: " + e.getMessage());
                 return 1;
             }
+
+            if (tools.contains("get_selected_device_parameters")
+                    && tools.contains("set_selected_device_parameter")) {
+                try {
+                    String response = client.callTool("get_selected_device_parameters", Map.of());
+                    EnvelopeResult envelope = parseEnvelope(response);
+
+                    if (!envelope.isValidEnvelope()) {
+                        err.println("FAIL: get_selected_device_parameters returned invalid envelope: "
+                                + envelope.errorMessage());
+                        return 1;
+                    }
+
+                    if (envelope.isError()) {
+                        if ("DEVICE_NOT_SELECTED".equals(envelope.errorCode())) {
+                            out.println("Skipping device parameter round-trip: DEVICE_NOT_SELECTED");
+                        } else {
+                            err.println("FAIL: get_selected_device_parameters returned error: " + envelope.errorCode());
+                            return 1;
+                        }
+                    } else {
+                        JsonNode root = OBJECT_MAPPER.readTree(response);
+                        JsonNode parameters = root.path("data").path("parameters");
+                        if (parameters.isArray() && parameters.size() > 0) {
+                            JsonNode firstParam = parameters.get(0);
+                            if (firstParam.hasNonNull("index") && firstParam.hasNonNull("value")) {
+                                int index = firstParam.get("index").asInt();
+                                double value = firstParam.get("value").asDouble();
+                                client.callTool("set_selected_device_parameter", Map.of(
+                                        "parameter_index", index,
+                                        "value", value
+                                ));
+                                out.println("✓ device parameter round-trip → OK");
+                            } else {
+                                out.println("Skipping device parameter round-trip: no parameter value available");
+                            }
+                        } else {
+                            out.println("Skipping device parameter round-trip: no parameters returned");
+                        }
+                    }
+                } catch (Exception e) {
+                    err.println("FAIL: device parameter round-trip failed: " + e.getMessage());
+                    return 1;
+                }
+            } else {
+                out.println("Skipping device parameter round-trip: required tools missing");
+            }
         } else {
             // Safe mode: only call read-only tools
             for (String tool : READ_ONLY_TOOLS) {
@@ -199,4 +246,3 @@ public final class McpSmokeHarness {
         }
     }
 }
-

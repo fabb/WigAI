@@ -1,6 +1,6 @@
 # Story 1.1: Repeatable MCP Smoke Test Harness + Checklist
 
-Status: Ready for Review
+Status: in-progress
 
 ## Story
 
@@ -58,6 +58,10 @@ so that MCP regressions and integration issues are caught early before we build 
 - [x] [AI-Review][High] Fail mutation mode when required mutation tools are missing instead of skipping [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:78]
 - [x] [AI-Review][High] Fix Story File List to match git changes (remove unchanged files) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:161]
 - [x] [AI-Review][Medium] Add CI-safe tests for envelope parsing/error surfacing [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessArgsTest.java]
+- [ ] [AI-Review][High] Add explicit guard to ensure safe mode never calls mutating tools [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:103]
+- [ ] [AI-Review][High] Handle non-text or multi-content tool responses in HttpMcpClient to avoid false envelope failures [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:83]
+- [ ] [AI-Review][Medium] De-duplicate resolved URL printing between CLI and harness output [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessMain.java:29]
+- [ ] [AI-Review][Medium] Update runbook baseline-tool assertion to match full baseline set [docs/engineering/mcp-smoke-test-runbook.md:43]
 
 ## Dev Notes
 
