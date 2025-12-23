@@ -1,55 +1,55 @@
-# Test Quality Review: {test_filename}
+# Test Quality Review: McpSmokeHarnessAtddRedTest.java
 
-**Quality Score**: {score}/100 ({grade} - {assessment})
-**Review Date**: {YYYY-MM-DD}
-**Review Scope**: {single | directory | suite}
-**Reviewer**: {user_name or TEA Agent}
+**Quality Score**: 88/100 (A - Good)
+**Review Date**: 2025-12-23
+**Review Scope**: single
+**Reviewer**: TEA Agent (Josh)
 
 ---
 
 ## Executive Summary
 
-**Overall Assessment**: {Excellent | Good | Acceptable | Needs Improvement | Critical Issues}
+**Overall Assessment**: Good
 
-**Recommendation**: {Approve | Approve with Comments | Request Changes | Block}
+**Recommendation**: Approve with Comments
 
 ### Key Strengths
 
-✅ {strength_1}
-✅ {strength_2}
-✅ {strength_3}
+✅ Clear coverage of Story 1.1 acceptance criteria (safe mode, mutation mode, typed error)
+✅ Deterministic unit tests using local fakes (no external dependencies)
+✅ Explicit assertions for exit codes and error messaging
 
 ### Key Weaknesses
 
-❌ {weakness_1}
-❌ {weakness_2}
-❌ {weakness_3}
+❌ Missing test IDs for traceability to ACs and story mapping
+❌ Missing priority markers (P0/P1/P2/P3) for execution ordering
+❌ No explicit Given/When/Then structure in test bodies
 
 ### Summary
 
-{1-2 paragraph summary of overall test quality, highlighting major findings and recommendation rationale}
+These ATDD tests validate core smoke-harness behavior with deterministic fakes and explicit assertions. The main gaps are traceability and prioritization metadata: no test IDs or P-level tags are present, and the tests lack explicit Given/When/Then structure. The implementation is sound and non-flaky, so the review recommends approval with comments to add traceability and priority annotations.
 
 ---
 
 ## Quality Criteria Assessment
 
-| Criterion                            | Status                          | Violations | Notes        |
-| ------------------------------------ | ------------------------------- | ---------- | ------------ |
-| BDD Format (Given-When-Then)         | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
-| Test IDs                             | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
-| Priority Markers (P0/P1/P2/P3)       | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
-| Hard Waits (sleep, waitForTimeout)   | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
-| Determinism (no conditionals)        | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
-| Isolation (cleanup, no shared state) | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
-| Fixture Patterns                     | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
-| Data Factories                       | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
-| Network-First Pattern                | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
-| Explicit Assertions                  | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
-| Test Length (≤300 lines)             | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {lines}    | {brief_note} |
-| Test Duration (≤1.5 min)             | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {duration} | {brief_note} |
-| Flakiness Patterns                   | {✅ PASS \| ⚠️ WARN \| ❌ FAIL} | {count}    | {brief_note} |
+| Criterion                            | Status                          | Violations | Notes                                                   |
+| ------------------------------------ | ------------------------------- | ---------- | ------------------------------------------------------- |
+| BDD Format (Given-When-Then)         | ⚠️ WARN                          | 1          | No explicit Given/When/Then structure                    |
+| Test IDs                             | ❌ FAIL                          | 7          | No test IDs in method names or @DisplayName             |
+| Priority Markers (P0/P1/P2/P3)       | ❌ FAIL                          | 7          | No P0-P3 tags; only @Tag("atdd_red")                    |
+| Hard Waits (sleep, waitForTimeout)   | ✅ PASS                          | 0          | No hard waits detected                                  |
+| Determinism (no conditionals)        | ✅ PASS                          | 0          | Deterministic fakes and assertions                       |
+| Isolation (cleanup, no shared state) | ✅ PASS                          | 0          | Local fakes, no shared state                             |
+| Fixture Patterns                     | ⚠️ WARN                          | 0          | Local fakes; no reusable fixture composition             |
+| Data Factories                       | ⚠️ WARN                          | 0          | Test data built inline; no factory helpers               |
+| Network-First Pattern                | ⚠️ WARN                          | 0          | Not a browser/network interception test                  |
+| Explicit Assertions                  | ✅ PASS                          | 0          | Assertions present in all tests                          |
+| Test Length (≤300 lines)             | ✅ PASS                          | 204        | Within recommended size                                 |
+| Test Duration (≤1.5 min)             | ✅ PASS                          | <1.5 min   | Unit tests with local fakes                              |
+| Flakiness Patterns                   | ✅ PASS                          | 0          | No flaky patterns detected                               |
 
-**Total Violations**: {critical_count} Critical, {high_count} High, {medium_count} Medium, {low_count} Low
+**Total Violations**: 0 Critical, 2 High, 1 Medium, 0 Low
 
 ---
 
@@ -57,137 +57,199 @@
 
 ```
 Starting Score:          100
-Critical Violations:     -{critical_count} × 10 = -{critical_deduction}
-High Violations:         -{high_count} × 5 = -{high_deduction}
-Medium Violations:       -{medium_count} × 2 = -{medium_deduction}
-Low Violations:          -{low_count} × 1 = -{low_deduction}
+Critical Violations:     -0 × 10 = -0
+High Violations:         -2 × 5 = -10
+Medium Violations:       -1 × 2 = -2
+Low Violations:          -0 × 1 = -0
 
 Bonus Points:
-  Excellent BDD:         +{0|5}
-  Comprehensive Fixtures: +{0|5}
-  Data Factories:        +{0|5}
-  Network-First:         +{0|5}
-  Perfect Isolation:     +{0|5}
-  All Test IDs:          +{0|5}
+  Excellent BDD:         +0
+  Comprehensive Fixtures: +0
+  Data Factories:        +0
+  Network-First:         +0
+  Perfect Isolation:     +0
+  All Test IDs:          +0
                          --------
-Total Bonus:             +{bonus_total}
+Total Bonus:             +0
 
-Final Score:             {final_score}/100
-Grade:                   {grade}
+Final Score:             88/100
+Grade:                   A
 ```
 
 ---
 
 ## Critical Issues (Must Fix)
 
-{If no critical issues: "No critical issues detected. ✅"}
-
-{For each critical issue:}
-
-### {issue_number}. {Issue Title}
-
-**Severity**: P0 (Critical)
-**Location**: `{filename}:{line_number}`
-**Criterion**: {criterion_name}
-**Knowledge Base**: [{fragment_name}]({fragment_path})
-
-**Issue Description**:
-{Detailed explanation of what the problem is and why it's critical}
-
-**Current Code**:
-
-```typescript
-// ❌ Bad (current implementation)
-{
-  code_snippet_showing_problem;
-}
-```
-
-**Recommended Fix**:
-
-```typescript
-// ✅ Good (recommended approach)
-{
-  code_snippet_showing_solution;
-}
-```
-
-**Why This Matters**:
-{Explanation of impact - flakiness risk, maintainability, reliability}
-
-**Related Violations**:
-{If similar issue appears elsewhere, note line numbers}
+No critical issues detected. ✅
 
 ---
 
 ## Recommendations (Should Fix)
 
-{If no recommendations: "No additional recommendations. Test quality is excellent. ✅"}
+### 1. Add Test IDs for Traceability
 
-{For each recommendation:}
-
-### {rec_number}. {Recommendation Title}
-
-**Severity**: {P1 (High) | P2 (Medium) | P3 (Low)}
-**Location**: `{filename}:{line_number}`
-**Criterion**: {criterion_name}
-**Knowledge Base**: [{fragment_name}]({fragment_path})
+**Severity**: P1 (High)
+**Location**: `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java:17`
+**Criterion**: Test IDs
+**Knowledge Base**: [traceability.md](../../../testarch/knowledge/traceability.md)
 
 **Issue Description**:
-{Detailed explanation of what could be improved and why}
+Tests lack explicit IDs to map to Story 1.1 acceptance criteria. This weakens auditability and coverage traceability.
 
 **Current Code**:
 
-```typescript
-// ⚠️ Could be improved (current implementation)
-{
-  code_snippet_showing_current_approach;
+```java
+// ⚠️ Could be improved (no test ID)
+@Test
+void prints_resolved_mcp_url_and_mode() {
+    // ...
 }
 ```
 
 **Recommended Improvement**:
 
-```typescript
+```java
 // ✅ Better approach (recommended)
-{
-  code_snippet_showing_improvement;
+@Test
+@DisplayName("1.1-SMOKE-001 AC1 connect + pass/fail output")
+void prints_resolved_mcp_url_and_mode() {
+    // ...
 }
 ```
 
 **Benefits**:
-{Explanation of benefits - maintainability, readability, reusability}
+Traceable IDs map tests to acceptance criteria and simplify coverage audits.
 
 **Priority**:
-{Why this is P1/P2/P3 - urgency and impact}
+P1 - improves traceability without affecting correctness
+
+---
+
+### 2. Add Priority Markers (P0-P3)
+
+**Severity**: P1 (High)
+**Location**: `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java:14`
+**Criterion**: Priority Markers
+**Knowledge Base**: [test-priorities.md](../../../testarch/knowledge/test-priorities.md)
+
+**Issue Description**:
+Priority markers are missing, so test criticality is unclear and cannot be aligned to Epic 1 execution order.
+
+**Current Code**:
+
+```java
+// ⚠️ Could be improved (no priority tags)
+@Tag("atdd_red")
+class McpSmokeHarnessAtddRedTest {
+    // ...
+}
+```
+
+**Recommended Improvement**:
+
+```java
+// ✅ Better approach (recommended)
+@Tag("P1")
+@Tag("atdd")
+class McpSmokeHarnessAtddRedTest {
+    // ...
+}
+```
+
+**Benefits**:
+Enables selective execution by criticality and aligns to the test design plan.
+
+**Priority**:
+P1 - improves execution planning and reporting
+
+---
+
+### 3. Add Explicit Given/When/Then Structure
+
+**Severity**: P2 (Medium)
+**Location**: `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java:18`
+**Criterion**: BDD Format (Given-When-Then)
+**Knowledge Base**: [test-quality.md](../../../testarch/knowledge/test-quality.md)
+
+**Issue Description**:
+Test intent is clear, but there is no explicit Given/When/Then structure to make the behavior and expectations unmistakable.
+
+**Current Code**:
+
+```java
+// ⚠️ Could be improved (implicit structure)
+@Test
+void mutation_mode_calls_transport_start_then_stop() {
+    // setup, execute, assert
+}
+```
+
+**Recommended Improvement**:
+
+```java
+// ✅ Better approach (recommended)
+@Test
+void mutation_mode_calls_transport_start_then_stop() {
+    // Given
+    // When
+    // Then
+}
+```
+
+**Benefits**:
+Improves readability and reduces misinterpretation of expected behavior.
+
+**Priority**:
+P2 - helpful for clarity, not a blocker
 
 ---
 
 ## Best Practices Found
 
-{If good patterns found, highlight them}
+### 1. Deterministic Local Fakes
 
-{For each best practice:}
-
-### {practice_number}. {Best Practice Title}
-
-**Location**: `{filename}:{line_number}`
-**Pattern**: {pattern_name}
-**Knowledge Base**: [{fragment_name}]({fragment_path})
+**Location**: `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java:167`
+**Pattern**: In-test fakes for isolation
+**Knowledge Base**: [test-quality.md](../../../testarch/knowledge/test-quality.md)
 
 **Why This Is Good**:
-{Explanation of why this pattern is excellent}
+Local fakes isolate the harness behavior from external dependencies, keeping tests fast and deterministic.
 
 **Code Example**:
 
-```typescript
+```java
 // ✅ Excellent pattern demonstrated in this test
-{
-  code_snippet_showing_best_practice;
+private static class FakeMcpClient implements McpClient {
+    @Override
+    public List<String> listTools() {
+        return tools;
+    }
 }
 ```
 
 **Use as Reference**:
-{Encourage using this pattern in other tests}
+Apply this local-fake pattern for other host-required boundary tests.
+
+---
+
+### 2. Mutation Gating Verification
+
+**Location**: `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java:80`
+**Pattern**: Safe-mode mutation guard
+**Knowledge Base**: [test-quality.md](../../../testarch/knowledge/test-quality.md)
+
+**Why This Is Good**:
+Explicitly asserting that safe mode never calls mutation tools prevents accidental state changes.
+
+**Code Example**:
+
+```java
+// ✅ Excellent pattern demonstrated in this test
+assertFalse(client.calledTools.contains("transport_start"));
+```
+
+**Use as Reference**:
+Use similar assertions for any safe-mode feature that must never mutate state.
 
 ---
 
@@ -195,34 +257,34 @@ Grade:                   {grade}
 
 ### File Metadata
 
-- **File Path**: `{relative_path_from_project_root}`
-- **File Size**: {line_count} lines, {kb_size} KB
-- **Test Framework**: {Playwright | Jest | Cypress | Vitest | Other}
-- **Language**: {TypeScript | JavaScript}
+- **File Path**: `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java`
+- **File Size**: 204 lines, 7.8 KB
+- **Test Framework**: Other (JUnit 5)
+- **Language**: Java
 
 ### Test Structure
 
-- **Describe Blocks**: {describe_count}
-- **Test Cases (it/test)**: {test_count}
-- **Average Test Length**: {avg_lines_per_test} lines per test
-- **Fixtures Used**: {fixture_count} ({fixture_names})
-- **Data Factories Used**: {factory_count} ({factory_names})
+- **Describe Blocks**: 0
+- **Test Cases (it/test)**: 7
+- **Average Test Length**: ~29 lines per test
+- **Fixtures Used**: 0 (local fakes only)
+- **Data Factories Used**: 0 (inline data)
 
 ### Test Coverage Scope
 
-- **Test IDs**: {test_id_list}
+- **Test IDs**: None
 - **Priority Distribution**:
-  - P0 (Critical): {p0_count} tests
-  - P1 (High): {p1_count} tests
-  - P2 (Medium): {p2_count} tests
-  - P3 (Low): {p3_count} tests
-  - Unknown: {unknown_count} tests
+  - P0 (Critical): 0 tests
+  - P1 (High): 0 tests
+  - P2 (Medium): 0 tests
+  - P3 (Low): 0 tests
+  - Unknown: 7 tests
 
 ### Assertions Analysis
 
-- **Total Assertions**: {assertion_count}
-- **Assertions per Test**: {avg_assertions_per_test} (avg)
-- **Assertion Types**: {assertion_types_used}
+- **Total Assertions**: 12
+- **Assertions per Test**: 1.7 (avg)
+- **Assertion Types**: assertEquals, assertTrue, assertFalse
 
 ---
 
@@ -230,28 +292,24 @@ Grade:                   {grade}
 
 ### Related Artifacts
 
-{If story file found:}
+- **Story File**: [1-1-repeatable-mcp-smoke-test-harness-checklist.md](../sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md)
+- **Acceptance Criteria Mapped**: 5/5 (100%)
 
-- **Story File**: [{story_filename}]({story_path})
-- **Acceptance Criteria Mapped**: {ac_mapped}/{ac_total} ({ac_coverage}%)
-
-{If test-design found:}
-
-- **Test Design**: [{test_design_filename}]({test_design_path})
-- **Risk Assessment**: {risk_level}
+- **Test Design**: [test-design-epic-1.md](../test-design-epic-1.md)
+- **Risk Assessment**: High (host-required smoke + integration)
 - **Priority Framework**: P0-P3 applied
 
 ### Acceptance Criteria Validation
 
-{If story file available, map tests to ACs:}
+| Acceptance Criterion | Test ID | Status        | Notes |
+| -------------------- | ------- | ------------- | ----- |
+| AC1 connect + pass/fail output | prints_resolved_mcp_url_and_mode | ✅ Covered | Asserts resolved URL and exit code |
+| AC2 baseline tools asserted | performs_tools_list_and_asserts_full_baseline_per_AC2 | ✅ Covered | Validates full baseline list |
+| AC3 safe mode read-only checks | safe_mode_never_calls_mutating_tools | ✅ Covered | Ensures no mutation tools called |
+| AC4 mutation flag gates mutations | mutation_mode_calls_transport_start_then_stop | ✅ Covered | Calls transport start/stop in order |
+| AC5 typed error on no device | no_device_selected_returns_typed_error_not_crash | ✅ Covered | Ensures typed error does not fail run |
 
-| Acceptance Criterion | Test ID   | Status                     | Notes   |
-| -------------------- | --------- | -------------------------- | ------- |
-| {AC_1}               | {test_id} | {✅ Covered \| ❌ Missing} | {notes} |
-| {AC_2}               | {test_id} | {✅ Covered \| ❌ Missing} | {notes} |
-| {AC_3}               | {test_id} | {✅ Covered \| ❌ Missing} | {notes} |
-
-**Coverage**: {covered_count}/{total_count} criteria covered ({coverage_percentage}%)
+**Coverage**: 5/5 criteria covered (100%)
 
 ---
 
@@ -278,56 +336,42 @@ See [tea-index.csv](../../../testarch/tea-index.csv) for complete knowledge base
 
 ### Immediate Actions (Before Merge)
 
-1. **{action_1}** - {description}
-   - Priority: {P0 | P1 | P2}
-   - Owner: {team_or_person}
-   - Estimated Effort: {time_estimate}
+1. **Add test IDs in @DisplayName** - Map to Story 1.1 acceptance criteria
+   - Priority: P1
+   - Owner: Josh
+   - Estimated Effort: 30 minutes
 
-2. **{action_2}** - {description}
-   - Priority: {P0 | P1 | P2}
-   - Owner: {team_or_person}
-   - Estimated Effort: {time_estimate}
+2. **Add priority tags (P0-P3)** - Align with Epic 1 execution plan
+   - Priority: P1
+   - Owner: Josh
+   - Estimated Effort: 30 minutes
 
 ### Follow-up Actions (Future PRs)
 
-1. **{action_1}** - {description}
-   - Priority: {P2 | P3}
-   - Target: {next_sprint | backlog}
+1. **Add Given/When/Then comments** - Make intent explicit for reviewers
+   - Priority: P2
+   - Target: next_sprint
 
-2. **{action_2}** - {description}
-   - Priority: {P2 | P3}
-   - Target: {next_sprint | backlog}
+2. **Extract reusable MCP response helpers** - Reduce duplication across tests
+   - Priority: P3
+   - Target: backlog
 
 ### Re-Review Needed?
 
-{✅ No re-review needed - approve as-is}
-{⚠️ Re-review after critical fixes - request changes, then re-review}
-{❌ Major refactor required - block merge, pair programming recommended}
+✅ No re-review needed - approve with comments
 
 ---
 
 ## Decision
 
-**Recommendation**: {Approve | Approve with Comments | Request Changes | Block}
+**Recommendation**: Approve with Comments
 
 **Rationale**:
-{1-2 paragraph explanation of recommendation based on findings}
-
-**For Approve**:
-
-> Test quality is excellent/good with {score}/100 score. {Minor issues noted can be addressed in follow-up PRs.} Tests are production-ready and follow best practices.
+The tests are deterministic, cover all acceptance criteria, and validate safe vs mutation behavior without flaky patterns. Traceability and priority metadata are missing, so add test IDs and P-level tags to align with the test design and reporting needs.
 
 **For Approve with Comments**:
 
-> Test quality is acceptable with {score}/100 score. {High-priority recommendations should be addressed but don't block merge.} Critical issues resolved, but improvements would enhance maintainability.
-
-**For Request Changes**:
-
-> Test quality needs improvement with {score}/100 score. {Critical issues must be fixed before merge.} {X} critical violations detected that pose flakiness/maintainability risks.
-
-**For Block**:
-
-> Test quality is insufficient with {score}/100 score. {Multiple critical issues make tests unsuitable for production.} Recommend pairing session with QA engineer to apply patterns from knowledge base.
+> Test quality is good with 88/100 score. High-priority recommendations should be addressed but don't block merge. Critical issues resolved, but improvements would enhance maintainability.
 
 ---
 
@@ -335,34 +379,25 @@ See [tea-index.csv](../../../testarch/tea-index.csv) for complete knowledge base
 
 ### Violation Summary by Location
 
-{Table of all violations sorted by line number:}
-
-| Line   | Severity      | Criterion   | Issue         | Fix         |
-| ------ | ------------- | ----------- | ------------- | ----------- |
-| {line} | {P0/P1/P2/P3} | {criterion} | {brief_issue} | {brief_fix} |
-| {line} | {P0/P1/P2/P3} | {criterion} | {brief_issue} | {brief_fix} |
+| Line   | Severity | Criterion        | Issue                          | Fix                                 |
+| ------ | -------- | ---------------- | ------------------------------ | ----------------------------------- |
+| 17     | P1       | Test IDs         | Missing test IDs               | Add @DisplayName with ID            |
+| 14     | P1       | Priority Markers | Missing P0-P3 tags             | Add @Tag("P#")                      |
+| 18     | P2       | BDD Format       | No Given/When/Then structure   | Add G/W/T comments                  |
 
 ### Quality Trends
 
-{If reviewing same file multiple times, show trend:}
-
-| Review Date  | Score         | Grade     | Critical Issues | Trend       |
-| ------------ | ------------- | --------- | --------------- | ----------- |
-| {YYYY-MM-DD} | {score_1}/100 | {grade_1} | {count_1}       | ⬆️ Improved |
-| {YYYY-MM-DD} | {score_2}/100 | {grade_2} | {count_2}       | ⬇️ Declined |
-| {YYYY-MM-DD} | {score_3}/100 | {grade_3} | {count_3}       | ➡️ Stable   |
+| Review Date  | Score       | Grade | Critical Issues | Trend       |
+| ------------ | ----------- | ----- | --------------- | ----------- |
+| 2025-12-23   | 88/100      | A     | 0               | ➡️ Stable   |
 
 ### Related Reviews
 
-{If reviewing multiple files in directory/suite:}
+| File | Score | Grade | Critical | Status |
+| ---- | ----- | ----- | -------- | ------ |
+| (single file review) | 88/100 | A | 0 | Approve with Comments |
 
-| File     | Score       | Grade   | Critical | Status             |
-| -------- | ----------- | ------- | -------- | ------------------ |
-| {file_1} | {score}/100 | {grade} | {count}  | {Approved/Blocked} |
-| {file_2} | {score}/100 | {grade} | {count}  | {Approved/Blocked} |
-| {file_3} | {score}/100 | {grade} | {count}  | {Approved/Blocked} |
-
-**Suite Average**: {avg_score}/100 ({avg_grade})
+**Suite Average**: 88/100 (A)
 
 ---
 
@@ -370,8 +405,8 @@ See [tea-index.csv](../../../testarch/tea-index.csv) for complete knowledge base
 
 **Generated By**: BMad TEA Agent (Test Architect)
 **Workflow**: testarch-test-review v4.0
-**Review ID**: test-review-{filename}-{YYYYMMDD}
-**Timestamp**: {YYYY-MM-DD HH:MM:SS}
+**Review ID**: test-review-McpSmokeHarnessAtddRedTest-20251223
+**Timestamp**: 2025-12-23 15:10:55
 **Version**: 1.0
 
 ---
