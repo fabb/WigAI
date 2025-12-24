@@ -108,11 +108,24 @@ Read-only tools tested:
 1. Restart Bitwig
 2. Check WigAI extension logs
 
-### Typed Error (Expected)
+### Typed Error Behavior
 
-**Symptom:** `status → typed error (expected in some states)`
+Safe mode behavior for typed errors:
 
-This is **not a failure**. Some tools return typed errors when the DAW state doesn't match (e.g., no device selected). The harness validates that errors are structured, not unhandled exceptions.
+| Error Code | Affected Tools | Result |
+|------------|----------------|--------|
+| `DEVICE_NOT_SELECTED` | `get_selected_device_parameters`, `get_device_details` | Expected (pass) |
+| `MISSING_REQUIRED_PARAMETER` | Any tool called without required params | Expected (pass) |
+| Any other error | Any other tool | **Failure** |
+
+**Why this matters:** A typed error on a read-only tool like `status` or `list_tracks` indicates a real problem. Only device-related tools may return `DEVICE_NOT_SELECTED` when Bitwig has no device selected.
+
+**Symptom:** `FAIL: list_tracks returned typed error: SOME_ERROR_CODE`
+
+**Solution:**
+1. Check the error code and message in the output
+2. Investigate whether the tool is behaving correctly in WigAI
+3. For device-related errors, ensure a device is selected in Bitwig before running
 
 ## Bug Report Checklist
 

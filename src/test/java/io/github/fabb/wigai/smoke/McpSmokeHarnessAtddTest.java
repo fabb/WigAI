@@ -1,6 +1,5 @@
 package io.github.fabb.wigai.smoke;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -11,8 +10,11 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Tag("atdd_red")
-class McpSmokeHarnessAtddRedTest {
+/**
+ * ATDD tests for Story 1.1 smoke harness - now green and running in CI.
+ * These tests verify acceptance criteria without requiring a live Bitwig instance.
+ */
+class McpSmokeHarnessAtddTest {
 
     @Test
     void prints_resolved_mcp_url_and_mode() {
@@ -181,6 +183,11 @@ class McpSmokeHarnessAtddRedTest {
         @Override
         public List<String> listTools() {
             return tools;
+        }
+
+        @Override
+        public String listToolsRaw() {
+            return "{\"result\":{\"tools\":[]}}";
         }
 
         @Override

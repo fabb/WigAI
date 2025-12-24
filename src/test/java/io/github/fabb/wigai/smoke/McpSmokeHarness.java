@@ -67,14 +67,29 @@ public final class McpSmokeHarness {
 
         // Step 1: Discovery - tools/list
         List<String> tools;
+        String rawToolsJson;
         try {
+            rawToolsJson = client.listToolsRaw();
             tools = client.listTools();
         } catch (Exception e) {
             err.println("FAIL: tools/list failed: " + e.getMessage());
             return 1;
         }
 
+        // AC2: Print full tools/list JSON to stdout
         out.println("Discovered tools: " + tools);
+        out.println();
+        out.println("--- Full tools/list JSON ---");
+        try {
+            // Pretty-print the JSON for readability
+            JsonNode rawJson = OBJECT_MAPPER.readTree(rawToolsJson);
+            out.println(OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(rawJson));
+        } catch (Exception e) {
+            // Fallback: print raw if parsing fails
+            out.println(rawToolsJson);
+        }
+        out.println("--- End tools/list JSON ---");
+        out.println();
 
         // Step 2: Assert baseline tools exist
         for (String required : BASELINE_REQUIRED_TOOLS) {

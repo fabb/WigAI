@@ -1,6 +1,6 @@
 # Story 1.1: Repeatable MCP Smoke Test Harness + Checklist
 
-Status: in-progress
+Status: Ready for Review
 
 ## Story
 
@@ -68,11 +68,11 @@ so that MCP regressions and integration issues are caught early before we build 
 - [x] [AI-Review][Critical] Update File List to include files from last 8 commits (docs/atdd-checklist-1-1-repeatable-mcp-smoke-test-harness-checklist.md, docs/sprint-artifacts/validation-report-2025-12-18T15-37-47-07-00.md, docs/test-design-epic-1.md, docs/test-review.md) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:198]
 - [x] [AI-Review][High] Fail safe mode on any typed error other than DEVICE_NOT_SELECTED to keep pass/fail meaningful [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:197]
 - [x] [AI-Review][Medium] Wrap JSON-RPC error responses in a {status:"error"} envelope so parseEnvelope reports actionable code/message [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:102]
-- [ ] [AI-Review][Critical] Fix File List to include missing last-10-commit docs (docs/atdd-checklist-1-1-repeatable-mcp-smoke-test-harness-checklist.md, docs/sprint-artifacts/validation-report-2025-12-18T15-37-47-07-00.md, docs/test-design-epic-1.md) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:208]
-- [ ] [AI-Review][High] Print full tools/list JSON to stdout (not just tool names) to satisfy AC2 [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:69]
-- [ ] [AI-Review][Medium] Update runbook typed-error guidance to reflect safe-mode failures on non-device tool errors [docs/engineering/mcp-smoke-test-runbook.md:111]
-- [ ] [AI-Review][Medium] Escape JSON-RPC error messages safely when wrapping in status envelope (handle newline/control chars) [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:105]
-- [ ] [AI-Review][Medium] Promote green ATDD tests (remove atdd_red tag or adjust filters so they run in CI) [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java:14]
+- [x] [AI-Review][Critical] Fix File List to include missing last-10-commit docs (docs/atdd-checklist-1-1-repeatable-mcp-smoke-test-harness-checklist.md, docs/sprint-artifacts/validation-report-2025-12-18T15-37-47-07-00.md, docs/test-design-epic-1.md) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:208]
+- [x] [AI-Review][High] Print full tools/list JSON to stdout (not just tool names) to satisfy AC2 [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:69]
+- [x] [AI-Review][Medium] Update runbook typed-error guidance to reflect safe-mode failures on non-device tool errors [docs/engineering/mcp-smoke-test-runbook.md:111]
+- [x] [AI-Review][Medium] Escape JSON-RPC error messages safely when wrapping in status envelope (handle newline/control chars) [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:105]
+- [x] [AI-Review][Medium] Promote green ATDD tests (remove atdd_red tag or adjust filters so they run in CI) [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java:14]
 
 ## Dev Notes
 
@@ -210,13 +210,22 @@ Claude Opus 4.5
 - Added 2 new tests: `safeModeFailsOnTypedErrorForNonDeviceTools` and `httpMcpClient_jsonRpcErrorParsableByParseEnvelope`
 - All 40 CI-safe tests pass
 
+**Code Review Follow-ups Round 5 (2025-12-23):**
+- Added `listToolsRaw()` to McpClient interface for full tools/list JSON output (AC2 compliance)
+- Updated harness to print pretty-printed full tools/list JSON to stdout
+- Updated runbook typed-error section to document safe-mode failure behavior
+- Added `escapeJsonString()` helper for safe JSON string escaping in error envelopes
+- Promoted ATDD tests to CI: renamed `McpSmokeHarnessAtddRedTest` → `McpSmokeHarnessAtddTest`, removed `@Tag("atdd_red")`
+- Added 4 new escape-related tests
+- All 51 CI-safe tests pass (including 7 promoted ATDD tests)
+
 ### File List
 
 - `src/test/java/io/github/fabb/wigai/smoke/McpClient.java` (new)
 - `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java` (new)
 - `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessArgs.java` (new)
 - `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessArgsTest.java` (new)
-- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java` (new)
+- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddTest.java` (new, renamed from McpSmokeHarnessAtddRedTest.java)
 - `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessMain.java` (new)
 - `src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java` (new)
 - `build.gradle.kts` (modified - added mcpSmokeTest task)
@@ -224,3 +233,6 @@ Claude Opus 4.5
 - `docs/sprint-artifacts/sprint-status.yaml` (modified)
 - `docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md` (new)
 - `docs/test-review.md` (new)
+- `docs/atdd-checklist-1-1-repeatable-mcp-smoke-test-harness-checklist.md` (new)
+- `docs/sprint-artifacts/validation-report-2025-12-18T15-37-47-07-00.md` (new)
+- `docs/test-design-epic-1.md` (new)

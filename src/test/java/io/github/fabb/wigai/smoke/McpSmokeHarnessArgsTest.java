@@ -268,6 +268,11 @@ class McpSmokeHarnessArgsTest {
             }
 
             @Override
+            public String listToolsRaw() {
+                return "{\"result\":{\"tools\":[]}}";
+            }
+
+            @Override
             public String callTool(String name, java.util.Map<String, Object> args) {
                 // Return typed error for list_tracks (should cause failure in safe mode)
                 if ("list_tracks".equals(name)) {
@@ -311,6 +316,11 @@ class McpSmokeHarnessArgsTest {
                         "set_selected_device_parameter", "set_selected_device_parameters",
                         "session_launchSceneByIndex", "session_launchSceneByName", "launch_clip"
                 );
+            }
+
+            @Override
+            public String listToolsRaw() {
+                return "{\"result\":{\"tools\":[]}}";
             }
 
             @Override
@@ -480,5 +490,54 @@ class McpSmokeHarnessArgsTest {
         assertTrue(envelope.isError(), "Should be recognized as error");
         assertEquals("JSON_RPC_ERROR_-32601", envelope.errorCode());
         assertTrue(envelope.errorMessage().contains("Method not found"));
+    }
+
+    @Test
+    void httpMcpClient_escapeJsonString_handlesControlChars() {
+        // Test escaping of various control characters
+        assertEquals("line1\\nline2", HttpMcpClient.escapeJsonString("line1\nline2"));
+        assertEquals("tab\\there", HttpMcpClient.escapeJsonString("tab\there"));
+        assertEquals("carriage\\rreturn", HttpMcpClient.escapeJsonString("carriage\rreturn"));
+        assertEquals("back\\bspace", HttpMcpClient.escapeJsonString("back\bspace"));
+        assertEquals("form\\ffeed", HttpMcpClient.escapeJsonString("form\ffeed"));
+    }
+
+    @Test
+    void httpMcpClient_escapeJsonString_handlesQuotesAndBackslash() {
+        assertEquals("say \\\"hello\\\"", HttpMcpClient.escapeJsonString("say \"hello\""));
+        assertEquals("path\\\\to\\\\file", HttpMcpClient.escapeJsonString("path\\to\\file"));
+        assertEquals("mixed \\\"quote\\\" and \\\\backslash",
+                HttpMcpClient.escapeJsonString("mixed \"quote\" and \\backslash"));
+    }
+
+    @Test
+    void httpMcpClient_escapeJsonString_handlesNullAndNormalText() {
+        assertEquals("", HttpMcpClient.escapeJsonString(null));
+        assertEquals("normal text", HttpMcpClient.escapeJsonString("normal text"));
+        assertEquals("123 numbers!", HttpMcpClient.escapeJsonString("123 numbers!"));
+    }
+
+    @Test
+    void httpMcpClient_jsonRpcErrorWithControlCharsIsParseable() {
+        // Verify that errors with newlines/special chars produce valid JSON envelopes
+        String mcpResponse = """
+            {
+              "jsonrpc": "2.0",
+              "id": 1,
+              "error": {
+                "code": -32000,
+                "message": "Error on line 1\\nDetails on line 2\\twith tab"
+              }
+            }
+            """;
+
+        String extracted = HttpMcpClient.extractToolResult(mcpResponse);
+
+        // The result should be valid JSON that can be parsed
+        McpSmokeHarness harness = new McpSmokeHarness();
+        McpSmokeHarness.EnvelopeResult envelope = harness.parseEnvelope(extracted);
+
+        assertTrue(envelope.isValidEnvelope(), "Should produce valid JSON even with control chars");
+        assertTrue(envelope.isError());
     }
 }

@@ -18,6 +18,12 @@ public interface McpClient {
     List<String> listTools();
 
     /**
+     * Returns the raw JSON response from tools/list for full diagnostic output.
+     * Satisfies AC2 requirement to print full tool list observed.
+     */
+    String listToolsRaw();
+
+    /**
      * Calls a tool and returns the raw JSON text payload returned by WigAI (single text content).
      */
     String callTool(String toolName, Map<String, Object> arguments);

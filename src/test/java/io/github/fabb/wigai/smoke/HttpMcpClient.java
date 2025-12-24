@@ -162,13 +162,7 @@ public final class HttpMcpClient implements McpClient {
     @Override
     public List<String> listTools() {
         try {
-            ObjectNode request = objectMapper.createObjectNode();
-            request.put("jsonrpc", "2.0");
-            request.put("id", requestIdCounter.getAndIncrement());
-            request.put("method", "tools/list");
-            request.set("params", objectMapper.createObjectNode());
-
-            String responseBody = sendRequest(request.toString());
+            String responseBody = listToolsRaw();
             JsonNode response = objectMapper.readTree(responseBody);
 
             List<String> toolNames = new ArrayList<>();
@@ -181,6 +175,21 @@ public final class HttpMcpClient implements McpClient {
                 }
             }
             return toolNames;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to list tools: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public String listToolsRaw() {
+        try {
+            ObjectNode request = objectMapper.createObjectNode();
+            request.put("jsonrpc", "2.0");
+            request.put("id", requestIdCounter.getAndIncrement());
+            request.put("method", "tools/list");
+            request.set("params", objectMapper.createObjectNode());
+
+            return sendRequest(request.toString());
         } catch (Exception e) {
             throw new RuntimeException("Failed to list tools: " + e.getMessage(), e);
         }
@@ -227,8 +236,7 @@ public final class HttpMcpClient implements McpClient {
             if (error != null) {
                 int errorCode = error.has("code") ? error.get("code").asInt() : -1;
                 String errorMessage = error.has("message") ? error.get("message").asText() : "Unknown JSON-RPC error";
-                // Escape quotes and backslashes in error message for valid JSON
-                String escapedMessage = errorMessage.replace("\\", "\\\\").replace("\"", "\\\"");
+                String escapedMessage = escapeJsonString(errorMessage);
                 return "{\"status\":\"error\",\"error\":{\"code\":\"JSON_RPC_ERROR_" + errorCode + "\",\"message\":\"" +
                         escapedMessage + "\"}}";
             }
@@ -284,6 +292,38 @@ public final class HttpMcpClient implements McpClient {
         } catch (Exception e) {
             return responseBody; // Return raw on parse error
         }
+    }
+
+    /**
+     * Escapes a string for safe inclusion in a JSON string value.
+     * Handles backslashes, quotes, and control characters (newlines, tabs, etc.).
+     */
+    static String escapeJsonString(String input) {
+        if (input == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(input.length());
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            switch (c) {
+                case '\\' -> sb.append("\\\\");
+                case '"' -> sb.append("\\\"");
+                case '\n' -> sb.append("\\n");
+                case '\r' -> sb.append("\\r");
+                case '\t' -> sb.append("\\t");
+                case '\b' -> sb.append("\\b");
+                case '\f' -> sb.append("\\f");
+                default -> {
+                    if (c < 0x20) {
+                        // Other control characters: use unicode escape
+                        sb.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        sb.append(c);
+                    }
+                }
+            }
+        }
+        return sb.toString();
     }
 
     private String sendRequest(String jsonBody) throws Exception {
