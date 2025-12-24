@@ -1,6 +1,6 @@
 # Story 1.1: Repeatable MCP Smoke Test Harness + Checklist
 
-Status: Ready for Review
+Status: in-progress
 
 ## Story
 
@@ -68,6 +68,11 @@ so that MCP regressions and integration issues are caught early before we build 
 - [x] [AI-Review][Critical] Update File List to include files from last 8 commits (docs/atdd-checklist-1-1-repeatable-mcp-smoke-test-harness-checklist.md, docs/sprint-artifacts/validation-report-2025-12-18T15-37-47-07-00.md, docs/test-design-epic-1.md, docs/test-review.md) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:198]
 - [x] [AI-Review][High] Fail safe mode on any typed error other than DEVICE_NOT_SELECTED to keep pass/fail meaningful [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:197]
 - [x] [AI-Review][Medium] Wrap JSON-RPC error responses in a {status:"error"} envelope so parseEnvelope reports actionable code/message [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:102]
+- [ ] [AI-Review][Critical] Fix File List to include missing last-10-commit docs (docs/atdd-checklist-1-1-repeatable-mcp-smoke-test-harness-checklist.md, docs/sprint-artifacts/validation-report-2025-12-18T15-37-47-07-00.md, docs/test-design-epic-1.md) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:208]
+- [ ] [AI-Review][High] Print full tools/list JSON to stdout (not just tool names) to satisfy AC2 [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:69]
+- [ ] [AI-Review][Medium] Update runbook typed-error guidance to reflect safe-mode failures on non-device tool errors [docs/engineering/mcp-smoke-test-runbook.md:111]
+- [ ] [AI-Review][Medium] Escape JSON-RPC error messages safely when wrapping in status envelope (handle newline/control chars) [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:105]
+- [ ] [AI-Review][Medium] Promote green ATDD tests (remove atdd_red tag or adjust filters so they run in CI) [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java:14]
 
 ## Dev Notes
 
