@@ -9,6 +9,12 @@ import java.util.Map;
  */
 public interface McpClient {
 
+    /**
+     * Initializes the MCP session. Must be called before any other operations.
+     * Performs the MCP initialize/initialized handshake.
+     */
+    void initialize();
+
     List<String> listTools();
 
     /**

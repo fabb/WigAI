@@ -258,6 +258,9 @@ class McpSmokeHarnessArgsTest {
 
         McpClient errorClient = new McpClient() {
             @Override
+            public void initialize() {}
+
+            @Override
             public java.util.List<String> listTools() {
                 return java.util.List.of("status", "list_tracks", "get_track_details",
                         "list_devices_on_track", "get_device_details", "list_scenes",
@@ -294,6 +297,9 @@ class McpSmokeHarnessArgsTest {
         // Create a mock client that tracks which tools are called
         java.util.Set<String> calledTools = new java.util.HashSet<>();
         McpClient trackingClient = new McpClient() {
+            @Override
+            public void initialize() {}
+
             @Override
             public java.util.List<String> listTools() {
                 // Return all baseline + mutation tools as available (using actual MCP tool names)

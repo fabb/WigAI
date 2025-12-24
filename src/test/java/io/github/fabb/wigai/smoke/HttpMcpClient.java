@@ -16,15 +16,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * HTTP-based MCP client for the smoke harness.
- * Communicates with the WigAI MCP server using JSON-RPC over HTTP.
+ * Communicates with the WigAI MCP server using JSON-RPC over HTTP
+ * with Streamable HTTP transport (requires session management).
  */
 public final class HttpMcpClient implements McpClient {
+
+    private static final String ACCEPT_HEADER = "text/event-stream";
+    private static final String SESSION_HEADER = "mcp-session-id";
 
     private final String mcpUrl;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final AtomicInteger requestIdCounter;
     private final Duration timeout;
+    private String sessionId;
 
     public HttpMcpClient(String mcpUrl, Duration timeout) {
         this.mcpUrl = mcpUrl;
@@ -34,6 +39,124 @@ public final class HttpMcpClient implements McpClient {
                 .build();
         this.objectMapper = new ObjectMapper();
         this.requestIdCounter = new AtomicInteger(1);
+        this.sessionId = null;
+    }
+
+    /**
+     * Initializes the MCP session by performing the initialize handshake.
+     * This must be called before any other operations.
+     *
+     * @throws RuntimeException if initialization fails
+     */
+    public void initialize() {
+        try {
+            ObjectNode request = objectMapper.createObjectNode();
+            request.put("jsonrpc", "2.0");
+            request.put("id", requestIdCounter.getAndIncrement());
+            request.put("method", "initialize");
+
+            ObjectNode params = objectMapper.createObjectNode();
+            ObjectNode clientInfo = objectMapper.createObjectNode();
+            clientInfo.put("name", "MCP Smoke Harness");
+            clientInfo.put("version", "1.0.0");
+            params.set("clientInfo", clientInfo);
+            params.put("protocolVersion", "2024-11-05");
+            ObjectNode capabilities = objectMapper.createObjectNode();
+            params.set("capabilities", capabilities);
+            request.set("params", params);
+
+            // Send initialize request and capture session ID from response header
+            // For initialize, accept both JSON and SSE as server may respond with either
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(mcpUrl))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json, " + ACCEPT_HEADER)
+                    .timeout(timeout)
+                    .POST(HttpRequest.BodyPublishers.ofString(request.toString()))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Initialize failed with HTTP " + response.statusCode() + ": " + response.body());
+            }
+
+            // Extract session ID from response header
+            this.sessionId = response.headers().firstValue(SESSION_HEADER).orElse(null);
+            if (this.sessionId == null) {
+                throw new RuntimeException("Server did not return session ID in " + SESSION_HEADER + " header");
+            }
+
+            // Parse response - may be JSON or SSE format depending on server
+            String responseBody = response.body();
+            String contentType = response.headers().firstValue("Content-Type").orElse("");
+            if (contentType.contains("text/event-stream")) {
+                responseBody = parseSSEResponse(responseBody);
+            }
+            JsonNode jsonResponse = objectMapper.readTree(responseBody);
+            if (jsonResponse.has("error")) {
+                throw new RuntimeException("Initialize returned error: " + jsonResponse.get("error"));
+            }
+
+            // Send initialized notification
+            sendInitializedNotification();
+
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize MCP session: " + e.getMessage(), e);
+        }
+    }
+
+    private void sendInitializedNotification() throws Exception {
+        ObjectNode notification = objectMapper.createObjectNode();
+        notification.put("jsonrpc", "2.0");
+        notification.put("method", "notifications/initialized");
+        // Notifications don't have an id field
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(mcpUrl))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json, " + ACCEPT_HEADER)
+                .header(SESSION_HEADER, sessionId)
+                .timeout(timeout)
+                .POST(HttpRequest.BodyPublishers.ofString(notification.toString()))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        // Notifications may return 200, 202 (accepted), or 204 (no content)
+        if (response.statusCode() != 200 && response.statusCode() != 202 && response.statusCode() != 204) {
+            throw new RuntimeException("Initialized notification failed with HTTP " + response.statusCode());
+        }
+    }
+
+    /**
+     * Parses a Server-Sent Events (SSE) response body to extract the JSON data.
+     * SSE format has lines like "event: message" and "data: {...json...}".
+     *
+     * @param sseBody the raw SSE response body
+     * @return the extracted JSON data string
+     */
+    private String parseSSEResponse(String sseBody) {
+        if (sseBody == null || sseBody.isBlank()) {
+            return "{}";
+        }
+
+        StringBuilder jsonData = new StringBuilder();
+        for (String line : sseBody.split("\n")) {
+            if (line.startsWith("data: ")) {
+                String data = line.substring(6); // Remove "data: " prefix
+                if (!data.isBlank()) {
+                    if (jsonData.length() > 0) {
+                        jsonData.append("\n");
+                    }
+                    jsonData.append(data);
+                }
+            }
+        }
+
+        return jsonData.length() > 0 ? jsonData.toString() : sseBody;
     }
 
     @Override
@@ -164,10 +287,15 @@ public final class HttpMcpClient implements McpClient {
     }
 
     private String sendRequest(String jsonBody) throws Exception {
+        if (sessionId == null) {
+            throw new IllegalStateException("MCP session not initialized. Call initialize() first.");
+        }
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(mcpUrl))
                 .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
+                .header("Accept", "application/json, " + ACCEPT_HEADER)
+                .header(SESSION_HEADER, sessionId)
                 .timeout(timeout)
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
@@ -178,6 +306,12 @@ public final class HttpMcpClient implements McpClient {
             throw new RuntimeException("HTTP " + response.statusCode() + ": " + response.body());
         }
 
-        return response.body();
+        // Parse response - may be JSON or SSE format depending on server
+        String responseBody = response.body();
+        String contentType = response.headers().firstValue("Content-Type").orElse("");
+        if (contentType.contains("text/event-stream")) {
+            return parseSSEResponse(responseBody);
+        }
+        return responseBody;
     }
 }

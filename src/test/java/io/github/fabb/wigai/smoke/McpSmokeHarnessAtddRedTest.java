@@ -176,6 +176,9 @@ class McpSmokeHarnessAtddRedTest {
         }
 
         @Override
+        public void initialize() {}
+
+        @Override
         public List<String> listTools() {
             return tools;
         }
