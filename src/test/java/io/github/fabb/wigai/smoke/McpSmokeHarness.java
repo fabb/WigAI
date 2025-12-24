@@ -35,11 +35,8 @@ public final class McpSmokeHarness {
     private static final Set<String> READ_ONLY_TOOLS = BASELINE_REQUIRED_TOOLS;
 
     // Tools that require parameters - MISSING_REQUIRED_PARAMETER is only expected for these
-    // Other tools (status, list_tracks, list_scenes, get_selected_device_parameters) work with no params
+    // Defaultable tools (get_track_details, list_devices_on_track, get_device_details) should not return MISSING_REQUIRED_PARAMETER
     private static final Set<String> TOOLS_REQUIRING_PARAMS = Set.of(
-            "get_track_details",         // requires track_index
-            "list_devices_on_track",     // requires track_index
-            "get_device_details",        // requires track_index, device_index
             "get_clips_in_scene"         // requires scene_index
     );
 
@@ -133,7 +130,7 @@ public final class McpSmokeHarness {
                     return 1;
                 }
                 if (startEnvelope.isError()) {
-                    err.println("FAIL: transport_start returned error: " + startEnvelope.errorCode());
+                    err.println("FAIL: transport_start returned error: " + formatTypedError(startEnvelope));
                     return 1;
                 }
                 out.println("✓ transport_start → OK");
@@ -145,7 +142,7 @@ public final class McpSmokeHarness {
                     return 1;
                 }
                 if (stopEnvelope.isError()) {
-                    err.println("FAIL: transport_stop returned error: " + stopEnvelope.errorCode());
+                    err.println("FAIL: transport_stop returned error: " + formatTypedError(stopEnvelope));
                     return 1;
                 }
                 out.println("✓ transport_stop → OK");
@@ -170,7 +167,7 @@ public final class McpSmokeHarness {
                         if ("DEVICE_NOT_SELECTED".equals(envelope.errorCode())) {
                             out.println("Skipping device parameter round-trip: DEVICE_NOT_SELECTED");
                         } else {
-                            err.println("FAIL: get_selected_device_parameters returned error: " + envelope.errorCode());
+                            err.println("FAIL: get_selected_device_parameters returned error: " + formatTypedError(envelope));
                             return 1;
                         }
                     } else {
@@ -193,7 +190,7 @@ public final class McpSmokeHarness {
                                 }
                                 if (setEnvelope.isError()) {
                                     err.println("FAIL: set_selected_device_parameter returned error: "
-                                            + setEnvelope.errorCode());
+                                            + formatTypedError(setEnvelope));
                                     return 1;
                                 }
                                 out.println("✓ device parameter round-trip → OK");
@@ -238,7 +235,7 @@ public final class McpSmokeHarness {
                                 out.println("✓ " + tool + " → typed error [" + envelope.errorCode() + "] (expected)");
                             } else {
                                 // Typed error on other read-only tools indicates a problem - fail to keep pass/fail meaningful
-                                err.println("FAIL: " + tool + " returned typed error: " + envelope.errorCode());
+                                err.println("FAIL: " + tool + " returned typed error: " + formatTypedError(envelope));
                                 return 1;
                             }
                         } else {
@@ -258,6 +255,15 @@ public final class McpSmokeHarness {
     }
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private static String formatTypedError(EnvelopeResult envelope) {
+        String code = envelope.errorCode() == null ? "UNKNOWN" : envelope.errorCode();
+        String message = envelope.errorMessage();
+        if (message == null || message.isBlank()) {
+            return code;
+        }
+        return code + " (" + message + ")";
+    }
 
     /**
      * Parses tool names from raw tools/list JSON response.

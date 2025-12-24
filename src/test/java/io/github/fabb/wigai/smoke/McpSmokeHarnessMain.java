@@ -51,7 +51,13 @@ public final class McpSmokeHarnessMain {
                 }
                 case "--port", "-p" -> {
                     if (i + 1 < args.length) {
-                        port = Integer.parseInt(args[++i]);
+                        String portArg = args[++i];
+                        try {
+                            port = Integer.parseInt(portArg);
+                        } catch (NumberFormatException e) {
+                            System.err.println("Invalid port: " + portArg + " (expected numeric)");
+                            port = DEFAULT_PORT;
+                        }
                     }
                 }
                 case "--endpoint", "-e" -> {

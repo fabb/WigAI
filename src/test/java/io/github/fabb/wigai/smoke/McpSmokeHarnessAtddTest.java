@@ -182,6 +182,35 @@ class McpSmokeHarnessAtddTest {
     }
 
     @Test
+    void missing_required_parameter_fails_for_defaultable_tools() {
+        // Defaultable tools (like get_track_details) should not return MISSING_REQUIRED_PARAMETER
+        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
+
+        ByteArrayOutputStream stderrBytes = new ByteArrayOutputStream();
+        PrintStream stderr = new PrintStream(stderrBytes, true, StandardCharsets.UTF_8);
+
+        McpClient client = new FakeMcpClient(allBaselineTools()) {
+            @Override
+            public String callTool(String toolName, Map<String, Object> arguments) {
+                if ("get_track_details".equals(toolName)) {
+                    return """
+                        {"status":"error","error":{"code":"MISSING_REQUIRED_PARAMETER","message":"Missing param","operation":"get_track_details"}}
+                        """.trim();
+                }
+                return super.callTool(toolName, arguments);
+            }
+        };
+
+        McpSmokeHarness harness = new McpSmokeHarness();
+        int exitCode = harness.run(args, client, System.out, stderr);
+
+        assertEquals(1, exitCode, "Should fail when defaultable tool returns MISSING_REQUIRED_PARAMETER");
+        String stderrText = new String(stderrBytes.toByteArray(), StandardCharsets.UTF_8);
+        assertTrue(stderrText.contains("get_track_details") && stderrText.contains("typed error"),
+                "Should report get_track_details returned unexpected typed error");
+    }
+
+    @Test
     void missing_required_parameter_accepted_for_param_requiring_tools() {
         // MISSING_REQUIRED_PARAMETER should be accepted for tools like get_track_details
         McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
@@ -192,10 +221,10 @@ class McpSmokeHarnessAtddTest {
         McpClient client = new FakeMcpClient(allBaselineTools()) {
             @Override
             public String callTool(String toolName, Map<String, Object> arguments) {
-                if ("get_track_details".equals(toolName)) {
-                    // This IS expected - get_track_details requires track_index param
+                if ("get_clips_in_scene".equals(toolName)) {
+                    // This IS expected - get_clips_in_scene requires scene_index or scene_name
                     return """
-                        {"status":"error","error":{"code":"MISSING_REQUIRED_PARAMETER","message":"Missing track_index","operation":"get_track_details"}}
+                        {"status":"error","error":{"code":"MISSING_REQUIRED_PARAMETER","message":"Missing scene_index","operation":"get_clips_in_scene"}}
                         """.trim();
                 }
                 return super.callTool(toolName, arguments);
@@ -205,11 +234,11 @@ class McpSmokeHarnessAtddTest {
         McpSmokeHarness harness = new McpSmokeHarness();
         int exitCode = harness.run(args, client, stdout, System.err);
 
-        // Should pass because get_track_details requires params
+        // Should pass because get_clips_in_scene requires params
         assertEquals(0, exitCode, "Should pass when param-requiring tool returns MISSING_REQUIRED_PARAMETER");
         String stdoutText = new String(stdoutBytes.toByteArray(), StandardCharsets.UTF_8);
-        assertTrue(stdoutText.contains("get_track_details") && stdoutText.contains("expected"),
-                "Should report MISSING_REQUIRED_PARAMETER as expected for get_track_details");
+        assertTrue(stdoutText.contains("get_clips_in_scene") && stdoutText.contains("expected"),
+                "Should report MISSING_REQUIRED_PARAMETER as expected for get_clips_in_scene");
     }
 
     @Test

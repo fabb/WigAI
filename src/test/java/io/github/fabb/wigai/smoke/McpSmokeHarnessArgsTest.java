@@ -2,6 +2,9 @@ package io.github.fabb.wigai.smoke;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
+import java.time.Duration;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -77,6 +80,23 @@ class McpSmokeHarnessArgsTest {
     void parseArgs_with_short_port_flag() {
         McpSmokeHarnessArgs args = McpSmokeHarnessMain.parseArgs(new String[]{"-p", "9999"});
         assertEquals(9999, args.port());
+    }
+
+    @Test
+    void parseArgs_with_non_numeric_port_exits_with_message() {
+        java.io.ByteArrayOutputStream err = new java.io.ByteArrayOutputStream();
+        java.io.PrintStream originalErr = System.err;
+        try {
+            System.setErr(new java.io.PrintStream(err));
+            McpSmokeHarnessArgs args = McpSmokeHarnessMain.parseArgs(new String[]{"--port", "not-a-number"});
+
+            assertEquals(61169, args.port(), "Should fall back to default port");
+            String errText = err.toString();
+            assertTrue(errText.contains("Invalid port"), "Should explain invalid port");
+            assertTrue(errText.contains("not-a-number"), "Should echo invalid port value");
+        } finally {
+            System.setErr(originalErr);
+        }
     }
 
     @Test
@@ -290,6 +310,7 @@ class McpSmokeHarnessArgsTest {
         assertEquals(1, exitCode, "Safe mode should fail on typed error for non-device tools");
         assertTrue(err.toString().contains("FAIL"), "Should report failure");
         assertTrue(err.toString().contains("SOME_ERROR"), "Should include the error code");
+        assertTrue(err.toString().contains("Test error"), "Should include the error message");
     }
 
     @Test
@@ -360,7 +381,22 @@ class McpSmokeHarnessArgsTest {
         return json.toString();
     }
 
+
     // --- HttpMcpClient Response Parsing Tests (CI-safe) ---
+
+    @Test
+    void httpMcpClient_parseSseDataWithoutSpace() throws Exception {
+        HttpMcpClient client = new HttpMcpClient("http://localhost:1/mcp", Duration.ofSeconds(1));
+        String json = "{\"jsonrpc\":\"2.0\",\"id\":1}";
+        String sse = "event: message\n" +
+                "data:" + json + "\n\n";
+
+        Method method = HttpMcpClient.class.getDeclaredMethod("parseSSEResponse", String.class);
+        method.setAccessible(true);
+        String parsed = (String) method.invoke(client, sse);
+
+        assertEquals(json, parsed);
+    }
 
     @Test
     void httpMcpClient_extractsTextFromSingleTextContent() {

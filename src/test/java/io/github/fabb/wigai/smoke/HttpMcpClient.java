@@ -145,8 +145,11 @@ public final class HttpMcpClient implements McpClient {
 
         StringBuilder jsonData = new StringBuilder();
         for (String line : sseBody.split("\n")) {
-            if (line.startsWith("data: ")) {
-                String data = line.substring(6); // Remove "data: " prefix
+            if (line.startsWith("data:")) {
+                String data = line.substring(5); // Remove "data:" prefix
+                if (data.startsWith(" ")) {
+                    data = data.substring(1);
+                }
                 if (!data.isBlank()) {
                     if (jsonData.length() > 0) {
                         jsonData.append("\n");
