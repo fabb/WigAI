@@ -58,10 +58,13 @@ so that MCP regressions and integration issues are caught early before we build 
 - [x] [AI-Review][High] Fail mutation mode when required mutation tools are missing instead of skipping [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:78]
 - [x] [AI-Review][High] Fix Story File List to match git changes (remove unchanged files) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:161]
 - [x] [AI-Review][Medium] Add CI-safe tests for envelope parsing/error surfacing [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessArgsTest.java]
-- [ ] [AI-Review][High] Add explicit guard to ensure safe mode never calls mutating tools [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:103]
-- [ ] [AI-Review][High] Handle non-text or multi-content tool responses in HttpMcpClient to avoid false envelope failures [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:83]
-- [ ] [AI-Review][Medium] De-duplicate resolved URL printing between CLI and harness output [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessMain.java:29]
-- [ ] [AI-Review][Medium] Update runbook baseline-tool assertion to match full baseline set [docs/engineering/mcp-smoke-test-runbook.md:43]
+- [x] [AI-Review][High] Add explicit guard to ensure safe mode never calls mutating tools [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:103]
+- [x] [AI-Review][High] Handle non-text or multi-content tool responses in HttpMcpClient to avoid false envelope failures [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:83]
+- [x] [AI-Review][Medium] De-duplicate resolved URL printing between CLI and harness output [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessMain.java:29]
+- [x] [AI-Review][Medium] Update runbook baseline-tool assertion to match full baseline set [docs/engineering/mcp-smoke-test-runbook.md:43]
+- [ ] [AI-Review][High] Align MUTATING_TOOLS and safe-mode guard with actual tool names (`set_selected_device_parameter`, `session_launchSceneByIndex`, `session_launchSceneByName`) [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:37]
+- [ ] [AI-Review][High] Validate mutation-mode tool responses via envelope parsing (transport + parameter set) instead of assuming OK [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:93]
+- [ ] [AI-Review][High] Fix File List to reflect current git changes (remove stale entries) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:190]
 
 ## Dev Notes
 
@@ -177,6 +180,13 @@ Claude Opus 4.5
 - Fixed File List to include only actually changed files
 - Added 8 CI-safe envelope parsing tests
 - All 25 CI-safe tests pass, all 7 ATDD tests pass
+
+**Code Review Follow-ups Round 2 (2025-12-23):**
+- Added explicit `assertToolIsSafeForSafeMode()` guard with 2 unit tests
+- Implemented `extractToolResult()` in HttpMcpClient to handle non-text and multi-content responses with 6 unit tests
+- Removed duplicate URL printing from CLI (harness already prints it)
+- Updated runbook baseline-tool description to reflect full tool set validation
+- All 37 CI-safe tests pass
 
 ### File List
 
