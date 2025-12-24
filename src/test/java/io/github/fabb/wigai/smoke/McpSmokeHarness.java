@@ -31,9 +31,6 @@ public final class McpSmokeHarness {
             "get_selected_device_parameters"
     );
 
-    // READ_ONLY_TOOLS is now the same as BASELINE_REQUIRED_TOOLS
-    private static final Set<String> READ_ONLY_TOOLS = BASELINE_REQUIRED_TOOLS;
-
     // Tools that require parameters - MISSING_REQUIRED_PARAMETER is only expected for these
     // Defaultable tools (get_track_details, list_devices_on_track, get_device_details) should not return MISSING_REQUIRED_PARAMETER
     private static final Set<String> TOOLS_REQUIRING_PARAMS = Set.of(
@@ -209,42 +206,46 @@ public final class McpSmokeHarness {
                 out.println("Skipping device parameter round-trip: required tools missing");
             }
         } else {
-            // Safe mode: only call read-only tools
-            for (String tool : READ_ONLY_TOOLS) {
-                if (tools.contains(tool)) {
-                    // Explicit guard: ensure safe mode never calls mutating tools
-                    assertToolIsSafeForSafeMode(tool);
-                    try {
-                        String result = client.callTool(tool, Map.of());
-                        EnvelopeResult envelope = parseEnvelope(result);
+            // Safe mode: call ALL non-mutating tools from discovery (AC3)
+            for (String tool : tools) {
+                // Skip mutating tools - safe mode must only call read-only tools
+                if (MUTATING_TOOLS.contains(tool)) {
+                    continue;
+                }
+                // Explicit guard: ensure safe mode never calls mutating tools
+                assertToolIsSafeForSafeMode(tool);
+                try {
+                    String result = client.callTool(tool, Map.of());
+                    EnvelopeResult envelope = parseEnvelope(result);
 
-                        if (!envelope.isValidEnvelope()) {
-                            err.println("FAIL: " + tool + " returned invalid envelope: " + envelope.errorMessage());
-                            return 1;
-                        }
-
-                        if (envelope.isError()) {
-                            // Device-related tools may return DEVICE_NOT_SELECTED when no device is selected in Bitwig
-                            boolean isDeviceTool = "get_selected_device_parameters".equals(tool)
-                                    || "get_device_details".equals(tool);
-                            // MISSING_REQUIRED_PARAMETER is only expected for tools that actually require parameters
-                            // Tools like status, list_tracks, list_scenes don't require params and should never return this
-                            boolean isMissingParamExpected = "MISSING_REQUIRED_PARAMETER".equals(envelope.errorCode())
-                                    && TOOLS_REQUIRING_PARAMS.contains(tool);
-                            if ((isDeviceTool && "DEVICE_NOT_SELECTED".equals(envelope.errorCode())) || isMissingParamExpected) {
-                                out.println("✓ " + tool + " → typed error [" + envelope.errorCode() + "] (expected)");
-                            } else {
-                                // Typed error on other read-only tools indicates a problem - fail to keep pass/fail meaningful
-                                err.println("FAIL: " + tool + " returned typed error: " + formatTypedError(envelope));
-                                return 1;
-                            }
-                        } else {
-                            out.println("✓ " + tool + " → OK");
-                        }
-                    } catch (Exception e) {
-                        err.println("FAIL: " + tool + " threw exception: " + e.getMessage());
+                    if (!envelope.isValidEnvelope()) {
+                        err.println("FAIL: " + tool + " returned invalid envelope: " + envelope.errorMessage());
                         return 1;
                     }
+
+                    if (envelope.isError()) {
+                        // Device-related tools may return DEVICE_NOT_SELECTED when no device is selected in Bitwig
+                        boolean isDeviceTool = "get_selected_device_parameters".equals(tool)
+                                || "get_device_details".equals(tool);
+                        // MISSING_REQUIRED_PARAMETER handling:
+                        // - Baseline tools: only expected for tools in TOOLS_REQUIRING_PARAMS (strict)
+                        // - Non-baseline tools: always allowed (lenient, since we don't know their param requirements)
+                        boolean isBaselineTool = BASELINE_REQUIRED_TOOLS.contains(tool);
+                        boolean isMissingParamExpected = "MISSING_REQUIRED_PARAMETER".equals(envelope.errorCode())
+                                && (TOOLS_REQUIRING_PARAMS.contains(tool) || !isBaselineTool);
+                        if ((isDeviceTool && "DEVICE_NOT_SELECTED".equals(envelope.errorCode())) || isMissingParamExpected) {
+                            out.println("✓ " + tool + " → typed error [" + envelope.errorCode() + "] (expected)");
+                        } else {
+                            // Typed error on other read-only tools indicates a problem - fail to keep pass/fail meaningful
+                            err.println("FAIL: " + tool + " returned typed error: " + formatTypedError(envelope));
+                            return 1;
+                        }
+                    } else {
+                        out.println("✓ " + tool + " → OK");
+                    }
+                } catch (Exception e) {
+                    err.println("FAIL: " + tool + " threw exception: " + e.getMessage());
+                    return 1;
                 }
             }
         }

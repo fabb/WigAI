@@ -115,10 +115,16 @@ Safe mode behavior for typed errors:
 | Error Code | Affected Tools | Result |
 |------------|----------------|--------|
 | `DEVICE_NOT_SELECTED` | `get_selected_device_parameters`, `get_device_details` | Expected (pass) |
-| `MISSING_REQUIRED_PARAMETER` | Any tool called without required params | Expected (pass) |
-| Any other error | Any other tool | **Failure** |
+| `MISSING_REQUIRED_PARAMETER` | Baseline tools that require params (e.g., `get_clips_in_scene`) | Expected (pass) |
+| `MISSING_REQUIRED_PARAMETER` | Baseline tools with defaults (e.g., `status`, `list_tracks`, `get_track_details`) | **Failure** |
+| `MISSING_REQUIRED_PARAMETER` | Non-baseline tools (discovered but not in baseline set) | Expected (pass) |
+| Any other error | Any tool | **Failure** |
 
-**Why this matters:** A typed error on a read-only tool like `status` or `list_tracks` indicates a real problem. Only device-related tools may return `DEVICE_NOT_SELECTED` when Bitwig has no device selected.
+**Why this matters:**
+- Baseline tools with defaults should never return `MISSING_REQUIRED_PARAMETER` - if they do, it's a regression
+- Only `get_clips_in_scene` genuinely requires a parameter (scene_index) in the baseline set
+- Non-baseline tools are called leniently since the harness doesn't know their parameter requirements
+- Device-related tools may return `DEVICE_NOT_SELECTED` when Bitwig has no device selected
 
 **Symptom:** `FAIL: list_tracks returned typed error: SOME_ERROR_CODE`
 

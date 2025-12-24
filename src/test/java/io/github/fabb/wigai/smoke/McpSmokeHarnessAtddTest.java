@@ -94,6 +94,54 @@ class McpSmokeHarnessAtddTest {
     }
 
     @Test
+    void safe_mode_calls_all_non_mutating_tools_from_discovery_per_AC3() {
+        // AC3: performs read-only validations on all non-mutating tools available
+        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
+
+        // Include baseline tools plus a hypothetical new read-only tool
+        RecordingMcpClient client = new RecordingMcpClient(allBaselineTools("new_read_only_tool"));
+        McpSmokeHarness harness = new McpSmokeHarness();
+
+        int exitCode = harness.run(args, client, System.out, System.err);
+
+        // Verify the new tool was also called (not just baseline tools)
+        assertTrue(client.calledTools.contains("new_read_only_tool"),
+                "Safe mode should call all discovered non-mutating tools, not just baseline");
+        assertEquals(0, exitCode);
+    }
+
+    @Test
+    void safe_mode_allows_missing_required_parameter_for_non_baseline_tools() {
+        // Non-baseline tools should be lenient about MISSING_REQUIRED_PARAMETER
+        // since we don't know their parameter requirements
+        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
+
+        ByteArrayOutputStream stdoutBytes = new ByteArrayOutputStream();
+        PrintStream stdout = new PrintStream(stdoutBytes, true, StandardCharsets.UTF_8);
+
+        McpClient client = new FakeMcpClient(allBaselineTools("new_tool_requiring_params")) {
+            @Override
+            public String callTool(String toolName, Map<String, Object> arguments) {
+                if ("new_tool_requiring_params".equals(toolName)) {
+                    return """
+                        {"status":"error","error":{"code":"MISSING_REQUIRED_PARAMETER","message":"Missing param","operation":"new_tool_requiring_params"}}
+                        """.trim();
+                }
+                return super.callTool(toolName, arguments);
+            }
+        };
+
+        McpSmokeHarness harness = new McpSmokeHarness();
+        int exitCode = harness.run(args, client, stdout, System.err);
+
+        // Should pass - non-baseline tools can return MISSING_REQUIRED_PARAMETER
+        assertEquals(0, exitCode, "Should pass when non-baseline tool returns MISSING_REQUIRED_PARAMETER");
+        String stdoutText = new String(stdoutBytes.toByteArray(), StandardCharsets.UTF_8);
+        assertTrue(stdoutText.contains("new_tool_requiring_params") && stdoutText.contains("expected"),
+                "Should report MISSING_REQUIRED_PARAMETER as expected for non-baseline tool");
+    }
+
+    @Test
     void mutation_mode_calls_transport_start_then_stop() {
         McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", true);
 

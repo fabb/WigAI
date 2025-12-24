@@ -1,6 +1,6 @@
 # Story 1.1: Repeatable MCP Smoke Test Harness + Checklist
 
-Status: in-progress
+Status: Ready for Review
 
 ## Story
 
@@ -81,10 +81,10 @@ so that MCP regressions and integration issues are caught early before we build 
 - [x] [AI-Review][Medium] Include typed error message in failure output for actionable diagnostics [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:136]
 - [x] [AI-Review][Medium] Treat defaultable read-only tools as success-only (fail on MISSING_REQUIRED_PARAMETER) to avoid masking regressions [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:37]
 - [x] [AI-Review][Low] Fail fast with a friendly error when --port is not numeric instead of throwing NumberFormatException [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessMain.java:53]
-- [ ] [AI-Review][High] Validate safe mode calls all non-mutating tools observed in tools/list (not just baseline) per AC3 [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:212]
-- [ ] [AI-Review][High] Resolve story File List vs git mismatch (story lists changes, git shows none) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:250]
-- [ ] [AI-Review][Medium] Align runbook typed-error guidance with harness behavior (MISSING_REQUIRED_PARAMETER only expected for param-requiring tools) [docs/engineering/mcp-smoke-test-runbook.md:111]
-- [ ] [AI-Review][Low] Update doc references to renamed McpSmokeHarnessAtddTest (remove AtddRed) [docs/test-review.md:1]
+- [x] [AI-Review][High] Validate safe mode calls all non-mutating tools observed in tools/list (not just baseline) per AC3 [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:212]
+- [x] [AI-Review][High] Resolve story File List vs git mismatch (story lists changes, git shows none) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:250]
+- [x] [AI-Review][Medium] Align runbook typed-error guidance with harness behavior (MISSING_REQUIRED_PARAMETER only expected for param-requiring tools) [docs/engineering/mcp-smoke-test-runbook.md:111]
+- [x] [AI-Review][Low] Update doc references to renamed McpSmokeHarnessAtddTest (remove AtddRed) [docs/test-review.md:1]
 
 ## Dev Notes
 
@@ -251,6 +251,16 @@ Claude Opus 4.5
 - Added unit test for non-numeric port
 - All tests pass: `./gradlew test`
 
+**Code Review Follow-ups Round 8 (2025-12-24):**
+- Safe mode now calls ALL non-mutating tools from discovery (not just baseline) per AC3
+- MISSING_REQUIRED_PARAMETER handling: strict for baseline tools, lenient for non-baseline tools
+- Removed unused READ_ONLY_TOOLS constant
+- Added 2 new ATDD tests for AC3 behavior
+- Updated runbook typed-error guidance to reflect actual harness behavior
+- Updated docs/test-review.md references from AtddRedTest to AtddTest
+- Verified File List accuracy against git history
+- All 54 CI-safe tests pass
+
 ### File List
 
 - `src/test/java/io/github/fabb/wigai/smoke/McpClient.java` (new)
@@ -271,6 +281,7 @@ Claude Opus 4.5
 
 ### Change Log
 
+- 2025-12-24: Addressed round 8 review follow-ups - AC3 all-tools discovery, runbook alignment, doc renames
 - 2025-12-23: Verified File List last-14 scope, aligned tools/list raw JSON in tests, `./gradlew test` passed
 - 2025-12-23: Accepted SSE `data:` lines without trailing space, added parsing test
 - 2025-12-23: Added typed error messages to failure output and updated tests
