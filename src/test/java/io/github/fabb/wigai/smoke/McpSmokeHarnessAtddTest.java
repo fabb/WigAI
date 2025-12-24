@@ -1,5 +1,6 @@
 package io.github.fabb.wigai.smoke;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -8,6 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+import static io.github.fabb.wigai.smoke.McpSmokeHarnessTestSupport.BASELINE_TOOLS;
+import static io.github.fabb.wigai.smoke.McpSmokeHarnessTestSupport.baselineToolsWith;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -16,110 +19,74 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class McpSmokeHarnessAtddTest {
 
+    @DisplayName("1.1-ATDD-001 [P1] Given safe mode, when harness runs, then prints resolved MCP URL and mode")
     @Test
     void prints_resolved_mcp_url_and_mode() {
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
+        McpSmokeHarnessArgs args = safeArgs();
+        McpClient client = new FakeMcpClient(BASELINE_TOOLS);
 
-        ByteArrayOutputStream stdoutBytes = new ByteArrayOutputStream();
-        ByteArrayOutputStream stderrBytes = new ByteArrayOutputStream();
-        PrintStream stdout = new PrintStream(stdoutBytes, true, StandardCharsets.UTF_8);
-        PrintStream stderr = new PrintStream(stderrBytes, true, StandardCharsets.UTF_8);
+        HarnessRun run = runHarness(args, client);
 
-        McpClient client = new FakeMcpClient(allBaselineTools());
-        McpSmokeHarness harness = new McpSmokeHarness();
-
-        int exitCode = harness.run(args, client, stdout, stderr);
-
-        String stdoutText = new String(stdoutBytes.toByteArray(), StandardCharsets.UTF_8);
-        assertTrue(stdoutText.contains(args.resolvedUrl()));
-        assertEquals(0, exitCode);
+        assertTrue(run.stdout.contains(args.resolvedUrl()));
+        assertTrue(run.stdout.contains("Mode: SAFE mode (read-only)"));
+        assertEquals(0, run.exitCode);
     }
 
+    @DisplayName("1.1-ATDD-002 [P1] Given full baseline tools, when tools/list runs, then pass")
     @Test
     void performs_tools_list_and_asserts_full_baseline_per_AC2() {
         // AC2: asserts baseline tools exist - all read-only tools must be present
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
+        McpClient client = new FakeMcpClient(BASELINE_TOOLS);
 
-        ByteArrayOutputStream stdoutBytes = new ByteArrayOutputStream();
-        ByteArrayOutputStream stderrBytes = new ByteArrayOutputStream();
+        HarnessRun run = runSafe(client);
 
-        // Provide ALL baseline read-only tools as per AC2
-        McpClient client = new FakeMcpClient(List.of(
-                "status",
-                "list_tracks",
-                "get_track_details",
-                "list_devices_on_track",
-                "get_device_details",
-                "list_scenes",
-                "get_clips_in_scene",
-                "get_selected_device_parameters"
-        ));
-        McpSmokeHarness harness = new McpSmokeHarness();
-
-        int exitCode = harness.run(args, client, new PrintStream(stdoutBytes), new PrintStream(stderrBytes));
-
-        assertEquals(0, exitCode, "Should pass when all baseline tools are present");
+        assertEquals(0, run.exitCode, "Should pass when all baseline tools are present");
     }
 
+    @DisplayName("1.1-ATDD-003 [P1] Given missing baseline tool, when tools/list runs, then fail")
     @Test
     void fails_when_baseline_tool_is_missing_per_AC2() {
         // AC2: asserts baseline tools exist - must fail if any baseline tool is missing
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
-
-        ByteArrayOutputStream stderrBytes = new ByteArrayOutputStream();
-
-        // Missing several baseline tools (only status and list_tracks present)
         McpClient client = new FakeMcpClient(List.of("status", "list_tracks"));
-        McpSmokeHarness harness = new McpSmokeHarness();
 
-        int exitCode = harness.run(args, client, System.out, new PrintStream(stderrBytes));
+        HarnessRun run = runSafe(client);
 
-        String stderrText = new String(stderrBytes.toByteArray(), StandardCharsets.UTF_8);
-        assertEquals(1, exitCode, "Should fail when baseline tools are missing");
-        assertTrue(stderrText.contains("Baseline tool missing"), "Should report missing baseline tool");
+        assertEquals(1, run.exitCode, "Should fail when baseline tools are missing");
+        assertTrue(run.stderr.contains("Baseline tool missing"), "Should report missing baseline tool");
     }
 
+    @DisplayName("1.1-ATDD-004 [P1] Given safe mode, when harness runs, then no mutating tools are called")
     @Test
     void safe_mode_never_calls_mutating_tools() {
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
-
         // Include all baseline tools plus a mutation tool to verify safe mode ignores it
-        RecordingMcpClient client = new RecordingMcpClient(allBaselineTools("transport_start"));
-        McpSmokeHarness harness = new McpSmokeHarness();
+        RecordingMcpClient client = new RecordingMcpClient(baselineToolsWith("transport_start"));
 
-        int exitCode = harness.run(args, client, System.out, System.err);
+        HarnessRun run = runSafe(client);
 
         assertFalse(client.calledTools.contains("transport_start"));
-        assertEquals(0, exitCode);
+        assertEquals(0, run.exitCode);
     }
 
+    @DisplayName("1.1-ATDD-005 [P1] Given new read-only tool, when safe mode runs, then it is called")
     @Test
     void safe_mode_calls_all_non_mutating_tools_from_discovery_per_AC3() {
         // AC3: performs read-only validations on all non-mutating tools available
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
+        RecordingMcpClient client = new RecordingMcpClient(baselineToolsWith("new_read_only_tool"));
 
-        // Include baseline tools plus a hypothetical new read-only tool
-        RecordingMcpClient client = new RecordingMcpClient(allBaselineTools("new_read_only_tool"));
-        McpSmokeHarness harness = new McpSmokeHarness();
-
-        int exitCode = harness.run(args, client, System.out, System.err);
+        HarnessRun run = runSafe(client);
 
         // Verify the new tool was also called (not just baseline tools)
         assertTrue(client.calledTools.contains("new_read_only_tool"),
                 "Safe mode should call all discovered non-mutating tools, not just baseline");
-        assertEquals(0, exitCode);
+        assertEquals(0, run.exitCode);
     }
 
+    @DisplayName("1.1-ATDD-006 [P2] Given non-baseline tool requires params, when safe mode runs, then allow missing-parameter")
     @Test
     void safe_mode_allows_missing_required_parameter_for_non_baseline_tools() {
         // Non-baseline tools should be lenient about MISSING_REQUIRED_PARAMETER
         // since we don't know their parameter requirements
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
-
-        ByteArrayOutputStream stdoutBytes = new ByteArrayOutputStream();
-        PrintStream stdout = new PrintStream(stdoutBytes, true, StandardCharsets.UTF_8);
-
-        McpClient client = new FakeMcpClient(allBaselineTools("new_tool_requiring_params")) {
+        McpClient client = new FakeMcpClient(baselineToolsWith("new_tool_requiring_params")) {
             @Override
             public String callTool(String toolName, Map<String, Object> arguments) {
                 if ("new_tool_requiring_params".equals(toolName)) {
@@ -131,54 +98,42 @@ class McpSmokeHarnessAtddTest {
             }
         };
 
-        McpSmokeHarness harness = new McpSmokeHarness();
-        int exitCode = harness.run(args, client, stdout, System.err);
+        HarnessRun run = runSafe(client);
 
-        // Should pass - non-baseline tools can return MISSING_REQUIRED_PARAMETER
-        assertEquals(0, exitCode, "Should pass when non-baseline tool returns MISSING_REQUIRED_PARAMETER");
-        String stdoutText = new String(stdoutBytes.toByteArray(), StandardCharsets.UTF_8);
-        assertTrue(stdoutText.contains("new_tool_requiring_params") && stdoutText.contains("expected"),
+        assertEquals(0, run.exitCode, "Should pass when non-baseline tool returns MISSING_REQUIRED_PARAMETER");
+        assertTrue(run.stdout.contains("new_tool_requiring_params") && run.stdout.contains("expected"),
                 "Should report MISSING_REQUIRED_PARAMETER as expected for non-baseline tool");
     }
 
+    @DisplayName("1.1-ATDD-007 [P1] Given mutation mode, when harness runs, then transport_start then transport_stop")
     @Test
     void mutation_mode_calls_transport_start_then_stop() {
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", true);
-
         // Mutation mode needs baseline tools plus transport tools
-        RecordingMcpClient client = new RecordingMcpClient(allBaselineTools("transport_start", "transport_stop"));
-        McpSmokeHarness harness = new McpSmokeHarness();
+        RecordingMcpClient client = new RecordingMcpClient(baselineToolsWith("transport_start", "transport_stop"));
 
-        int exitCode = harness.run(args, client, System.out, System.err);
+        HarnessRun run = runMutation(client);
 
         assertEquals(List.of("transport_start", "transport_stop"), client.calledTools);
-        assertEquals(0, exitCode);
+        assertEquals(0, run.exitCode);
     }
 
+    @DisplayName("1.1-ATDD-008 [P1] Given mutation mode missing tools, when harness runs, then fail")
     @Test
     void mutation_mode_fails_when_required_tools_missing() {
         // Mutation mode must fail if required mutation tools are missing, not silently skip
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", true);
+        McpClient client = new FakeMcpClient(BASELINE_TOOLS);
 
-        ByteArrayOutputStream stderrBytes = new ByteArrayOutputStream();
+        HarnessRun run = runMutation(client);
 
-        // Only baseline tools, no mutation tools
-        McpClient client = new FakeMcpClient(allBaselineTools());
-        McpSmokeHarness harness = new McpSmokeHarness();
-
-        int exitCode = harness.run(args, client, System.out, new PrintStream(stderrBytes));
-
-        String stderrText = new String(stderrBytes.toByteArray(), StandardCharsets.UTF_8);
-        assertEquals(1, exitCode, "Mutation mode should fail when required tools are missing");
-        assertTrue(stderrText.contains("transport_start") || stderrText.contains("transport_stop"),
+        assertEquals(1, run.exitCode, "Mutation mode should fail when required tools are missing");
+        assertTrue(run.stderr.contains("transport_start") || run.stderr.contains("transport_stop"),
                 "Should report which mutation tool is missing");
     }
 
+    @DisplayName("1.1-ATDD-009 [P2] Given no device selected, when device params requested, then typed error")
     @Test
     void no_device_selected_returns_typed_error_not_crash() {
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
-
-        McpClient client = new FakeMcpClient(allBaselineTools()) {
+        McpClient client = new FakeMcpClient(BASELINE_TOOLS) {
             @Override
             public String callTool(String toolName, Map<String, Object> arguments) {
                 if ("get_selected_device_parameters".equals(toolName)) {
@@ -190,23 +145,17 @@ class McpSmokeHarnessAtddTest {
             }
         };
 
-        McpSmokeHarness harness = new McpSmokeHarness();
-        int exitCode = harness.run(args, client, System.out, System.err);
+        HarnessRun run = runSafe(client);
 
-        assertEquals(0, exitCode);
+        assertEquals(0, run.exitCode);
     }
 
+    @DisplayName("1.1-ATDD-010 [P2] Given non-param tool error, when safe mode runs, then fail")
     @Test
     void missing_required_parameter_expected_only_for_param_requiring_tools() {
         // MISSING_REQUIRED_PARAMETER should be expected for tools that require params
         // but should FAIL for tools that don't require params (like status, list_tracks)
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
-
-        ByteArrayOutputStream stderrBytes = new ByteArrayOutputStream();
-        PrintStream stderr = new PrintStream(stderrBytes, true, StandardCharsets.UTF_8);
-
-        // Create a client where 'status' returns MISSING_REQUIRED_PARAMETER (which is wrong - status has no params)
-        McpClient client = new FakeMcpClient(allBaselineTools()) {
+        McpClient client = new FakeMcpClient(BASELINE_TOOLS) {
             @Override
             public String callTool(String toolName, Map<String, Object> arguments) {
                 if ("status".equals(toolName)) {
@@ -219,25 +168,18 @@ class McpSmokeHarnessAtddTest {
             }
         };
 
-        McpSmokeHarness harness = new McpSmokeHarness();
-        int exitCode = harness.run(args, client, System.out, stderr);
+        HarnessRun run = runSafe(client);
 
-        // Should fail because status should never return MISSING_REQUIRED_PARAMETER
-        assertEquals(1, exitCode, "Should fail when non-param tool returns MISSING_REQUIRED_PARAMETER");
-        String stderrText = new String(stderrBytes.toByteArray(), StandardCharsets.UTF_8);
-        assertTrue(stderrText.contains("status") && stderrText.contains("typed error"),
+        assertEquals(1, run.exitCode, "Should fail when non-param tool returns MISSING_REQUIRED_PARAMETER");
+        assertTrue(run.stderr.contains("status") && run.stderr.contains("typed error"),
                 "Should report status tool returned unexpected typed error");
     }
 
+    @DisplayName("1.1-ATDD-011 [P2] Given defaultable tool error, when safe mode runs, then fail")
     @Test
     void missing_required_parameter_fails_for_defaultable_tools() {
         // Defaultable tools (like get_track_details) should not return MISSING_REQUIRED_PARAMETER
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
-
-        ByteArrayOutputStream stderrBytes = new ByteArrayOutputStream();
-        PrintStream stderr = new PrintStream(stderrBytes, true, StandardCharsets.UTF_8);
-
-        McpClient client = new FakeMcpClient(allBaselineTools()) {
+        McpClient client = new FakeMcpClient(BASELINE_TOOLS) {
             @Override
             public String callTool(String toolName, Map<String, Object> arguments) {
                 if ("get_track_details".equals(toolName)) {
@@ -249,24 +191,18 @@ class McpSmokeHarnessAtddTest {
             }
         };
 
-        McpSmokeHarness harness = new McpSmokeHarness();
-        int exitCode = harness.run(args, client, System.out, stderr);
+        HarnessRun run = runSafe(client);
 
-        assertEquals(1, exitCode, "Should fail when defaultable tool returns MISSING_REQUIRED_PARAMETER");
-        String stderrText = new String(stderrBytes.toByteArray(), StandardCharsets.UTF_8);
-        assertTrue(stderrText.contains("get_track_details") && stderrText.contains("typed error"),
+        assertEquals(1, run.exitCode, "Should fail when defaultable tool returns MISSING_REQUIRED_PARAMETER");
+        assertTrue(run.stderr.contains("get_track_details") && run.stderr.contains("typed error"),
                 "Should report get_track_details returned unexpected typed error");
     }
 
+    @DisplayName("1.1-ATDD-012 [P2] Given param-requiring tool error, when safe mode runs, then allow")
     @Test
     void missing_required_parameter_accepted_for_param_requiring_tools() {
-        // MISSING_REQUIRED_PARAMETER should be accepted for tools like get_track_details
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
-
-        ByteArrayOutputStream stdoutBytes = new ByteArrayOutputStream();
-        PrintStream stdout = new PrintStream(stdoutBytes, true, StandardCharsets.UTF_8);
-
-        McpClient client = new FakeMcpClient(allBaselineTools()) {
+        // MISSING_REQUIRED_PARAMETER should be accepted for tools that require params
+        McpClient client = new FakeMcpClient(BASELINE_TOOLS) {
             @Override
             public String callTool(String toolName, Map<String, Object> arguments) {
                 if ("get_clips_in_scene".equals(toolName)) {
@@ -279,25 +215,17 @@ class McpSmokeHarnessAtddTest {
             }
         };
 
-        McpSmokeHarness harness = new McpSmokeHarness();
-        int exitCode = harness.run(args, client, stdout, System.err);
+        HarnessRun run = runSafe(client);
 
-        // Should pass because get_clips_in_scene requires params
-        assertEquals(0, exitCode, "Should pass when param-requiring tool returns MISSING_REQUIRED_PARAMETER");
-        String stdoutText = new String(stdoutBytes.toByteArray(), StandardCharsets.UTF_8);
-        assertTrue(stdoutText.contains("get_clips_in_scene") && stdoutText.contains("expected"),
+        assertEquals(0, run.exitCode, "Should pass when param-requiring tool returns MISSING_REQUIRED_PARAMETER");
+        assertTrue(run.stdout.contains("get_clips_in_scene") && run.stdout.contains("expected"),
                 "Should report MISSING_REQUIRED_PARAMETER as expected for get_clips_in_scene");
     }
 
+    @DisplayName("1.1-ATDD-013 [P1] Given tools/list JSON, when harness prints, then full JSON is included")
     @Test
     void prints_full_tools_list_json_to_stdout_per_AC2() {
         // AC2: prints the full tool list observed (including at minimum `status`)
-        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
-
-        ByteArrayOutputStream stdoutBytes = new ByteArrayOutputStream();
-        PrintStream stdout = new PrintStream(stdoutBytes, true, StandardCharsets.UTF_8);
-
-        // Create a client that returns realistic JSON structure
         String fullToolsJson = """
             {"jsonrpc":"2.0","id":2,"result":{"tools":[
                 {"name":"status","description":"Get status"},
@@ -311,101 +239,53 @@ class McpSmokeHarnessAtddTest {
             ]}}
             """.trim();
 
-        McpClient client = new FakeMcpClient(allBaselineTools()) {
+        McpClient client = new FakeMcpClient(BASELINE_TOOLS) {
             @Override
             public String listToolsRaw() {
                 return fullToolsJson;
             }
         };
 
-        McpSmokeHarness harness = new McpSmokeHarness();
-        int exitCode = harness.run(args, client, stdout, System.err);
-
-        String stdoutText = new String(stdoutBytes.toByteArray(), StandardCharsets.UTF_8);
+        HarnessRun run = runSafe(client);
 
         // Verify full JSON is printed (not just tool names)
-        assertTrue(stdoutText.contains("--- Full tools/list JSON ---"), "Should have JSON section header");
-        assertTrue(stdoutText.contains("--- End tools/list JSON ---"), "Should have JSON section footer");
-        assertTrue(stdoutText.contains("\"name\""), "Should contain JSON with name fields");
-        assertTrue(stdoutText.contains("\"description\""), "Should contain JSON with description fields");
-        assertTrue(stdoutText.contains("\"status\""), "Should contain status tool in JSON");
-        assertEquals(0, exitCode);
+        assertTrue(run.stdout.contains("--- Full tools/list JSON ---"), "Should have JSON section header");
+        assertTrue(run.stdout.contains("--- End tools/list JSON ---"), "Should have JSON section footer");
+        assertTrue(run.stdout.contains("\"name\""), "Should contain JSON with name fields");
+        assertTrue(run.stdout.contains("\"description\""), "Should contain JSON with description fields");
+        assertTrue(run.stdout.contains("\"status\""), "Should contain status tool in JSON");
+        assertEquals(0, run.exitCode);
     }
 
-    /**
-     * Returns list of all baseline read-only tools, optionally with additional tools.
-     */
-    private static List<String> allBaselineTools(String... additional) {
-        List<String> tools = new java.util.ArrayList<>(List.of(
-                "status",
-                "list_tracks",
-                "get_track_details",
-                "list_devices_on_track",
-                "get_device_details",
-                "list_scenes",
-                "get_clips_in_scene",
-                "get_selected_device_parameters"
-        ));
-        tools.addAll(List.of(additional));
-        return tools;
+    private static McpSmokeHarnessArgs safeArgs() {
+        return new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
     }
 
-    private static String toolsListJson(List<String> tools) {
-        StringBuilder json = new StringBuilder();
-        json.append("{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"tools\":[");
-        for (int i = 0; i < tools.size(); i++) {
-            if (i > 0) {
-                json.append(",");
-            }
-            json.append("{\"name\":\"").append(tools.get(i)).append("\"}");
-        }
-        json.append("]}}");
-        return json.toString();
+    private static McpSmokeHarnessArgs mutationArgs() {
+        return new McpSmokeHarnessArgs("localhost", 61169, "/mcp", true);
     }
 
-    private static class FakeMcpClient implements McpClient {
-        private final List<String> tools;
-
-        FakeMcpClient() {
-            this(List.of("status"));
-        }
-
-        FakeMcpClient(List<String> tools) {
-            this.tools = tools;
-        }
-
-        @Override
-        public void initialize() {}
-
-        @Override
-        public List<String> listTools() {
-            return tools;
-        }
-
-        @Override
-        public String listToolsRaw() {
-            return toolsListJson(tools);
-        }
-
-        @Override
-        public String callTool(String toolName, Map<String, Object> arguments) {
-            return """
-                {"status":"success","data":{"tool":"%s"}}
-                """.formatted(toolName).trim();
-        }
+    private static HarnessRun runSafe(McpClient client) {
+        return runHarness(safeArgs(), client);
     }
 
-    private static class RecordingMcpClient extends FakeMcpClient {
-        private final List<String> calledTools = new java.util.ArrayList<>();
-
-        RecordingMcpClient(List<String> tools) {
-            super(tools);
-        }
-
-        @Override
-        public String callTool(String toolName, Map<String, Object> arguments) {
-            calledTools.add(toolName);
-            return super.callTool(toolName, arguments);
-        }
+    private static HarnessRun runMutation(McpClient client) {
+        return runHarness(mutationArgs(), client);
     }
+
+    private static HarnessRun runHarness(McpSmokeHarnessArgs args, McpClient client) {
+        ByteArrayOutputStream stdoutBytes = new ByteArrayOutputStream();
+        ByteArrayOutputStream stderrBytes = new ByteArrayOutputStream();
+        PrintStream stdout = new PrintStream(stdoutBytes, true, StandardCharsets.UTF_8);
+        PrintStream stderr = new PrintStream(stderrBytes, true, StandardCharsets.UTF_8);
+
+        McpSmokeHarness harness = new McpSmokeHarness();
+        int exitCode = harness.run(args, client, stdout, stderr);
+
+        String stdoutText = new String(stdoutBytes.toByteArray(), StandardCharsets.UTF_8);
+        String stderrText = new String(stderrBytes.toByteArray(), StandardCharsets.UTF_8);
+        return new HarnessRun(exitCode, stdoutText, stderrText);
+    }
+
+    private record HarnessRun(int exitCode, String stdout, String stderr) {}
 }

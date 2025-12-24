@@ -167,6 +167,23 @@ so that MCP regressions and integration issues are caught early before we build 
 - MCP endpoint path constant: `src/main/java/io/github/fabb/wigai/WigAIExtension.java`
 - Build + dependency versions: `build.gradle.kts`
 
+## Test Quality Review
+
+**Review Date:** 2025-12-24  
+**Score:** 100/100 (A+ - Excellent)  
+**Recommendation:** Approve  
+**Review File:** `docs/test-review-McpSmokeHarnessAtddTest.md`
+
+**Key Findings:**
+- Traceable ATDD IDs + P1/P2 priorities added across all tests
+- Helper extraction reduced duplication and file size (<300 lines)
+- Mode output is explicitly asserted
+
+**Strengths:**
+- Deterministic, CI-safe ATDD coverage of all ACs
+- Explicit assertions and typed error validation
+- Full tools/list JSON output verified
+
 ## Dev Agent Record
 
 ### Context Reference
