@@ -1,6 +1,6 @@
 # Story 1.1: Repeatable MCP Smoke Test Harness + Checklist
 
-Status: Ready for Review
+Status: in-progress
 
 ## Story
 
@@ -65,6 +65,9 @@ so that MCP regressions and integration issues are caught early before we build 
 - [x] [AI-Review][High] Align MUTATING_TOOLS and safe-mode guard with actual tool names (`set_selected_device_parameter`, `session_launchSceneByIndex`, `session_launchSceneByName`) [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:37]
 - [x] [AI-Review][High] Validate mutation-mode tool responses via envelope parsing (transport + parameter set) instead of assuming OK [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:93]
 - [x] [AI-Review][High] Fix File List to reflect current git changes (remove stale entries) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:190]
+- [ ] [AI-Review][Critical] Update File List to include files from last 8 commits (docs/atdd-checklist-1-1-repeatable-mcp-smoke-test-harness-checklist.md, docs/sprint-artifacts/validation-report-2025-12-18T15-37-47-07-00.md, docs/test-design-epic-1.md, docs/test-review.md) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:198]
+- [ ] [AI-Review][High] Fail safe mode on any typed error other than DEVICE_NOT_SELECTED to keep pass/fail meaningful [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:197]
+- [ ] [AI-Review][Medium] Wrap JSON-RPC error responses in a {status:"error"} envelope so parseEnvelope reports actionable code/message [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:102]
 
 ## Dev Notes
 
