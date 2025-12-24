@@ -1,6 +1,6 @@
 # Story 1.1: Repeatable MCP Smoke Test Harness + Checklist
 
-Status: Ready for Review
+Status: in-progress
 
 ## Story
 
@@ -73,6 +73,10 @@ so that MCP regressions and integration issues are caught early before we build 
 - [x] [AI-Review][Medium] Update runbook typed-error guidance to reflect safe-mode failures on non-device tool errors [docs/engineering/mcp-smoke-test-runbook.md:111]
 - [x] [AI-Review][Medium] Escape JSON-RPC error messages safely when wrapping in status envelope (handle newline/control chars) [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:105]
 - [x] [AI-Review][Medium] Promote green ATDD tests (remove atdd_red tag or adjust filters so they run in CI) [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java:14]
+- [ ] [AI-Review][High] Align File List with last-10-commit review scope (remove or note docs not touched in last 10 commits) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:236]
+- [ ] [AI-Review][High] Treat MISSING_REQUIRED_PARAMETER as expected only for specific tools, not blanket safe-mode pass [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:220]
+- [ ] [AI-Review][Medium] Avoid duplicate tools/list calls or ensure raw and parsed tool lists are from same response [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:68]
+- [ ] [AI-Review][Medium] Add test asserting full tools/list JSON is printed to stdout [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddTest.java:19]
 
 ## Dev Notes
 
