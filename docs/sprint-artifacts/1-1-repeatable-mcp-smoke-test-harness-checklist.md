@@ -1,6 +1,6 @@
 # Story 1.1: Repeatable MCP Smoke Test Harness + Checklist
 
-Status: Ready for Review
+Status: in-progress
 
 ## Story
 
@@ -81,6 +81,10 @@ so that MCP regressions and integration issues are caught early before we build 
 - [x] [AI-Review][Medium] Include typed error message in failure output for actionable diagnostics [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:136]
 - [x] [AI-Review][Medium] Treat defaultable read-only tools as success-only (fail on MISSING_REQUIRED_PARAMETER) to avoid masking regressions [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:37]
 - [x] [AI-Review][Low] Fail fast with a friendly error when --port is not numeric instead of throwing NumberFormatException [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessMain.java:53]
+- [ ] [AI-Review][High] Validate safe mode calls all non-mutating tools observed in tools/list (not just baseline) per AC3 [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:212]
+- [ ] [AI-Review][High] Resolve story File List vs git mismatch (story lists changes, git shows none) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:250]
+- [ ] [AI-Review][Medium] Align runbook typed-error guidance with harness behavior (MISSING_REQUIRED_PARAMETER only expected for param-requiring tools) [docs/engineering/mcp-smoke-test-runbook.md:111]
+- [ ] [AI-Review][Low] Update doc references to renamed McpSmokeHarnessAtddTest (remove AtddRed) [docs/test-review.md:1]
 
 ## Dev Notes
 
