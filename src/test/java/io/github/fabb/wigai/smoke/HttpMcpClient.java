@@ -99,10 +99,15 @@ public final class HttpMcpClient implements McpClient {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode response = mapper.readTree(responseBody);
 
-            // Handle JSON-RPC error
+            // Handle JSON-RPC error - wrap in status envelope for parseEnvelope compatibility
             JsonNode error = response.get("error");
             if (error != null) {
-                return mapper.writeValueAsString(error);
+                int errorCode = error.has("code") ? error.get("code").asInt() : -1;
+                String errorMessage = error.has("message") ? error.get("message").asText() : "Unknown JSON-RPC error";
+                // Escape quotes and backslashes in error message for valid JSON
+                String escapedMessage = errorMessage.replace("\\", "\\\\").replace("\"", "\\\"");
+                return "{\"status\":\"error\",\"error\":{\"code\":\"JSON_RPC_ERROR_" + errorCode + "\",\"message\":\"" +
+                        escapedMessage + "\"}}";
             }
 
             JsonNode result = response.get("result");

@@ -251,6 +251,40 @@ class McpSmokeHarnessArgsTest {
     }
 
     @Test
+    void safeModeFailsOnTypedErrorForNonDeviceTools() {
+        // Safe mode should fail on typed errors for tools other than get_selected_device_parameters
+        McpSmokeHarness harness = new McpSmokeHarness();
+        McpSmokeHarnessArgs safeArgs = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
+
+        McpClient errorClient = new McpClient() {
+            @Override
+            public java.util.List<String> listTools() {
+                return java.util.List.of("status", "list_tracks", "get_track_details",
+                        "list_devices_on_track", "get_device_details", "list_scenes",
+                        "get_clips_in_scene", "get_selected_device_parameters");
+            }
+
+            @Override
+            public String callTool(String name, java.util.Map<String, Object> args) {
+                // Return typed error for list_tracks (should cause failure in safe mode)
+                if ("list_tracks".equals(name)) {
+                    return "{\"status\":\"error\",\"error\":{\"code\":\"SOME_ERROR\",\"message\":\"Test error\"}}";
+                }
+                return "{\"status\":\"success\",\"data\":{}}";
+            }
+        };
+
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        java.io.ByteArrayOutputStream err = new java.io.ByteArrayOutputStream();
+
+        int exitCode = harness.run(safeArgs, errorClient, new java.io.PrintStream(out), new java.io.PrintStream(err));
+
+        assertEquals(1, exitCode, "Safe mode should fail on typed error for non-device tools");
+        assertTrue(err.toString().contains("FAIL"), "Should report failure");
+        assertTrue(err.toString().contains("SOME_ERROR"), "Should include the error code");
+    }
+
+    @Test
     void safeModeRejectsMutatingToolCall() {
         // AC3: Safe mode must perform read-only validations only
         // This test verifies the harness has an explicit guard against calling mutating tools
@@ -408,8 +442,37 @@ class McpSmokeHarnessArgsTest {
             """;
 
         String extracted = HttpMcpClient.extractToolResult(mcpResponse);
-        // Should return the error as JSON for caller to handle
-        assertTrue(extracted.contains("error") || extracted.contains("-32600"),
-                "Should return error information");
+        // Should wrap JSON-RPC error in status envelope for parseEnvelope compatibility
+        assertTrue(extracted.contains("\"status\":\"error\""),
+                "Should wrap in status envelope");
+        assertTrue(extracted.contains("JSON_RPC_ERROR_-32600"),
+                "Should include error code in wrapped format");
+        assertTrue(extracted.contains("Invalid Request"),
+                "Should preserve error message");
+    }
+
+    @Test
+    void httpMcpClient_jsonRpcErrorParsableByParseEnvelope() {
+        String mcpResponse = """
+            {
+              "jsonrpc": "2.0",
+              "id": 1,
+              "error": {
+                "code": -32601,
+                "message": "Method not found"
+              }
+            }
+            """;
+
+        String extracted = HttpMcpClient.extractToolResult(mcpResponse);
+
+        // The wrapped response should be parseable by parseEnvelope
+        McpSmokeHarness harness = new McpSmokeHarness();
+        McpSmokeHarness.EnvelopeResult envelope = harness.parseEnvelope(extracted);
+
+        assertTrue(envelope.isValidEnvelope(), "Wrapped JSON-RPC error should be a valid envelope");
+        assertTrue(envelope.isError(), "Should be recognized as error");
+        assertEquals("JSON_RPC_ERROR_-32601", envelope.errorCode());
+        assertTrue(envelope.errorMessage().contains("Method not found"));
     }
 }

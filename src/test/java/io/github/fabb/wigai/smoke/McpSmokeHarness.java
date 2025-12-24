@@ -203,8 +203,9 @@ public final class McpSmokeHarness {
                                     return 1;
                                 }
                             } else {
-                                // Typed error (has code) is acceptable in some states
-                                out.println("✓ " + tool + " → typed error [" + envelope.errorCode() + "] (expected in some states)");
+                                // Typed error on other read-only tools indicates a problem - fail to keep pass/fail meaningful
+                                err.println("FAIL: " + tool + " returned typed error: " + envelope.errorCode());
+                                return 1;
                             }
                         } else {
                             out.println("✓ " + tool + " → OK");
