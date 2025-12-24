@@ -26,7 +26,7 @@ public final class McpSmokeHarnessMain {
 
     public static void main(String[] args) {
         McpSmokeHarnessArgs harnessArgs = parseArgs(args);
-        System.out.println("Resolved MCP URL: " + harnessArgs.resolvedUrl());
+        // Note: URL is printed by the harness itself in its formatted output
 
         McpClient client = new HttpMcpClient(harnessArgs.resolvedUrl(), DEFAULT_TIMEOUT);
         McpSmokeHarness harness = new McpSmokeHarness();

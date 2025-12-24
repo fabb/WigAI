@@ -77,27 +77,84 @@ public final class HttpMcpClient implements McpClient {
             request.set("params", params);
 
             String responseBody = sendRequest(request.toString());
-            JsonNode response = objectMapper.readTree(responseBody);
+            return extractToolResult(responseBody);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to call tool " + toolName + ": " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Extracts the tool result from an MCP JSON-RPC response.
+     * Handles text content, multiple content items, non-text content, and errors.
+     *
+     * @param responseBody the raw JSON-RPC response body
+     * @return the extracted text content or error information
+     */
+    static String extractToolResult(String responseBody) {
+        if (responseBody == null || responseBody.isBlank()) {
+            return "{\"status\":\"error\",\"error\":{\"code\":\"EMPTY_RESPONSE\",\"message\":\"Empty response from server\"}}";
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode response = mapper.readTree(responseBody);
+
+            // Handle JSON-RPC error
+            JsonNode error = response.get("error");
+            if (error != null) {
+                return mapper.writeValueAsString(error);
+            }
 
             JsonNode result = response.get("result");
-            if (result != null && result.has("content")) {
-                JsonNode content = result.get("content");
-                if (content.isArray() && content.size() > 0) {
-                    JsonNode firstContent = content.get(0);
-                    if (firstContent.has("text")) {
-                        return firstContent.get("text").asText();
+            if (result == null) {
+                return responseBody; // Return raw if no result
+            }
+
+            if (!result.has("content")) {
+                return responseBody; // Return raw if no content field
+            }
+
+            JsonNode content = result.get("content");
+            if (!content.isArray()) {
+                return responseBody; // Return raw if content is not an array
+            }
+
+            if (content.size() == 0) {
+                return ""; // Empty content array
+            }
+
+            // Process all content items, collecting text and noting non-text types
+            StringBuilder textBuilder = new StringBuilder();
+            List<String> nonTextTypes = new ArrayList<>();
+
+            for (JsonNode item : content) {
+                String type = item.has("type") ? item.get("type").asText() : "unknown";
+
+                if ("text".equals(type) && item.has("text")) {
+                    if (textBuilder.length() > 0) {
+                        textBuilder.append("\n");
                     }
+                    textBuilder.append(item.get("text").asText());
+                } else {
+                    nonTextTypes.add(type);
                 }
             }
 
-            JsonNode error = response.get("error");
-            if (error != null) {
-                return objectMapper.writeValueAsString(error);
+            // If we got text content, return it
+            if (textBuilder.length() > 0) {
+                return textBuilder.toString();
             }
 
-            return responseBody;
+            // No text content - return indicator of what content types were received
+            if (!nonTextTypes.isEmpty()) {
+                return "{\"status\":\"error\",\"error\":{\"code\":\"NON_TEXT_CONTENT\"," +
+                        "\"message\":\"Response contained non-text content types: " +
+                        String.join(", ", nonTextTypes) + "\"}}";
+            }
+
+            return responseBody; // Fallback
         } catch (Exception e) {
-            throw new RuntimeException("Failed to call tool " + toolName + ": " + e.getMessage(), e);
+            return responseBody; // Return raw on parse error
         }
     }
 

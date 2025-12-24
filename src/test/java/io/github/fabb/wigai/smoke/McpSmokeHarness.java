@@ -150,6 +150,8 @@ public final class McpSmokeHarness {
             // Safe mode: only call read-only tools
             for (String tool : READ_ONLY_TOOLS) {
                 if (tools.contains(tool)) {
+                    // Explicit guard: ensure safe mode never calls mutating tools
+                    assertToolIsSafeForSafeMode(tool);
                     try {
                         String result = client.callTool(tool, Map.of());
                         EnvelopeResult envelope = parseEnvelope(result);
@@ -160,8 +162,17 @@ public final class McpSmokeHarness {
                         }
 
                         if (envelope.isError()) {
-                            // AC5: Typed error (has code) is acceptable in some states
-                            out.println("✓ " + tool + " → typed error [" + envelope.errorCode() + "] (expected in some states)");
+                            if ("get_selected_device_parameters".equals(tool)) {
+                                if ("DEVICE_NOT_SELECTED".equals(envelope.errorCode())) {
+                                    out.println("✓ " + tool + " → typed error [DEVICE_NOT_SELECTED] (expected when no device selected)");
+                                } else {
+                                    err.println("FAIL: " + tool + " returned unexpected error: " + envelope.errorCode());
+                                    return 1;
+                                }
+                            } else {
+                                // Typed error (has code) is acceptable in some states
+                                out.println("✓ " + tool + " → typed error [" + envelope.errorCode() + "] (expected in some states)");
+                            }
                         } else {
                             out.println("✓ " + tool + " → OK");
                         }
@@ -179,6 +190,19 @@ public final class McpSmokeHarness {
     }
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    /**
+     * Explicit guard: throws IllegalStateException if tool is in MUTATING_TOOLS.
+     * This prevents safe mode from ever calling mutating tools, even if READ_ONLY_TOOLS
+     * is accidentally modified to include a mutating tool.
+     */
+    void assertToolIsSafeForSafeMode(String toolName) {
+        if (MUTATING_TOOLS.contains(toolName)) {
+            throw new IllegalStateException(
+                    "Safe mode attempted to call mutating tool: " + toolName +
+                    ". This is a bug in the harness - safe mode must only call read-only tools.");
+        }
+    }
 
     /**
      * Represents the result of parsing a tool response envelope.

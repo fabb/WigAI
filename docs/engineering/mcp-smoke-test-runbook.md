@@ -40,8 +40,8 @@ This additionally tests mutation tools like `transport_start`/`transport_stop`.
 |-------|-------------|
 | Connection | Connects to MCP endpoint at `http://{host}:{port}/mcp` |
 | Discovery | Runs `tools/list` and prints all available tools |
-| Baseline Tools | Asserts `status` tool exists |
-| Read-Only Tools | Calls available read-only tools and validates responses |
+| Baseline Tools | Asserts ALL baseline read-only tools exist (see list below) |
+| Read-Only Tools | Calls each baseline tool and validates response envelopes |
 
 Read-only tools tested:
 - `status`
@@ -96,7 +96,9 @@ Read-only tools tested:
 
 ### Baseline Tool Missing
 
-**Symptom:** `FAIL: Baseline tool missing: status`
+**Symptom:** `FAIL: Baseline tool missing: <tool_name>`
+
+(Where `<tool_name>` is any of the baseline tools: `status`, `list_tracks`, `get_track_details`, etc.)
 
 **Causes:**
 - WigAI version mismatch
