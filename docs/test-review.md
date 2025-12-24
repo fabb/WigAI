@@ -1,6 +1,6 @@
 # Test Quality Review: McpSmokeHarnessAtddTest.java (originally McpSmokeHarnessAtddRedTest.java)
 
-**Quality Score**: 88/100 (A - Good)
+**Quality Score**: 86/100 (A - Good)
 **Review Date**: 2025-12-23
 **Review Scope**: single
 **Reviewer**: TEA Agent (Josh)
@@ -35,9 +35,9 @@ These ATDD tests validate core smoke-harness behavior with deterministic fakes a
 
 | Criterion                            | Status                          | Violations | Notes                                                   |
 | ------------------------------------ | ------------------------------- | ---------- | ------------------------------------------------------- |
-| BDD Format (Given-When-Then)         | ⚠️ WARN                          | 1          | No explicit Given/When/Then structure                    |
-| Test IDs                             | ❌ FAIL                          | 7          | No test IDs in method names or @DisplayName             |
-| Priority Markers (P0/P1/P2/P3)       | ❌ FAIL                          | 7          | No P0-P3 tags; only @Tag("atdd_red")                    |
+| BDD Format (Given-When-Then)         | ⚠️ WARN                          | 13         | No explicit Given/When/Then structure                    |
+| Test IDs                             | ❌ FAIL                          | 13         | No test IDs in method names or @DisplayName             |
+| Priority Markers (P0/P1/P2/P3)       | ❌ FAIL                          | 13         | No P0-P3 tags present                                    |
 | Hard Waits (sleep, waitForTimeout)   | ✅ PASS                          | 0          | No hard waits detected                                  |
 | Determinism (no conditionals)        | ✅ PASS                          | 0          | Deterministic fakes and assertions                       |
 | Isolation (cleanup, no shared state) | ✅ PASS                          | 0          | Local fakes, no shared state                             |
@@ -45,11 +45,11 @@ These ATDD tests validate core smoke-harness behavior with deterministic fakes a
 | Data Factories                       | ⚠️ WARN                          | 0          | Test data built inline; no factory helpers               |
 | Network-First Pattern                | ⚠️ WARN                          | 0          | Not a browser/network interception test                  |
 | Explicit Assertions                  | ✅ PASS                          | 0          | Assertions present in all tests                          |
-| Test Length (≤300 lines)             | ✅ PASS                          | 204        | Within recommended size                                 |
+| Test Length (≤300 lines)             | ⚠️ WARN                          | 411        | Exceeds recommended size                                |
 | Test Duration (≤1.5 min)             | ✅ PASS                          | <1.5 min   | Unit tests with local fakes                              |
 | Flakiness Patterns                   | ✅ PASS                          | 0          | No flaky patterns detected                               |
 
-**Total Violations**: 0 Critical, 2 High, 1 Medium, 0 Low
+**Total Violations**: 0 Critical, 2 High, 2 Medium, 0 Low
 
 ---
 
@@ -59,7 +59,7 @@ These ATDD tests validate core smoke-harness behavior with deterministic fakes a
 Starting Score:          100
 Critical Violations:     -0 × 10 = -0
 High Violations:         -2 × 5 = -10
-Medium Violations:       -1 × 2 = -2
+Medium Violations:       -2 × 2 = -4
 Low Violations:          -0 × 1 = -0
 
 Bonus Points:
@@ -72,7 +72,7 @@ Bonus Points:
                          --------
 Total Bonus:             +0
 
-Final Score:             88/100
+Final Score:             86/100
 Grade:                   A
 ```
 
@@ -139,7 +139,6 @@ Priority markers are missing, so test criticality is unclear and cannot be align
 
 ```java
 // ⚠️ Could be improved (no priority tags)
-@Tag("atdd_red")
 class McpSmokeHarnessAtddTest {
     // ...
 }
@@ -258,15 +257,15 @@ Use similar assertions for any safe-mode feature that must never mutate state.
 ### File Metadata
 
 - **File Path**: `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddTest.java`
-- **File Size**: 204 lines, 7.8 KB
+- **File Size**: 411 lines, 18.1 KB
 - **Test Framework**: Other (JUnit 5)
 - **Language**: Java
 
 ### Test Structure
 
 - **Describe Blocks**: 0
-- **Test Cases (it/test)**: 7
-- **Average Test Length**: ~29 lines per test
+- **Test Cases (it/test)**: 13
+- **Average Test Length**: ~32 lines per test
 - **Fixtures Used**: 0 (local fakes only)
 - **Data Factories Used**: 0 (inline data)
 
@@ -278,12 +277,12 @@ Use similar assertions for any safe-mode feature that must never mutate state.
   - P1 (High): 0 tests
   - P2 (Medium): 0 tests
   - P3 (Low): 0 tests
-  - Unknown: 7 tests
+  - Unknown: 13 tests
 
 ### Assertions Analysis
 
-- **Total Assertions**: 12
-- **Assertions per Test**: 1.7 (avg)
+- **Total Assertions**: 31
+- **Assertions per Test**: 2.4 (avg)
 - **Assertion Types**: assertEquals, assertTrue, assertFalse
 
 ---
@@ -371,7 +370,7 @@ The tests are deterministic, cover all acceptance criteria, and validate safe vs
 
 **For Approve with Comments**:
 
-> Test quality is good with 88/100 score. High-priority recommendations should be addressed but don't block merge. Critical issues resolved, but improvements would enhance maintainability.
+> Test quality is good with 86/100 score. High-priority recommendations should be addressed but don't block merge. Critical issues resolved, but improvements would enhance maintainability.
 
 ---
 
@@ -389,15 +388,15 @@ The tests are deterministic, cover all acceptance criteria, and validate safe vs
 
 | Review Date  | Score       | Grade | Critical Issues | Trend       |
 | ------------ | ----------- | ----- | --------------- | ----------- |
-| 2025-12-23   | 88/100      | A     | 0               | ➡️ Stable   |
+| 2025-12-23   | 86/100      | A     | 0               | ➡️ Stable   |
 
 ### Related Reviews
 
 | File | Score | Grade | Critical | Status |
 | ---- | ----- | ----- | -------- | ------ |
-| (single file review) | 88/100 | A | 0 | Approve with Comments |
+| (single file review) | 86/100 | A | 0 | Approve with Comments |
 
-**Suite Average**: 88/100 (A)
+**Suite Average**: 86/100 (A)
 
 ---
 

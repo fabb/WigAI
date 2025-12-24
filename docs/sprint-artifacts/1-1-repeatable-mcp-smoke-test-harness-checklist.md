@@ -1,6 +1,6 @@
 # Story 1.1: Repeatable MCP Smoke Test Harness + Checklist
 
-Status: Ready for Review
+Status: done
 
 ## Story
 
@@ -153,7 +153,7 @@ so that MCP regressions and integration issues are caught early before we build 
 
 ### Story Completion Status
 
-- Set `development_status[1-1-repeatable-mcp-smoke-test-harness-checklist] = ready-for-dev` in `docs/sprint-artifacts/sprint-status.yaml`.
+- Set `development_status[1-1-repeatable-mcp-smoke-test-harness-checklist] = done` in `docs/sprint-artifacts/sprint-status.yaml`.
 - Completion note: “Ultimate context engine analysis completed — comprehensive developer guide created.”
 
 ## References

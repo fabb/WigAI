@@ -41,9 +41,9 @@ This additionally tests mutation tools like `transport_start`/`transport_stop`.
 | Connection | Connects to MCP endpoint at `http://{host}:{port}/mcp` |
 | Discovery | Runs `tools/list` and prints all available tools |
 | Baseline Tools | Asserts ALL baseline read-only tools exist (see list below) |
-| Read-Only Tools | Calls each baseline tool and validates response envelopes |
+| Read-Only Tools | Calls each discovered non-mutating tool and validates response envelopes |
 
-Read-only tools tested:
+Baseline read-only tools required:
 - `status`
 - `list_tracks`
 - `get_track_details`
@@ -52,6 +52,9 @@ Read-only tools tested:
 - `list_scenes`
 - `get_clips_in_scene`
 - `get_selected_device_parameters`
+
+Safe mode also calls any other non-mutating tools returned by `tools/list`. The baseline
+list above is the minimum required set for the harness to pass.
 
 ### Mutation Mode
 
