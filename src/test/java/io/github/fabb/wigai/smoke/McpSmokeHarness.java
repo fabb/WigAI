@@ -34,12 +34,15 @@ public final class McpSmokeHarness {
     // READ_ONLY_TOOLS is now the same as BASELINE_REQUIRED_TOOLS
     private static final Set<String> READ_ONLY_TOOLS = BASELINE_REQUIRED_TOOLS;
 
+    // Mutating tools - aligned with actual MCP tool names from src/main/java/.../mcp/tool/
     private static final Set<String> MUTATING_TOOLS = Set.of(
             "transport_start",
             "transport_stop",
-            "set_device_parameter",
-            "launch_scene",
-            "launch_clip"
+            "set_selected_device_parameter",      // DeviceParamTool.SET_PARAMETER_TOOL
+            "set_selected_device_parameters",     // DeviceParamTool.SET_MULTIPLE_PARAMETERS_TOOL
+            "session_launchSceneByIndex",         // SceneTool.TOOL_NAME
+            "session_launchSceneByName",          // SceneByNameTool.TOOL_NAME
+            "launch_clip"                         // ClipTool.TOOL_NAME
     );
 
     public int run(McpSmokeHarnessArgs args, McpClient client, PrintStream out, PrintStream err) {
@@ -89,11 +92,30 @@ public final class McpSmokeHarness {
                 return 1;
             }
 
-            // transport_start then transport_stop
+            // transport_start then transport_stop - with envelope validation
             try {
-                client.callTool("transport_start", Map.of());
+                String startResponse = client.callTool("transport_start", Map.of());
+                EnvelopeResult startEnvelope = parseEnvelope(startResponse);
+                if (!startEnvelope.isValidEnvelope()) {
+                    err.println("FAIL: transport_start returned invalid envelope: " + startEnvelope.errorMessage());
+                    return 1;
+                }
+                if (startEnvelope.isError()) {
+                    err.println("FAIL: transport_start returned error: " + startEnvelope.errorCode());
+                    return 1;
+                }
                 out.println("✓ transport_start → OK");
-                client.callTool("transport_stop", Map.of());
+
+                String stopResponse = client.callTool("transport_stop", Map.of());
+                EnvelopeResult stopEnvelope = parseEnvelope(stopResponse);
+                if (!stopEnvelope.isValidEnvelope()) {
+                    err.println("FAIL: transport_stop returned invalid envelope: " + stopEnvelope.errorMessage());
+                    return 1;
+                }
+                if (stopEnvelope.isError()) {
+                    err.println("FAIL: transport_stop returned error: " + stopEnvelope.errorCode());
+                    return 1;
+                }
                 out.println("✓ transport_stop → OK");
             } catch (Exception e) {
                 err.println("FAIL: transport mutation failed: " + e.getMessage());
@@ -127,10 +149,21 @@ public final class McpSmokeHarness {
                             if (firstParam.hasNonNull("index") && firstParam.hasNonNull("value")) {
                                 int index = firstParam.get("index").asInt();
                                 double value = firstParam.get("value").asDouble();
-                                client.callTool("set_selected_device_parameter", Map.of(
+                                String setResponse = client.callTool("set_selected_device_parameter", Map.of(
                                         "parameter_index", index,
                                         "value", value
                                 ));
+                                EnvelopeResult setEnvelope = parseEnvelope(setResponse);
+                                if (!setEnvelope.isValidEnvelope()) {
+                                    err.println("FAIL: set_selected_device_parameter returned invalid envelope: "
+                                            + setEnvelope.errorMessage());
+                                    return 1;
+                                }
+                                if (setEnvelope.isError()) {
+                                    err.println("FAIL: set_selected_device_parameter returned error: "
+                                            + setEnvelope.errorCode());
+                                    return 1;
+                                }
                                 out.println("✓ device parameter round-trip → OK");
                             } else {
                                 out.println("Skipping device parameter round-trip: no parameter value available");

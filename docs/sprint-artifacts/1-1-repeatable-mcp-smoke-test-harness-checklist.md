@@ -1,6 +1,6 @@
 # Story 1.1: Repeatable MCP Smoke Test Harness + Checklist
 
-Status: in-progress
+Status: Ready for Review
 
 ## Story
 
@@ -62,9 +62,9 @@ so that MCP regressions and integration issues are caught early before we build 
 - [x] [AI-Review][High] Handle non-text or multi-content tool responses in HttpMcpClient to avoid false envelope failures [src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java:83]
 - [x] [AI-Review][Medium] De-duplicate resolved URL printing between CLI and harness output [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessMain.java:29]
 - [x] [AI-Review][Medium] Update runbook baseline-tool assertion to match full baseline set [docs/engineering/mcp-smoke-test-runbook.md:43]
-- [ ] [AI-Review][High] Align MUTATING_TOOLS and safe-mode guard with actual tool names (`set_selected_device_parameter`, `session_launchSceneByIndex`, `session_launchSceneByName`) [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:37]
-- [ ] [AI-Review][High] Validate mutation-mode tool responses via envelope parsing (transport + parameter set) instead of assuming OK [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:93]
-- [ ] [AI-Review][High] Fix File List to reflect current git changes (remove stale entries) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:190]
+- [x] [AI-Review][High] Align MUTATING_TOOLS and safe-mode guard with actual tool names (`set_selected_device_parameter`, `session_launchSceneByIndex`, `session_launchSceneByName`) [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:37]
+- [x] [AI-Review][High] Validate mutation-mode tool responses via envelope parsing (transport + parameter set) instead of assuming OK [src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java:93]
+- [x] [AI-Review][High] Fix File List to reflect current git changes (remove stale entries) [docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md:190]
 
 ## Dev Notes
 
@@ -188,14 +188,23 @@ Claude Opus 4.5
 - Updated runbook baseline-tool description to reflect full tool set validation
 - All 37 CI-safe tests pass
 
+**Code Review Follow-ups Round 3 (2025-12-23):**
+- Aligned MUTATING_TOOLS with actual MCP tool names from source (`set_selected_device_parameter`, `set_selected_device_parameters`, `session_launchSceneByIndex`, `session_launchSceneByName`, `launch_clip`)
+- Added envelope validation for mutation-mode transport_start/transport_stop and set_selected_device_parameter responses
+- Fixed File List to include all files created for this story (McpClient.java, McpSmokeHarnessArgs.java)
+- Updated tests to use correct tool names
+- All 37 CI-safe tests pass
+
 ### File List
 
-- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java` (modified)
+- `src/test/java/io/github/fabb/wigai/smoke/McpClient.java` (new)
+- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarness.java` (new)
+- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessArgs.java` (new)
 - `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessArgsTest.java` (new)
-- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java` (modified)
+- `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessAtddRedTest.java` (new)
 - `src/test/java/io/github/fabb/wigai/smoke/McpSmokeHarnessMain.java` (new)
 - `src/test/java/io/github/fabb/wigai/smoke/HttpMcpClient.java` (new)
 - `build.gradle.kts` (modified - added mcpSmokeTest task)
 - `docs/engineering/mcp-smoke-test-runbook.md` (new)
 - `docs/sprint-artifacts/sprint-status.yaml` (modified)
-- `docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md` (modified)
+- `docs/sprint-artifacts/1-1-repeatable-mcp-smoke-test-harness-checklist.md` (new)

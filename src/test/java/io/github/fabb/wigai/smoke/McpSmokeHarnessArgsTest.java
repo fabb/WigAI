@@ -240,11 +240,13 @@ class McpSmokeHarnessArgsTest {
     @Test
     void assertToolIsSafeForSafeMode_rejectsMutatingTools() {
         McpSmokeHarness harness = new McpSmokeHarness();
-        // Should throw for mutating tools
+        // Should throw for mutating tools - using actual MCP tool names
         assertThrows(IllegalStateException.class, () -> harness.assertToolIsSafeForSafeMode("transport_start"));
         assertThrows(IllegalStateException.class, () -> harness.assertToolIsSafeForSafeMode("transport_stop"));
-        assertThrows(IllegalStateException.class, () -> harness.assertToolIsSafeForSafeMode("set_device_parameter"));
-        assertThrows(IllegalStateException.class, () -> harness.assertToolIsSafeForSafeMode("launch_scene"));
+        assertThrows(IllegalStateException.class, () -> harness.assertToolIsSafeForSafeMode("set_selected_device_parameter"));
+        assertThrows(IllegalStateException.class, () -> harness.assertToolIsSafeForSafeMode("set_selected_device_parameters"));
+        assertThrows(IllegalStateException.class, () -> harness.assertToolIsSafeForSafeMode("session_launchSceneByIndex"));
+        assertThrows(IllegalStateException.class, () -> harness.assertToolIsSafeForSafeMode("session_launchSceneByName"));
         assertThrows(IllegalStateException.class, () -> harness.assertToolIsSafeForSafeMode("launch_clip"));
     }
 
@@ -260,12 +262,14 @@ class McpSmokeHarnessArgsTest {
         McpClient trackingClient = new McpClient() {
             @Override
             public java.util.List<String> listTools() {
-                // Return all baseline + mutation tools as available
+                // Return all baseline + mutation tools as available (using actual MCP tool names)
                 return java.util.List.of(
                         "status", "list_tracks", "get_track_details", "list_devices_on_track",
                         "get_device_details", "list_scenes", "get_clips_in_scene",
                         "get_selected_device_parameters",
-                        "transport_start", "transport_stop", "set_device_parameter", "launch_scene", "launch_clip"
+                        "transport_start", "transport_stop",
+                        "set_selected_device_parameter", "set_selected_device_parameters",
+                        "session_launchSceneByIndex", "session_launchSceneByName", "launch_clip"
                 );
             }
 
@@ -281,9 +285,11 @@ class McpSmokeHarnessArgsTest {
 
         harness.run(safeArgs, trackingClient, new java.io.PrintStream(out), new java.io.PrintStream(err));
 
-        // Verify no mutating tools were called
+        // Verify no mutating tools were called (using actual MCP tool names)
         java.util.Set<String> mutatingTools = java.util.Set.of(
-                "transport_start", "transport_stop", "set_device_parameter", "launch_scene", "launch_clip"
+                "transport_start", "transport_stop",
+                "set_selected_device_parameter", "set_selected_device_parameters",
+                "session_launchSceneByIndex", "session_launchSceneByName", "launch_clip"
         );
         for (String mutatingTool : mutatingTools) {
             assertFalse(calledTools.contains(mutatingTool),
