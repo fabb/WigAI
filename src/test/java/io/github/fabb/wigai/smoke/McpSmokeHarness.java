@@ -34,6 +34,15 @@ public final class McpSmokeHarness {
     // READ_ONLY_TOOLS is now the same as BASELINE_REQUIRED_TOOLS
     private static final Set<String> READ_ONLY_TOOLS = BASELINE_REQUIRED_TOOLS;
 
+    // Tools that require parameters - MISSING_REQUIRED_PARAMETER is only expected for these
+    // Other tools (status, list_tracks, list_scenes, get_selected_device_parameters) work with no params
+    private static final Set<String> TOOLS_REQUIRING_PARAMS = Set.of(
+            "get_track_details",         // requires track_index
+            "list_devices_on_track",     // requires track_index
+            "get_device_details",        // requires track_index, device_index
+            "get_clips_in_scene"         // requires scene_index
+    );
+
     // Mutating tools - aligned with actual MCP tool names from src/main/java/.../mcp/tool/
     private static final Set<String> MUTATING_TOOLS = Set.of(
             "transport_start",
@@ -65,12 +74,12 @@ public final class McpSmokeHarness {
             return 1;
         }
 
-        // Step 1: Discovery - tools/list
+        // Step 1: Discovery - tools/list (single call, parse both raw and tool names from same response)
         List<String> tools;
         String rawToolsJson;
         try {
             rawToolsJson = client.listToolsRaw();
-            tools = client.listTools();
+            tools = parseToolNamesFromRaw(rawToolsJson);
         } catch (Exception e) {
             err.println("FAIL: tools/list failed: " + e.getMessage());
             return 1;
@@ -221,10 +230,11 @@ public final class McpSmokeHarness {
                             // Device-related tools may return DEVICE_NOT_SELECTED when no device is selected in Bitwig
                             boolean isDeviceTool = "get_selected_device_parameters".equals(tool)
                                     || "get_device_details".equals(tool);
-                            // Tools called without required params will return MISSING_REQUIRED_PARAMETER
-                            // This is expected behavior when calling with empty params for discovery
-                            boolean isMissingParam = "MISSING_REQUIRED_PARAMETER".equals(envelope.errorCode());
-                            if ((isDeviceTool && "DEVICE_NOT_SELECTED".equals(envelope.errorCode())) || isMissingParam) {
+                            // MISSING_REQUIRED_PARAMETER is only expected for tools that actually require parameters
+                            // Tools like status, list_tracks, list_scenes don't require params and should never return this
+                            boolean isMissingParamExpected = "MISSING_REQUIRED_PARAMETER".equals(envelope.errorCode())
+                                    && TOOLS_REQUIRING_PARAMS.contains(tool);
+                            if ((isDeviceTool && "DEVICE_NOT_SELECTED".equals(envelope.errorCode())) || isMissingParamExpected) {
                                 out.println("✓ " + tool + " → typed error [" + envelope.errorCode() + "] (expected)");
                             } else {
                                 // Typed error on other read-only tools indicates a problem - fail to keep pass/fail meaningful
@@ -248,6 +258,28 @@ public final class McpSmokeHarness {
     }
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    /**
+     * Parses tool names from raw tools/list JSON response.
+     * Avoids making a second network call by parsing from the same response used for raw output.
+     */
+    List<String> parseToolNamesFromRaw(String rawToolsJson) {
+        List<String> toolNames = new java.util.ArrayList<>();
+        try {
+            JsonNode response = OBJECT_MAPPER.readTree(rawToolsJson);
+            JsonNode result = response.get("result");
+            if (result != null && result.has("tools")) {
+                for (JsonNode tool : result.get("tools")) {
+                    if (tool.has("name")) {
+                        toolNames.add(tool.get("name").asText());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse tools from response: " + e.getMessage(), e);
+        }
+        return toolNames;
+    }
 
     /**
      * Explicit guard: throws IllegalStateException if tool is in MUTATING_TOOLS.

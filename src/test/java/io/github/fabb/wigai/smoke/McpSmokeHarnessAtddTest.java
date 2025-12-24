@@ -148,6 +148,113 @@ class McpSmokeHarnessAtddTest {
         assertEquals(0, exitCode);
     }
 
+    @Test
+    void missing_required_parameter_expected_only_for_param_requiring_tools() {
+        // MISSING_REQUIRED_PARAMETER should be expected for tools that require params
+        // but should FAIL for tools that don't require params (like status, list_tracks)
+        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
+
+        ByteArrayOutputStream stderrBytes = new ByteArrayOutputStream();
+        PrintStream stderr = new PrintStream(stderrBytes, true, StandardCharsets.UTF_8);
+
+        // Create a client where 'status' returns MISSING_REQUIRED_PARAMETER (which is wrong - status has no params)
+        McpClient client = new FakeMcpClient(allBaselineTools()) {
+            @Override
+            public String callTool(String toolName, Map<String, Object> arguments) {
+                if ("status".equals(toolName)) {
+                    // This should NOT be treated as expected - status doesn't require params
+                    return """
+                        {"status":"error","error":{"code":"MISSING_REQUIRED_PARAMETER","message":"Missing param","operation":"status"}}
+                        """.trim();
+                }
+                return super.callTool(toolName, arguments);
+            }
+        };
+
+        McpSmokeHarness harness = new McpSmokeHarness();
+        int exitCode = harness.run(args, client, System.out, stderr);
+
+        // Should fail because status should never return MISSING_REQUIRED_PARAMETER
+        assertEquals(1, exitCode, "Should fail when non-param tool returns MISSING_REQUIRED_PARAMETER");
+        String stderrText = new String(stderrBytes.toByteArray(), StandardCharsets.UTF_8);
+        assertTrue(stderrText.contains("status") && stderrText.contains("typed error"),
+                "Should report status tool returned unexpected typed error");
+    }
+
+    @Test
+    void missing_required_parameter_accepted_for_param_requiring_tools() {
+        // MISSING_REQUIRED_PARAMETER should be accepted for tools like get_track_details
+        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
+
+        ByteArrayOutputStream stdoutBytes = new ByteArrayOutputStream();
+        PrintStream stdout = new PrintStream(stdoutBytes, true, StandardCharsets.UTF_8);
+
+        McpClient client = new FakeMcpClient(allBaselineTools()) {
+            @Override
+            public String callTool(String toolName, Map<String, Object> arguments) {
+                if ("get_track_details".equals(toolName)) {
+                    // This IS expected - get_track_details requires track_index param
+                    return """
+                        {"status":"error","error":{"code":"MISSING_REQUIRED_PARAMETER","message":"Missing track_index","operation":"get_track_details"}}
+                        """.trim();
+                }
+                return super.callTool(toolName, arguments);
+            }
+        };
+
+        McpSmokeHarness harness = new McpSmokeHarness();
+        int exitCode = harness.run(args, client, stdout, System.err);
+
+        // Should pass because get_track_details requires params
+        assertEquals(0, exitCode, "Should pass when param-requiring tool returns MISSING_REQUIRED_PARAMETER");
+        String stdoutText = new String(stdoutBytes.toByteArray(), StandardCharsets.UTF_8);
+        assertTrue(stdoutText.contains("get_track_details") && stdoutText.contains("expected"),
+                "Should report MISSING_REQUIRED_PARAMETER as expected for get_track_details");
+    }
+
+    @Test
+    void prints_full_tools_list_json_to_stdout_per_AC2() {
+        // AC2: prints the full tool list observed (including at minimum `status`)
+        McpSmokeHarnessArgs args = new McpSmokeHarnessArgs("localhost", 61169, "/mcp", false);
+
+        ByteArrayOutputStream stdoutBytes = new ByteArrayOutputStream();
+        PrintStream stdout = new PrintStream(stdoutBytes, true, StandardCharsets.UTF_8);
+
+        // Create a client that returns realistic JSON structure
+        String fullToolsJson = """
+            {"jsonrpc":"2.0","id":2,"result":{"tools":[
+                {"name":"status","description":"Get status"},
+                {"name":"list_tracks","description":"List tracks"},
+                {"name":"get_track_details","description":"Get track details"},
+                {"name":"list_devices_on_track","description":"List devices"},
+                {"name":"get_device_details","description":"Get device details"},
+                {"name":"list_scenes","description":"List scenes"},
+                {"name":"get_clips_in_scene","description":"Get clips"},
+                {"name":"get_selected_device_parameters","description":"Get device params"}
+            ]}}
+            """.trim();
+
+        McpClient client = new FakeMcpClient(allBaselineTools()) {
+            @Override
+            public String listToolsRaw() {
+                return fullToolsJson;
+            }
+        };
+
+        McpSmokeHarness harness = new McpSmokeHarness();
+        int exitCode = harness.run(args, client, stdout, System.err);
+
+        String stdoutText = new String(stdoutBytes.toByteArray(), StandardCharsets.UTF_8);
+
+        // Verify full JSON is printed (not just tool names)
+        assertTrue(stdoutText.contains("--- Full tools/list JSON ---"), "Should have JSON section header");
+        assertTrue(stdoutText.contains("--- End tools/list JSON ---"), "Should have JSON section footer");
+        assertTrue(stdoutText.contains("\"name\""), "Should contain JSON with name fields");
+        assertTrue(stdoutText.contains("\"description\""), "Should contain JSON with description fields");
+        assertTrue(stdoutText.contains("\"status\""), "Should contain status tool in JSON");
+        assertEquals(0, exitCode);
+    }
+
     /**
      * Returns list of all baseline read-only tools, optionally with additional tools.
      */
@@ -164,6 +271,19 @@ class McpSmokeHarnessAtddTest {
         ));
         tools.addAll(List.of(additional));
         return tools;
+    }
+
+    private static String toolsListJson(List<String> tools) {
+        StringBuilder json = new StringBuilder();
+        json.append("{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"tools\":[");
+        for (int i = 0; i < tools.size(); i++) {
+            if (i > 0) {
+                json.append(",");
+            }
+            json.append("{\"name\":\"").append(tools.get(i)).append("\"}");
+        }
+        json.append("]}}");
+        return json.toString();
     }
 
     private static class FakeMcpClient implements McpClient {
@@ -187,7 +307,7 @@ class McpSmokeHarnessAtddTest {
 
         @Override
         public String listToolsRaw() {
-            return "{\"result\":{\"tools\":[]}}";
+            return toolsListJson(tools);
         }
 
         @Override

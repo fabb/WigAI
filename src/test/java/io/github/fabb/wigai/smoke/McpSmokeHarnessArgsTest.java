@@ -269,7 +269,7 @@ class McpSmokeHarnessArgsTest {
 
             @Override
             public String listToolsRaw() {
-                return "{\"result\":{\"tools\":[]}}";
+                return toolsListJson(listTools());
             }
 
             @Override
@@ -320,7 +320,7 @@ class McpSmokeHarnessArgsTest {
 
             @Override
             public String listToolsRaw() {
-                return "{\"result\":{\"tools\":[]}}";
+                return toolsListJson(listTools());
             }
 
             @Override
@@ -345,6 +345,19 @@ class McpSmokeHarnessArgsTest {
             assertFalse(calledTools.contains(mutatingTool),
                     "Safe mode must NOT call mutating tool: " + mutatingTool);
         }
+    }
+
+    private static String toolsListJson(java.util.List<String> tools) {
+        StringBuilder json = new StringBuilder();
+        json.append("{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"tools\":[");
+        for (int i = 0; i < tools.size(); i++) {
+            if (i > 0) {
+                json.append(",");
+            }
+            json.append("{\"name\":\"").append(tools.get(i)).append("\"}");
+        }
+        json.append("]}}");
+        return json.toString();
     }
 
     // --- HttpMcpClient Response Parsing Tests (CI-safe) ---
