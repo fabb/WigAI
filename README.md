@@ -12,6 +12,7 @@ The extension enables external AI agents (e.g., IDE-based copilots, standalone A
 -   Transport control (start/stop playback)
 -   Device parameter control for selected devices
 -   Clip and scene launching
+-   Switching between open projects
 
 ## Requirements
 

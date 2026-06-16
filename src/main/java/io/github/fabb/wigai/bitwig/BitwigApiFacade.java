@@ -328,6 +328,22 @@ public class BitwigApiFacade {
     }
 
     /**
+     * Switches to the next open project tab in Bitwig.
+     */
+    public void nextProject() {
+        logger.info("BitwigApiFacade: Switching to next project");
+        application.nextProject();
+    }
+
+    /**
+     * Switches to the previous open project tab in Bitwig.
+     */
+    public void previousProject() {
+        logger.info("BitwigApiFacade: Switching to previous project");
+        application.previousProject();
+    }
+
+    /**
      * Get the ControllerHost instance.
      *
      * @return The ControllerHost

@@ -28,6 +28,7 @@ public enum ErrorCode {
     BITWIG_TIMEOUT("BITWIG_TIMEOUT", "Bitwig API operation timed out"),
     DEVICE_UNAVAILABLE("DEVICE_UNAVAILABLE", "Device is not available or responding"),
     TRANSPORT_ERROR("TRANSPORT_ERROR", "Transport operation failed"),
+    PROJECT_ERROR("PROJECT_ERROR", "Project operation failed"),
 
     // System Errors
     INTERNAL_ERROR("INTERNAL_ERROR", "Internal system error occurred"),

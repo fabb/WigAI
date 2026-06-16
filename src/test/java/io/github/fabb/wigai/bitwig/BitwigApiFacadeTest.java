@@ -284,6 +284,30 @@ public class BitwigApiFacadeTest {
     }
 
     @Test
+    void testNextProject() {
+        // Execute the facade method
+        bitwigApiFacade.nextProject();
+
+        // Verify the application.nextProject() was called
+        verify(mockApplication).nextProject();
+
+        // Verify logging
+        verify(mockLogger).info("BitwigApiFacade: Switching to next project");
+    }
+
+    @Test
+    void testPreviousProject() {
+        // Execute the facade method
+        bitwigApiFacade.previousProject();
+
+        // Verify the application.previousProject() was called
+        verify(mockApplication).previousProject();
+
+        // Verify logging
+        verify(mockLogger).info("BitwigApiFacade: Switching to previous project");
+    }
+
+    @Test
     void testSetSelectedDeviceParameter_Success() {
         // Arrange
         int parameterIndex = 3;
