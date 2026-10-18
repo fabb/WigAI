@@ -1,5 +1,18 @@
 # WigAI - Bitwig Studio Extension for AI Control
 
+> [!WARNING]
+> **This project is archived and no longer maintained.**
+> WigAI was a working experiment that I have abandoned. The code is [MIT licensed](LICENSE) — feel free to fork, reuse and build on it.
+>
+> Forks with further development (as of October 2026):
+> - [glassdimly/wigai-full](https://github.com/glassdimly/wigai-full) — full project editing: devices, presets, browser, notes, arranger, event streaming
+> - [jmeachum/WigAI](https://github.com/jmeachum/WigAI) — continued development, clip slot status
+> - [liqtranq/WigAI](https://github.com/liqtranq/WigAI) — 39 extra MCP tools, resources, project switching
+> - [0reo/WigAI](https://github.com/0reo/WigAI) — track group hierarchy, arranger clip introspection
+> - [csabacsaba/WigAI](https://github.com/csabacsaba/WigAI) — song structure / scene / cue builder, clip note writing
+>
+> I am not affiliated with these forks or their authors, have not reviewed their code, and do not endorse them. They are listed for reference only; use them at your own risk. I accept no responsibility or liability for them.
+
 WigAI is a Model Context Protocol (MCP) server implemented as a Bitwig Studio extension. It provides an interface for external AI assistants to control Bitwig Studio through simple text-based commands.
 
 ## Overview
