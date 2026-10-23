@@ -39,3 +39,7 @@ hs_err_pid*
 .nyx/
 
 CHANGELOG.md
+
+# Python
+__pycache__/
+*.pyc

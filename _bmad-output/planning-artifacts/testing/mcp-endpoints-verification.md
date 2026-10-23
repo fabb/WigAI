@@ -164,7 +164,32 @@ Expected response format:
    - `name`: Should exactly match scene names as displayed in Bitwig
    - `color`: Should be `rgb(r,g,b)` format or `null` for scenes without colors
 
-### 5. Check Log Messages
+### 5. Automated Live Test (Epic 9 editing tools)
+
+`scripts/live_test.py` runs the editing tools end to end against a running Bitwig:
+
+```bash
+python3 scripts/live_test.py            # default URL http://localhost:61169/mcp
+python3 scripts/live_test.py --keep     # leave the test tracks for inspection
+```
+
+It creates its own tracks, exercises tracks/mixer, devices, parameters, clips, notes, file import and actions, then deletes them and checks the track count is restored. **Open an empty project first**: the script refuses to run when the project has more than 2 regular tracks (`--force` overrides). It prints one line per check and exits non-zero on any failure.
+
+### 5a. Automated Live Tests (Epics 10-15)
+
+Each script follows the same rules as `live_test.py` (empty project only, creates and deletes its own tracks, one line per check, non-zero exit on failure):
+
+| Script | Covers | Checks |
+|---|---|---|
+| `scripts/live_test_container.py` | presets on disk, `replace_device`, the browser, drum pads, layer mixers (Epic 10) | 19 |
+| `scripts/live_test_notes.py` | note expressions and conditions, clip settings, scenes, cue mix, crossfade, arranger clips (Epics 13, 14) | 16 |
+| `scripts/live_test_project.py` | project state, groove, transport options, clip copy/move/duplicate, note editing (Epics 13, 14) | 10 |
+| `scripts/live_test_midi.py` | playing notes, MIDI, modulated values, `show` (Epic 12) | 8 |
+| `scripts/live_test_events.py` | plugin inventory and VST2/VST3 insertion, `get_events` long-poll, `watch` streaming on the raw HTTP stream (Epics 11, 15) | 10 |
+
+All pass on Bitwig 6.1.3, Linux. Some tests switch the audio engine to the open project (`set_engine_active`) and play the transport briefly with the test track silenced.
+
+### 6. Check Log Messages
 
 After running these tests, check the Bitwig extension console to verify that appropriate log messages are being generated for each request and response.
 

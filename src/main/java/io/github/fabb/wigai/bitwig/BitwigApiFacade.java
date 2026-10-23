@@ -31,6 +31,7 @@ public class BitwigApiFacade {
         public static final String DEFAULT_TIME_STRING = "0:00.000";
         public static final int MAX_TRACKS = 128;
         public static final int MAX_SCENES = 128;
+        public static final int MAX_SENDS = 8;
         public static final int MAX_DEVICES_PER_TRACK = 128;
         public static final int TICKS_PER_SIXTEENTH = 240;
         public static final int BEATS_PER_MEASURE = 4;
@@ -90,7 +91,7 @@ public class BitwigApiFacade {
         this.projectParameterBank = masterTrack.createCursorRemoteControlsPage(Constants.PROJECT_PARAMETER_COUNT);
 
         // Initialize track bank for clip launching (support up to 128 tracks and 128 scenes for full functionality)
-        this.trackBank = host.createTrackBank(Constants.MAX_TRACKS, 0, Constants.MAX_SCENES);
+        this.trackBank = host.createTrackBank(Constants.MAX_TRACKS, Constants.MAX_SENDS, Constants.MAX_SCENES);
         this.sceneBankFacade = new SceneBankFacade(host, logger, Constants.MAX_SCENES); // Support up to 128 scenes for full functionality
 
         // Initialize device banks for each track to enable device enumeration
@@ -261,6 +262,26 @@ public class BitwigApiFacade {
             }
         }
         return -1;
+    }
+
+    // ========================================
+    // Accessors for BitwigEditFacade
+    // ========================================
+
+    public Application getApplication() {
+        return application;
+    }
+
+    public Transport getTransport() {
+        return transport;
+    }
+
+    public TrackBank getTrackBank() {
+        return trackBank;
+    }
+
+    public List<DeviceBank> getTrackDeviceBanks() {
+        return trackDeviceBanks;
     }
 
     // ========================================

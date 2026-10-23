@@ -169,6 +169,27 @@ Validating WigAI's functionality will involve several layers:
 -   **[Epic 8: Device Information Retrieval](./epic-8.md)**
     * **Goal:** Provide MCP tools to list devices on a specific track and retrieve detailed information including remote controls and remote control pages for a specific device.
 
+-   **[Epic 9: Project Editing](./epic-9.md)**
+    * **Goal:** Provide MCP tools to create and configure tracks, build device chains, set parameters on any device, create clips and write notes, adjust transport settings and run Bitwig application actions.
+
+-   **[Epic 10: Device Chains, Presets and Containers](./epic-10.md)**
+    * **Goal:** Work inside container devices (Vocoder carrier/modulator, FX slots, layers), load presets, drive Bitwig's browser, and set up Drum Machine pads and layer mixers.
+
+-   **[Epic 11: Device Knowledge](./epic-11.md)**
+    * **Goal:** List every installed Bitwig device and plugin, describe each device's controls (scanned on demand, with history) and store Bitwig's own device descriptions.
+
+-   **[Epic 12: Listening and Auditioning](./epic-12.md)**
+    * **Goal:** Meters, playing notes and modulated values, auditioning notes and sending MIDI, and showing the user what changed.
+
+-   **[Epic 13: Arrangement, Scenes, Clips and Notes](./epic-13.md)**
+    * **Goal:** Cue markers and loop, scene management, clip management, reading and editing notes with every expression and condition, and the arranger clip the user selects.
+
+-   **[Epic 14: Project-wide Control](./epic-14.md)**
+    * **Goal:** Clear stray solos, mutes and arms; set groove, transport options and the cue mix.
+
+-   **[Epic 15: Following the User](./epic-15.md)**
+    * **Goal:** An event log of changes with long-poll, and a call that streams changes as MCP notifications (issue #3).
+
 ## Key Reference Documents
 
 -   `docs/project-brief.md`

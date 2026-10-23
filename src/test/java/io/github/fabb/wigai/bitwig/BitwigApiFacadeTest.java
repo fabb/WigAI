@@ -98,7 +98,7 @@ public class BitwigApiFacadeTest {
         when(mockMasterTrack.createCursorRemoteControlsPage(8)).thenReturn(mockProjectParameterBank);
 
         // Setup TrackBank mocks (new for clip launching) - use smaller sizes for testing
-        when(mockHost.createTrackBank(128, 0, 128)).thenReturn(mockTrackBank);
+        when(mockHost.createTrackBank(128, 8, 128)).thenReturn(mockTrackBank);
         when(mockTrackBank.getSizeOfBank()).thenReturn(8); // Reduced from 128 to 8 for testing
         when(mockTrackBank.getItemAt(anyInt())).thenReturn(mockTrack);
         when(mockTrack.clipLauncherSlotBank()).thenReturn(mockClipLauncherSlotBank);
